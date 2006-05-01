@@ -1,0 +1,6 @@
+name="postgresql"
+version="1.4.5"
+description="PostgreSQL bindings for OCaml"
+requires="unix"
+archive(byte)="postgresql.cma"
+archive(native)="postgresql.cmxa"

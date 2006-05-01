@@ -1,0 +1,83 @@
+2006-01-24:  Added support for accessing binary fields.
+
+2005-05-31:  Fixed some uncleanliness reported by Saffire (an FFI-type
+             checker).
+
+2005-03-22:  Small internal improvement.
+
+2004-12-28:  Fixed a potential compilation problem.
+
+2004-12-20:  Fixed a bug in the "escape_bytea"-function: escaped strings
+             contained an additional null character.
+
+             Thanks to Christophe Troestler
+             <Christophe.Troestler@umh.ac.be> for the bug report!
+
+             Updated OCamlMakefile.
+
+2004-08-26:  Small internal code-improvement.
+
+2004-08-05:  Several significant improvements: the oid type is now
+             revealed as int in the interface.  The "ftype"-method has
+             been changed to return the new type "ftype".  The latter
+             lists 60 constructors, which specify the types of fields.
+
+             The change comes with new conversion functions:
+
+               * ftype_of_oid
+               * oid_of_ftype
+               * string_of_ftype
+               * ftype_of_string
+
+             And with new exceptions:
+
+               * exception Oid of oid
+               * exception InternalError of string
+
+2004-08-02:  Fixed two serious thread-related bugs.
+
+2004-07-14:  Minor update for OCaml-3.08.
+
+             Updated OCamlMakefile.
+
+2004-07-06:  Added an example "cursor" that demonstrates the use of
+             cursors.
+
+2004-06-29:  Fixed an off-by-one error in method "get_all_lst".
+             Thanks to Anil Madhavapeddy <anil@recoil.org> for the patch!
+
+             Updated OCamlMakefile.
+
+2004-04-27:  Updated OCamlMakefile.
+
+2004-04-13:  Fixed a problem concerning backwards compatibility with
+             older OCaml-versions that do not yet use the caml-namespace
+             (identifiers not yet prefixed with "caml_").
+
+2004-02-21:  Added CAMLprim in the C-interface where appropriate.
+
+2004-02-08:  Fixed minor bugs concerning returning unit values from C.
+             Made C-interface compile with pedantic compiler settings.
+
+2004-01-29:  Some major changes to interface to use or improve handling
+             of default arguments. Effected methods:
+
+               * escape_string
+               * escape_bytea
+               * getline
+               * getline_async
+               * putnbytes
+               * lo_write
+               * lo_read
+               * lo_seek
+
+             Removed methods (obsolete due to default arguments - use
+             "lo_write" instead):
+
+               * lo_write_string
+
+             Added functions:
+
+               * unescape_bytea
+
+2004-01-28:  First release.
