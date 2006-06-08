@@ -105,7 +105,7 @@ static value none = Val_int(0);
 static value make_some(value v)
 {
   CAMLparam1(v);
-  value res = alloc_small(1, 0);
+  value res = caml_alloc_small(1, 0);
   Field(res, 0) = v;
   CAMLreturn(res);
 }
@@ -117,7 +117,7 @@ static value *exc_InternalError = NULL;  /* Exception [InternalError] */
 CAMLprim value PQocaml_init(value unit)
 {
   register_global_root(&empty_string);
-  empty_string = alloc_string(0);
+  empty_string = caml_alloc_string(0);
   exc_Oid = caml_named_value("Postgresql.Oid");
   exc_InternalError = caml_named_value("Postgresql.InternalError");
   return Val_unit;
@@ -232,7 +232,7 @@ CAMLprim value PQconnectdb_stub(value vconn_info)
 
   /* One may raise this 30 to 500 for instance if the program takes
      responsibility of closing connections */
-  vconn = alloc_final(3, free_conn, 1, 30);
+  vconn = caml_alloc_final(3, free_conn, 1, 30);
 
   set_conn(vconn, conn);
   set_conn_cb(vconn, NULL);
@@ -262,27 +262,27 @@ CAMLprim value PQconndefaults_stub(value unit)
   PQconninfoOption *cios = PQconndefaults(), *p = cios;
   int i, j, n;
 
-  while(p->keyword != NULL) p++;
+  while (p->keyword != NULL) p++;
 
   n = p - cios;
-  res = alloc_tuple(n);
+  res = caml_alloc_tuple(n);
 
   for (i = 0; i < n; i++, cios++) {
-    value el = alloc_small(7, 0);
+    value el = caml_alloc_small(7, 0);
     for (j = 0; j < 7; j++) { Field(el, j) = none; };
     Store_field(res, i, el);
-    Field(el, 0) = copy_string(cios->keyword);
-    modify(&Field(el, 1), copy_string(cios->envvar));
+    Field(el, 0) = caml_copy_string(cios->keyword);
+    modify(&Field(el, 1), caml_copy_string(cios->envvar));
     if (cios->compiled) {
-      value some = make_some(copy_string(cios->compiled));
+      value some = make_some(caml_copy_string(cios->compiled));
       modify(&Field(el, 2), some);
     };
     if (cios->val) {
-      value some = make_some(copy_string(cios->val));
+      value some = make_some(caml_copy_string(cios->val));
       modify(&Field(el, 3), some);
     };
-    modify(&Field(el, 4), copy_string(cios->label));
-    modify(&Field(el, 5), copy_string(cios->dispchar));
+    modify(&Field(el, 4), caml_copy_string(cios->label));
+    modify(&Field(el, 5), caml_copy_string(cios->dispchar));
     modify(&Field(el, 6), Val_int(cios->dispsize));
   };
 
@@ -290,7 +290,7 @@ CAMLprim value PQconndefaults_stub(value unit)
 }
 
 static value make_string(const char *s)
-{ return (s ? copy_string(s) : empty_string); }
+{ return (s ? caml_copy_string(s) : empty_string); }
 
 #define conn_info(fun, ret) \
   CAMLprim value fun##_stub(value vconn) \
@@ -373,7 +373,7 @@ CAMLprim value PQres_isnull(value vres) {
 
 static value alloc_result(PGresult *res, np_callback *cb)
 {
-  value vres = alloc_final(3, free_result, 1, 500);
+  value vres = caml_alloc_final(3, free_result, 1, 500);
   set_res(vres, res);
   set_res_cb(vres, cb);
   np_incr_refcount(cb);
@@ -423,7 +423,7 @@ CAMLprim value PQgetvalue_stub(value vres, value v_tup_num, value v_field_num)
   else {
     /* Assume binary format! */
     int len = PQgetlength(res, tup_num, field_num);
-    v_str = len ? empty_string : alloc_string(len);
+    v_str = len ? empty_string : caml_alloc_string(len);
     memcpy(String_val(v_str), str, len);
   }
   CAMLreturn(v_str);
@@ -485,7 +485,7 @@ CAMLprim value PQescapeBytea_stub(value v_from, value v_pos_from, value v_len)
     (char *) PQescapeBytea(
       (unsigned char *) String_val(v_from) + Int_val(v_pos_from),
       Int_val(v_len), &len);
-  value v_res = alloc_string(len - 1);
+  value v_res = caml_alloc_string(len - 1);
   memcpy(String_val(v_res), buf, len);
   free(buf);
   return v_res;
@@ -499,7 +499,7 @@ CAMLprim value PQunescapeBytea_stub(value v_from)
   if (buf == NULL)
     failwith("Postgresql.unescape_bytea: illegal bytea string");
   else {
-    value v_res = alloc_string(len);
+    value v_res = caml_alloc_string(len);
     memcpy(String_val(v_res), buf, len);
     free(buf);
     return v_res;
@@ -518,7 +518,7 @@ CAMLprim value PQnotifies_stub(value vconn)
     CAMLlocal1(str);
     value couple;
     str = make_string(noti->relname);
-    couple = alloc_small(2, 0);
+    couple = caml_alloc_small(2, 0);
     Field(couple, 0) = str;
     Field(couple, 1) = Val_int(noti->be_pid);
     CAMLreturn(make_some(couple));
