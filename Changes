@@ -1,3 +1,5 @@
+2006-06-08:  Fixed GC-bugs.
+
 2006-01-24:  Added support for accessing binary fields.
 
 2005-05-31:  Fixed some uncleanliness reported by Saffire (an FFI-type

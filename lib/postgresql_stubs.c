@@ -325,7 +325,8 @@ noalloc_conn_info(PQbackendPID, Val_int)
 #define res_info(fun, ret) \
   CAMLprim value fun##_stub(value vres) { \
     CAMLparam1(vres); \
-    CAMLreturn(ret(fun(get_res(vres)))); \
+    value v_ret = ret(fun(get_res(vres))); \
+    CAMLreturn(v_ret); \
   }
 
 #define noalloc_res_info(fun, ret) \
@@ -335,7 +336,8 @@ noalloc_conn_info(PQbackendPID, Val_int)
   CAMLprim value fun##_stub(value vres, value field_num) \
   { \
     CAMLparam1(vres); \
-    CAMLreturn(ret(fun(get_res(vres), Int_val(field_num)))); \
+    value v_ret = ret(fun(get_res(vres), Int_val(field_num))); \
+    CAMLreturn(v_ret); \
   }
 
 #define noalloc_fieldnum_info(fun, ret) \
@@ -348,7 +350,8 @@ noalloc_conn_info(PQbackendPID, Val_int)
   CAMLprim value fun##_stub(value vres, value tup_num, value field_num) \
   { \
     CAMLparam1(vres); \
-    CAMLreturn(ret(fun(get_res(vres), Int_val(tup_num), Int_val(field_num)))); \
+    value v_ret = ret(fun(get_res(vres), Int_val(tup_num), Int_val(field_num))); \
+    CAMLreturn(v_ret); \
   }
 
 #define noalloc_field_info(fun, ret) \
@@ -367,7 +370,8 @@ static void free_result(value vres)
   set_res(vres, NULL);
 }
 
-CAMLprim value PQres_isnull(value vres) {
+CAMLprim value PQres_isnull(value vres)
+{
   return Val_int((get_res(vres)) ? 0 : 1);
 }
 
@@ -439,8 +443,10 @@ noalloc_res_info(PQoidValue, Val_int)
 CAMLprim value PQmakeEmptyPGresult_stub(value vconn, value status)
 {
   CAMLparam1(vconn);
-  CAMLreturn(alloc_result(PQmakeEmptyPGresult(get_conn(vconn), Int_val(status)),
-                          get_conn_cb(vconn)));
+  value v_res =
+    alloc_result(PQmakeEmptyPGresult(get_conn(vconn), Int_val(status)),
+                 get_conn_cb(vconn));
+  CAMLreturn(v_res);
 }
 
 
@@ -461,7 +467,8 @@ CAMLprim value PQsendQuery_stub(value vconn, value query)
 CAMLprim value PQgetResult_stub(value vconn)
 {
   CAMLparam1(vconn);
-  CAMLreturn(alloc_result(PQgetResult(get_conn(vconn)), get_conn_cb(vconn)));
+  value v_res = alloc_result(PQgetResult(get_conn(vconn)), get_conn_cb(vconn));
+  CAMLreturn(v_res);
 }
 
 noalloc_conn_info(PQconsumeInput, Val_int)
