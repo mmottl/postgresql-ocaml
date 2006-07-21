@@ -289,14 +289,15 @@ CAMLprim value PQconndefaults_stub(value unit)
   CAMLreturn(res);
 }
 
-static value make_string(const char *s)
+static inline value make_string(const char *s)
 { return (s ? caml_copy_string(s) : empty_string); }
 
 #define conn_info(fun, ret) \
   CAMLprim value fun##_stub(value vconn) \
   { \
     CAMLparam1(vconn); \
-    CAMLreturn(ret(fun(get_conn(vconn)))); \
+    value v_ret = ret(fun(get_conn(vconn))); \
+    CAMLreturn(v_ret); \
   }
 
 #define noalloc_conn_info(fun, ret) \
@@ -350,7 +351,8 @@ noalloc_conn_info(PQbackendPID, Val_int)
   CAMLprim value fun##_stub(value vres, value tup_num, value field_num) \
   { \
     CAMLparam1(vres); \
-    value v_ret = ret(fun(get_res(vres), Int_val(tup_num), Int_val(field_num))); \
+    value v_ret = \
+      ret(fun(get_res(vres), Int_val(tup_num), Int_val(field_num))); \
     CAMLreturn(v_ret); \
   }
 
