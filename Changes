@@ -1,3 +1,7 @@
+2006-08-17:  Automatically fetch compiler and linker flags for the local
+             PostgreSQL-installation for simpler installation.  Thanks to
+             Vincenzo Ciancia <ciancia@di.unipi.it> for the hint!
+
 2006-07-21:  Fixed GC-bug.
 
 2006-06-08:  Fixed GC-bugs.
