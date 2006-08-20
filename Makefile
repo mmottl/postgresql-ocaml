@@ -1,5 +1,3 @@
--include Makefile.conf
-
 EXAMPLES = $(filter-out examples/CVS, $(wildcard examples/*))
 
 .PHONY: all
