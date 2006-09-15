@@ -1,3 +1,5 @@
+2006-09-15:  Updated OCamlMakefile.
+
 2006-08-17:  Automatically fetch compiler and linker flags for the local
              PostgreSQL-installation for simpler installation.  Thanks to
              Vincenzo Ciancia <ciancia@di.unipi.it> for the hint!

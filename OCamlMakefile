@@ -5,7 +5,7 @@
 #                             For updates see:
 #                http://www.ocaml.info/home/ocaml_sources.html
 #
-#        $Id: OCamlMakefile,v 1.6 2006/01/17 00:41:12 mottl Exp $
+#        $Id: OCamlMakefile,v 1.72 2005/12/09 15:30:50 mottl Exp $
 #
 ###########################################################################
 
@@ -513,7 +513,7 @@ CINCFLAGS += $(SOURCE_DIRS:%=-I%) $(INCDIRS:%=-I%) $(OCAML_DEFAULT_DIRS:%=-I%)
 
 ifndef MSVC
 CLIBFLAGS += $(SOURCE_DIRS:%=-L%) $(LIBDIRS:%=-L%) \
-             $(EXTLIBDIRS:%=-L%) $(EXTLIBDIRS:%=-Wl,$(RPATH_FLAG)%) \
+             $(EXTLIBDIRS:%=-L%) $(EXTLIBDIRS:%=-dllpath %) \
              $(OCAML_DEFAULT_DIRS:%=-L%)
 endif
 
@@ -903,10 +903,10 @@ $(RESULT).cmxa $(RESULT).$(EXT_LIB):	$(REAL_IMPL_INTF) $(EXTRADEPS) $(RESULTDEPS
 else
 ifdef BYTE_OCAML
 $(LIB_PACK_NAME).cmi $(LIB_PACK_NAME).cmo: $(REAL_IMPL_INTF)
-			$(REAL_OCAMLFIND) $(REAL_OCAMLC) -pack -o $(LIB_PACK_NAME).cmo $(REAL_IMPL)
+			$(REAL_OCAMLFIND) $(REAL_OCAMLC) -pack -o $(LIB_PACK_NAME).cmo $(OCAMLLDFLAGS) $(REAL_IMPL)
 else
 $(LIB_PACK_NAME).cmi $(LIB_PACK_NAME).cmx: $(REAL_IMPL_INTF)
-			$(REAL_OCAMLFIND) $(REAL_OCAMLC) -pack -o $(LIB_PACK_NAME).cmx $(REAL_IMPL)
+			$(REAL_OCAMLFIND) $(REAL_OCAMLC) -pack -o $(LIB_PACK_NAME).cmx  $(OCAMLLDFLAGS) $(REAL_IMPL)
 endif
 
 $(RESULT).cma:		$(LIB_PACK_NAME).cmi $(LIB_PACK_NAME).cmo $(MAKEDLL) $(EXTRADEPS) $(RESULTDEPS)
