@@ -172,12 +172,6 @@ val escape_string : ?pos : int -> ?len : int -> string -> string
     @param pos default = 0
     @param len default = String.length str - pos *)
 
-val escape_bytea : ?pos : int -> ?len : int -> string -> string
-(** [escape_bytea pos len str] escapes binary substring [str]  of length
-    [len] starting at position [pos] for use within SQL.
-    @param pos default = 0
-    @param len default = String.length str - pos *)
-
 external unescape_bytea : string -> string = "PQunescapeBytea_stub"
 (** [unescape_bytea str] unescapes binary string [str]. *)
 
@@ -599,4 +593,10 @@ object
   (** [lo_unlink oid] removes the large object specified by [oid] from the
       database.
       @raise Error if there is a connection error. *)
+
+  method escape_bytea : ?pos : int -> ?len : int -> string -> string
+  (** [escape_bytea pos len str] escapes binary substring [str]  of length
+      [len] starting at position [pos] for use within SQL.
+      @param pos default = 0
+      @param len default = String.length str - pos *)
 end

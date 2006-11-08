@@ -487,17 +487,18 @@ CAMLprim value PQescapeString_stub(value v_from, value v_pos_from,
                                 Int_val(v_len)));
 }
 
-CAMLprim value PQescapeBytea_stub(value v_from, value v_pos_from, value v_len)
+CAMLprim value PQescapeByteaConn_stub(
+  value v_conn, value v_from, value v_pos_from, value v_len)
 {
   size_t len;
   char *buf =
-    (char *) PQescapeBytea(
+    (char *) PQescapeByteaConn(
+      get_conn(v_conn),
       (unsigned char *) String_val(v_from) + Int_val(v_pos_from),
       Int_val(v_len), &len);
-  --len;
-  value v_res = caml_alloc_string(len);
+  value v_res = caml_alloc_string(--len);
   memcpy(String_val(v_res), buf, len);
-  free(buf);
+  PQfreemem(buf);
   return v_res;
 }
 
@@ -511,7 +512,7 @@ CAMLprim value PQunescapeBytea_stub(value v_from)
   else {
     value v_res = caml_alloc_string(len);
     memcpy(String_val(v_res), buf, len);
-    free(buf);
+    PQfreemem(buf);
     return v_res;
   }
 }
@@ -531,6 +532,7 @@ CAMLprim value PQnotifies_stub(value vconn)
     couple = caml_alloc_small(2, 0);
     Field(couple, 0) = str;
     Field(couple, 1) = Val_int(noti->be_pid);
+    PQfreemem(noti);
     CAMLreturn(make_some(couple));
   }
   else CAMLreturn(none);

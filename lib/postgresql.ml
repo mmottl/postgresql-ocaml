@@ -398,7 +398,8 @@ module Stub = struct
     string -> int -> string -> int -> int -> int
     = "PQescapeString_stub" "noalloc"
 
-  external escape_bytea : string -> int -> int -> string = "PQescapeBytea_stub"
+  external escape_bytea_conn :
+    connection -> string -> int -> int -> string = "PQescapeByteaConn_stub"
 
 
   (* Control Functions *)
@@ -449,13 +450,6 @@ let escape_string ?(pos = 0) ?len str =
   let buf = String.create (len + len + 1) in
   let n = Stub.escape_string str pos buf 0 len in
   String.sub buf 0 n
-
-let escape_bytea ?(pos = 0) ?len str =
-  let str_len = String.length str in
-  let len = match len with Some len -> len | None -> str_len in
-  if pos < 0 || len < 0 || pos + len > str_len then
-    invalid_arg "Postgresql.escape_bytea";
-  Stub.escape_bytea str pos len
 
 external unescape_bytea : string -> string = "PQunescapeBytea_stub"
 
@@ -596,6 +590,13 @@ object(self)
   (* Main routines *)
 
   method finish = check_null (); Stub.finish conn
+
+  method escape_bytea ?(pos = 0) ?len str =
+    let str_len = String.length str in
+    let len = match len with Some len -> len | None -> str_len in
+    if pos < 0 || len < 0 || pos + len > str_len then
+      invalid_arg "Postgresql.escape_bytea";
+    Stub.escape_bytea_conn conn str pos len
 
   method try_reset =
     check_null ();
