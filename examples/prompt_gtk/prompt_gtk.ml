@@ -20,7 +20,7 @@ let file_dialog title =
   let name = ref "" in
   let sel = GWindow.file_selection ~title ~modal:true () in
   let cancel_callback () = sel#destroy (); Main.quit () in
-  let ok_callback () = name := sel#get_filename; cancel_callback () in
+  let ok_callback () = name := sel#filename; cancel_callback () in
   let _ = sel#ok_button#connect#clicked ~callback:ok_callback in
   let _ = sel#cancel_button#connect#clicked ~callback:cancel_callback in
   sel#show ();
@@ -63,15 +63,9 @@ let show_tuples res =
 
 let show_copy_out conn =
   let window, hbox, sbv, sbh = make_window "Result (copy_out)" in
-
-  let txt =
-    GEdit.text
-      ~packing:hbox#add
-      ~vadjustment:sbv#adjustment
-      ~hadjustment:sbh#adjustment
-      () in
-
-  conn#copy_out (fun s -> txt#insert (s ^ "\n"));
+  let txt = GText.view ~packing:hbox#add () in
+  let buf = txt#buffer in
+  conn#copy_out (fun s -> buf#insert (s ^ "\n"));
   window#show ()
 
 let main () =
@@ -80,9 +74,10 @@ let main () =
   let window = GWindow.window ~title:"Queries" ~width:300 ~height:300 () in
   let _ = window#connect#destroy ~callback:Main.quit in
   let vbox = GPack.vbox ~border_width:5 ~spacing:10 ~packing:window#add () in
-  let result = GEdit.text ~editable:false ~packing:vbox#add () in
-  let text = GEdit.text ~editable:true ~packing:vbox#add ~height:50 () in
-  let print s = ignore (result#insert_text s ~pos:result#length) in
+  let result = GText.view ~editable:false ~packing:vbox#add () in
+  let res_buf = result#buffer in
+  let text = GText.view ~editable:true ~packing:vbox#add ~height:50 () in
+  let print s = ignore (res_buf#insert s) in
 
   let rec dump_res () =
     match conn#get_result with
@@ -107,11 +102,10 @@ let main () =
     | None -> () in
 
   let query () =
-    let stop = text#length in
-    let s = text#get_chars ~start:0 ~stop in
+    let buf = text#buffer in
+    let s = buf#get_text () in
     print "-> "; print s; print "\n";
-    text#delete_text ~start:0 ~stop;
-    text#set_position 0;
+    buf#delete ~start:buf#start_iter ~stop:buf#end_iter;
     conn#send_query s;
     dump_res ();
     print "======\n";
@@ -122,7 +116,7 @@ let main () =
     else false in
 
   let _ = text#event#connect#key_press ~callback:key_press in
-  let button = GButton.button ~label:"Exec" ~packing:vbox#add ~height:40 () in
+  let button = GButton.button ~label:"Exec" ~packing:vbox#add () in
   let _ = button#connect#clicked ~callback:query in
 
   window#show ();
