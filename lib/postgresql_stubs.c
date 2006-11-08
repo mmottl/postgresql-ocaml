@@ -494,7 +494,8 @@ CAMLprim value PQescapeBytea_stub(value v_from, value v_pos_from, value v_len)
     (char *) PQescapeBytea(
       (unsigned char *) String_val(v_from) + Int_val(v_pos_from),
       Int_val(v_len), &len);
-  value v_res = caml_alloc_string(len - 1);
+  --len;
+  value v_res = caml_alloc_string(len);
   memcpy(String_val(v_res), buf, len);
   free(buf);
   return v_res;
