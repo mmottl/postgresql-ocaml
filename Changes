@@ -1,3 +1,12 @@
+2006-11-08:  Upgraded prompt_gtk to LablGTK2.
+
+             Tightened compilation warnings.
+
+             Removed superfluous linking option.
+
+             Replaced obsolete escaping method, and added calls to
+             PQfreemem required on Windows.
+
 2006-09-15:  Updated OCamlMakefile.
 
 2006-08-17:  Automatically fetch compiler and linker flags for the local
