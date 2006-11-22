@@ -75,8 +75,12 @@ export OCAMLBLDFLAGS
 ifndef OCAMLCPFLAGS
   OCAMLCPFLAGS := a
 endif
-
 export OCAMLCPFLAGS
+
+ifndef DOC_DIR
+  DOC_DIR := doc
+endif
+export DOC_DIR
 
 export PPFLAGS
 
@@ -153,7 +157,11 @@ export LDFLAGS
 export CPPFLAGS
 
 ifndef RPATH_FLAG
-  RPATH_FLAG := -R
+  ifdef ELF_RPATH_FLAG
+    RPATH_FLAG := $(ELF_RPATH_FLAG)
+  else
+    RPATH_FLAG := -R
+  endif
 endif
 export RPATH_FLAG
 
@@ -512,9 +520,12 @@ INCFLAGS := $(DINCFLAGS) $(INCDIRS:%=-I %)
 CINCFLAGS += $(SOURCE_DIRS:%=-I%) $(INCDIRS:%=-I%) $(OCAML_DEFAULT_DIRS:%=-I%)
 
 ifndef MSVC
-CLIBFLAGS += $(SOURCE_DIRS:%=-L%) $(LIBDIRS:%=-L%) \
-             $(EXTLIBDIRS:%=-L%) $(EXTLIBDIRS:%=-dllpath %) \
-             $(OCAML_DEFAULT_DIRS:%=-L%)
+  CLIBFLAGS += $(SOURCE_DIRS:%=-L%) $(LIBDIRS:%=-L%) \
+               $(EXTLIBDIRS:%=-L%) $(OCAML_DEFAULT_DIRS:%=-L%)
+
+  ifeq ($(ELF_RPATH), yes)
+    CLIBFLAGS += $(EXTLIBDIRS:%=-Wl,$(RPATH_FLAG)%)
+  endif
 endif
 
 ifndef PROFILING
@@ -533,14 +544,17 @@ else
 endif
 
 ifndef MSVC
-COMMON_LDFLAGS := $(LDFLAGS:%=-ccopt %) $(SOURCE_DIRS:%=-ccopt -L%) \
-		  $(LIBDIRS:%=-ccopt -L%) $(EXTLIBDIRS:%=-ccopt -L%) \
-		  $(EXTLIBDIRS:%=-ccopt -Wl,$(RPATH_FLAG)%) \
-		  $(OCAML_DEFAULT_DIRS:%=-ccopt -L%)
+  COMMON_LDFLAGS := $(LDFLAGS:%=-ccopt %) $(SOURCE_DIRS:%=-ccopt -L%) \
+		    $(LIBDIRS:%=-ccopt -L%) $(EXTLIBDIRS:%=-ccopt -L%) \
+		    $(EXTLIBDIRS:%=-ccopt -Wl $(OCAML_DEFAULT_DIRS:%=-ccopt -L%))
+
+  ifeq ($(ELF_RPATH),yes)
+    COMMON_LDFLAGS += $(EXTLIBDIRS:%=-ccopt -Wl,$(RPATH_FLAG)%)
+  endif
 else
-COMMON_LDFLAGS := -ccopt "/link -NODEFAULTLIB:LIBC $(LDFLAGS:%=%) $(SOURCE_DIRS:%=-LIBPATH:%) \
-		  $(LIBDIRS:%=-LIBPATH:%) $(EXTLIBDIRS:%=-LIBPATH:%) \
-		  $(OCAML_DEFAULT_DIRS:%=-LIBPATH:%) "
+  COMMON_LDFLAGS := -ccopt "/link -NODEFAULTLIB:LIBC $(LDFLAGS:%=%) $(SOURCE_DIRS:%=-LIBPATH:%) \
+		    $(LIBDIRS:%=-LIBPATH:%) $(EXTLIBDIRS:%=-LIBPATH:%) \
+		    $(OCAML_DEFAULT_DIRS:%=-LIBPATH:%) "
 endif
 
 CLIBS_OPTS := $(CLIBS:%=-cclib -l%)
@@ -827,16 +841,16 @@ pack-native-code:		$(PRE_TARGETS)
 panc:	pack-native-code
 
 # generates HTML-documentation
-htdoc:	doc/$(RESULT)/html
+htdoc:	$(DOC_DIR)/$(RESULT)/html
 
 # generates Latex-documentation
-ladoc:	doc/$(RESULT)/latex
+ladoc:	$(DOC_DIR)/$(RESULT)/latex
 
 # generates PostScript-documentation
-psdoc:	doc/$(RESULT)/latex/doc.ps
+psdoc:	$(DOC_DIR)/$(RESULT)/latex/doc.ps
 
 # generates PDF-documentation
-pdfdoc:	doc/$(RESULT)/latex/doc.pdf
+pdfdoc:	$(DOC_DIR)/$(RESULT)/latex/doc.pdf
 
 # generates all supported forms of documentation
 doc: htdoc ladoc psdoc pdfdoc
@@ -1012,7 +1026,7 @@ endif
 .c.$(EXT_OBJ):
 			$(OCAMLC) -c -cc "$(CC)" -ccopt "$(CFLAGS) \
 				$(CPPFLAGS) $(CPPFLAGS_WIN32) \
-				$(CFLAGS_WIN32) $(CINCFLAGS) $(CFLAG_O)$@ " $< 
+				$(CFLAGS_WIN32) $(CINCFLAGS) $(CFLAG_O)$@ " $<
 
 .$(EXT_CXX).$(EXT_OBJ):
 			$(CXX) -c $(CXXFLAGS) $(CINCFLAGS) $(CPPFLAGS) \
@@ -1047,7 +1061,7 @@ $(BCDIDIR)/%.di $(NCDIDIR)/%.di:	%.mli
 			    -pp "$$pp $(PPFLAGS)" $(DINCFLAGS) $< > $@; \
 			fi
 
-doc/$(RESULT)/html: $(DOC_FILES)
+$(DOC_DIR)/$(RESULT)/html: $(DOC_FILES)
 	rm -rf $@
 	mkdir -p $@
 	$(QUIET)pp=`sed -n -e '/^#/d' -e 's/(\*pp \([^*]*\) \*)/\1/p;q' $<`; \
@@ -1061,7 +1075,7 @@ doc/$(RESULT)/html: $(DOC_FILES)
 	  	$(INCFLAGS) $(DOC_FILES); \
 	fi
 
-doc/$(RESULT)/latex: $(DOC_FILES)
+$(DOC_DIR)/$(RESULT)/latex: $(DOC_FILES)
 	rm -rf $@
 	mkdir -p $@
 	$(QUIET)pp=`sed -n -e '/^#/d' -e 's/(\*pp \([^*]*\) \*)/\1/p;q' $<`; \
@@ -1077,14 +1091,14 @@ doc/$(RESULT)/latex: $(DOC_FILES)
 	  	$(INCFLAGS) $(DOC_FILES) -o $@/doc.tex; \
 	fi
 
-doc/$(RESULT)/latex/doc.ps: doc/$(RESULT)/latex
-	cd doc/$(RESULT)/latex && \
+$(DOC_DIR)/$(RESULT)/latex/doc.ps: $(DOC_DIR)/$(RESULT)/latex
+	cd $(DOC_DIR)/$(RESULT)/latex && \
 	  $(LATEX) doc.tex && \
 	  $(LATEX) doc.tex && \
 	  $(DVIPS) $(DVIPSFLAGS) doc.dvi -o $(@F)
 
-doc/$(RESULT)/latex/doc.pdf: doc/$(RESULT)/latex/doc.ps
-	cd doc/$(RESULT)/latex && $(PS2PDF) $(<F)
+$(DOC_DIR)/$(RESULT)/latex/doc.pdf: $(DOC_DIR)/$(RESULT)/latex/doc.ps
+	cd $(DOC_DIR)/$(RESULT)/latex && $(PS2PDF) $(<F)
 
 define make_subproj
 .PHONY:
@@ -1147,7 +1161,7 @@ cleanup::
 
 .PHONY: clean-doc
 clean-doc::
-	rm -rf doc
+	rm -rf $(DOC_DIR)/html $(DOC_DIR)/latex $(DOC_DIR)/dot
 
 .PHONY: nobackup
 nobackup:

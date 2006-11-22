@@ -1,3 +1,5 @@
+2006-11-22:  Updated OCamlMakefile.
+
 2006-11-08:  Upgraded prompt_gtk to LablGTK2.
 
              Tightened compilation warnings.
