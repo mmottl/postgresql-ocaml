@@ -1,3 +1,8 @@
+2007-01-08:  Fixed a build problem related to a bug in OCamlMakefile.
+
+             Thanks to Anastasia Gornostaeva <ermine@ermine.pp.ru>
+             for the hint!
+
 2007-01-08:  Fixed a build problem concerning non-standard locations of
              PostgreSQL.
 
