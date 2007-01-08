@@ -1,3 +1,9 @@
+2007-01-08:  Fixed a build problem concerning non-standard locations of
+             PostgreSQL.
+
+             Thanks to Anastasia Gornostaeva <ermine@ermine.pp.ru>
+             for the patch!
+
 2006-11-22:  Updated OCamlMakefile.
 
 2006-11-08:  Upgraded prompt_gtk to LablGTK2.
