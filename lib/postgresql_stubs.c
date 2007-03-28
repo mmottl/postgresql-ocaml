@@ -167,7 +167,7 @@ typedef struct {
 static np_callback * np_new(value handler)
 {
   np_callback *c;
-  c = (np_callback *) stat_alloc(sizeof(np_callback));
+  c = (np_callback *) caml_stat_alloc(sizeof(np_callback));
   c->callback = handler;
   c->counter = 1;
   register_global_root(&(c->callback));
@@ -573,7 +573,8 @@ CAMLprim value PQendcopy_stub(value vconn)
 
 static void notice_ml(void *cb, const char *message)
 {
-  callback(((np_callback *) cb)->callback, make_string(message));
+  value v_message = make_string(message);
+  caml_callback(((np_callback *) cb)->callback, v_message);
 }
 
 CAMLprim value PQsetNoticeProcessor_stub(value vconn, value cb)

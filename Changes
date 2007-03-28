@@ -1,3 +1,5 @@
+2007-03-28:  Fixed a potential GC-bug.  Updated OCamlMakefile.
+
 2007-03-19:  Updated OCamlMakefile.
 
 2007-03-19:  Fixed a linking problem on Mac OS X.

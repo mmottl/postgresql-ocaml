@@ -27,7 +27,7 @@ export RES_CLIB_SUF
 ifndef RESULT
   RESULT := foo
 endif
-export RESULT
+export RESULT := $(strip $(RESULT))
 
 export LIB_PACK_NAME
 
@@ -35,6 +35,7 @@ ifndef DOC_FILES
   DOC_FILES := $(filter %.mli, $(SOURCES))
 endif
 export DOC_FILES
+FIRST_DOC_FILE := $(firstword $(DOC_FILES))
 
 export BCSUFFIX
 export NCSUFFIX
@@ -848,7 +849,7 @@ panc:	pack-native-code
 htdoc:	$(DOC_DIR)/$(RESULT)/html/index.html
 
 # generates Latex-documentation
-ladoc:	$(DOC_DIR)/$(RESULT)/latex
+ladoc:	$(DOC_DIR)/$(RESULT)/latex/doc.tex
 
 # generates PostScript-documentation
 psdoc:	$(DOC_DIR)/$(RESULT)/latex/doc.ps
@@ -1071,7 +1072,7 @@ $(DOC_DIR)/$(RESULT)/html:
 
 $(DOC_DIR)/$(RESULT)/html/index.html: $(DOC_DIR)/$(RESULT)/html $(DOC_FILES)
 	rm -rf $</*
-	$(QUIET)pp=`sed -n -e '/^#/d' -e 's/(\*pp \([^*]*\) \*)/\1/p;q' $<`; \
+	$(QUIET)pp=`sed -n -e '/^#/d' -e 's/(\*pp \([^*]*\) \*)/\1/p;q' $(FIRST_DOC_FILE)`; \
 	if [ -z "$$pp" ]; then \
 	  echo $(REAL_OCAMLFIND) $(OCAMLDOC) $(OCAML_FIND_PACKAGES) -html -d $< $(OCAMLDOCFLAGS) $(INCFLAGS) $(DOC_FILES); \
 	  $(REAL_OCAMLFIND) $(OCAMLDOC) $(OCAML_FIND_PACKAGES) -html -d $< $(OCAMLDOCFLAGS) $(INCFLAGS) $(DOC_FILES); \
@@ -1082,23 +1083,25 @@ $(DOC_DIR)/$(RESULT)/html/index.html: $(DOC_DIR)/$(RESULT)/html $(DOC_FILES)
 	  	$(INCFLAGS) $(DOC_FILES); \
 	fi
 
-$(DOC_DIR)/$(RESULT)/latex: $(DOC_FILES)
-	rm -rf $@
+$(DOC_DIR)/$(RESULT)/latex:
 	mkdir -p $@
-	$(QUIET)pp=`sed -n -e '/^#/d' -e 's/(\*pp \([^*]*\) \*)/\1/p;q' $<`; \
+
+$(DOC_DIR)/$(RESULT)/latex/doc.tex: $(DOC_DIR)/$(RESULT)/latex $(DOC_FILES)
+	rm -rf $</*
+	$(QUIET)pp=`sed -n -e '/^#/d' -e 's/(\*pp \([^*]*\) \*)/\1/p;q' $(FIRST_DOC_FILE)`; \
 	if [ -z "$$pp" ]; then \
 	  echo $(REAL_OCAMLFIND) $(OCAMLDOC) $(OCAML_FIND_PACKAGES) -latex $(OCAMLDOCFLAGS) $(INCFLAGS) \
-	  	$(DOC_FILES) -o $@/doc.tex; \
+	  	$(DOC_FILES) -o $@; \
 	  $(REAL_OCAMLFIND) $(OCAMLDOC) $(OCAML_FIND_PACKAGES) -latex $(OCAMLDOCFLAGS) $(INCFLAGS) $(DOC_FILES) \
-	  	-o $@/doc.tex; \
+	  	-o $@; \
 	else \
 	  echo $(REAL_OCAMLFIND) $(OCAMLDOC) $(OCAML_FIND_PACKAGES) -pp \"$$pp $(PPFLAGS)\" -latex $(OCAMLDOCFLAGS) \
-	  	$(INCFLAGS) $(DOC_FILES) -o $@/doc.tex; \
+	  	$(INCFLAGS) $(DOC_FILES) -o $@; \
 	  $(REAL_OCAMLFIND) $(OCAMLDOC) $(OCAML_FIND_PACKAGES) -pp "$$pp $(PPFLAGS)" -latex $(OCAMLDOCFLAGS) \
-	  	$(INCFLAGS) $(DOC_FILES) -o $@/doc.tex; \
+	  	$(INCFLAGS) $(DOC_FILES) -o $@; \
 	fi
 
-$(DOC_DIR)/$(RESULT)/latex/doc.ps: $(DOC_DIR)/$(RESULT)/latex
+$(DOC_DIR)/$(RESULT)/latex/doc.ps: $(DOC_DIR)/$(RESULT)/latex/doc.tex
 	cd $(DOC_DIR)/$(RESULT)/latex && \
 	  $(LATEX) doc.tex && \
 	  $(LATEX) doc.tex && \
