@@ -137,7 +137,8 @@ static int oid_tbl[] = {
   LANGUAGE_HANDLEROID, INTERNALOID, OPAQUEOID, ANYELEMENTOID
 };
 
-CAMLprim value ftype_of_oid_stub(value v_oid) {
+CAMLprim value ftype_of_oid_stub(value v_oid)
+{
   int oid = Int_val(v_oid);
   int *p = oid_tbl;
   int *last = oid_tbl + sizeof(oid_tbl)/sizeof(oid_tbl[0]);
@@ -146,7 +147,8 @@ CAMLprim value ftype_of_oid_stub(value v_oid) {
   return Val_int (p - oid_tbl);
 }
 
-CAMLprim value oid_of_ftype_stub(value v_ftype) {
+CAMLprim value oid_of_ftype_stub(value v_ftype)
+{
   return Val_int(oid_tbl[Int_val(v_ftype)]);
 }
 
@@ -323,7 +325,8 @@ noalloc_conn_info(PQbackendPID, Val_int)
 #define set_res_cb(v, cb) (Field(v, 2) = (value) cb)
 
 #define res_info(fun, ret) \
-  CAMLprim value fun##_stub(value v_res) { \
+  CAMLprim value fun##_stub(value v_res) \
+  { \
     CAMLparam1(v_res); \
     value v_ret = ret(fun(get_res(v_res))); \
     CAMLreturn(v_ret); \
