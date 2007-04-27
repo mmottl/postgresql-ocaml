@@ -32,7 +32,6 @@ type oid = int
 type large_object = int
 
 exception Oid of oid
-exception InternalError of string
 
 let invalid_oid = 0
 
@@ -235,7 +234,6 @@ let ftype_of_string = function
 external init : unit -> unit = "PQocaml_init"
 let () =
   Callback.register_exception "Postgresql.Oid" (Oid invalid_oid);
-  Callback.register_exception "Postgresql.InternalError" (InternalError "");
   init ()
 
 type connection_status = Ok | Bad

@@ -160,9 +160,6 @@ val string_of_error : error -> string
 (** [Oid oid] conversion from an oid to an ftype encountered an unknown [oid] *)
 exception Oid of oid
 
-(** [InternalError error] indicates an internal [error] *)
-exception InternalError of string
-
 
 (** {6 Utility functions}*)
 
