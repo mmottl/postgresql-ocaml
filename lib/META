@@ -1,5 +1,5 @@
 name="postgresql"
-version="1.6.6"
+version="1.7.0"
 description="PostgreSQL bindings for OCaml"
 requires="unix"
 archive(byte)="postgresql.cma"
