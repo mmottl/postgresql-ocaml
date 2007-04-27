@@ -223,7 +223,7 @@ CAMLprim value PQconnectdb_stub(value v_conn_info)
   value v_conn;
 
   int len = string_length(v_conn_info) + 1;
-  char *conn_info = malloc(len);
+  char *conn_info = caml_stat_alloc(len);
   memcpy(conn_info, String_val(v_conn_info), len);
 
   caml_enter_blocking_section();
