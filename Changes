@@ -1,3 +1,11 @@
+2007-03-28:  Greatly improved multi-thread support.
+
+             Added seek options.
+
+             Improved documentation.
+
+             Updated OCamlMakefile.
+
 2007-03-28:  Fixed a potential GC-bug.  Updated OCamlMakefile.
 
 2007-03-19:  Updated OCamlMakefile.
