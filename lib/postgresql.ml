@@ -259,6 +259,8 @@ type result_status =
   | Nonfatal_error
   | Fatal_error
 
+external result_status : result_status -> string = "PQresStatus_stub"
+
 type getline_result = EOF | LineRead | BufFull
 
 type getline_async_result =
@@ -267,7 +269,10 @@ type getline_async_result =
   | DataRead of int
   | PartDataRead of int
 
-external result_status : result_status -> string = "PQresStatus_stub"
+type seek_cmd =
+  | SEEK_SET
+  | SEEK_CUR
+  | SEEK_END
 
 type error =
   | Field_out_of_range of int * int
@@ -380,17 +385,17 @@ module Stub = struct
   (* Functions Associated with the COPY Command *)
 
   external getline :
-    connection -> string -> int -> int -> int = "PQgetline_stub" "noalloc"
+    connection -> string -> int -> int -> int = "PQgetline_stub"
 
   external getline_async :
     connection -> string -> int -> int -> int = "PQgetlineAsync_stub" "noalloc"
 
-  external putline : connection -> string -> int = "PQputline_stub" "noalloc"
+  external putline : connection -> string -> int = "PQputline_stub"
 
   external putnbytes :
-    connection -> string -> int -> int -> int = "PQputnbytes_stub" "noalloc"
+    connection -> string -> int -> int -> int = "PQputnbytes_stub"
 
-  external endcopy : connection -> int = "PQendcopy_stub" "noalloc"
+  external endcopy : connection -> int = "PQendcopy_stub"
 
   external escape_string :
     string -> int -> string -> int -> int -> int
@@ -408,33 +413,22 @@ module Stub = struct
 
   (* Large objects *)
 
-  external lo_creat : connection -> oid = "lo_creat_stub" "noalloc"
-  external lo_import : connection -> string -> oid = "lo_import_stub" "noalloc"
-
-  external lo_export :
-    connection -> oid -> string -> int = "lo_export_stub" "noalloc"
-
-  external lo_open :
-    connection -> oid -> large_object = "lo_open_stub" "noalloc"
-
-  external lo_close :
-    connection -> large_object -> int = "lo_close_stub" "noalloc"
+  external lo_creat : connection -> oid = "lo_creat_stub"
+  external lo_import : connection -> string -> oid = "lo_import_stub"
+  external lo_export : connection -> oid -> string -> int = "lo_export_stub"
+  external lo_open : connection -> oid -> large_object = "lo_open_stub"
+  external lo_close : connection -> large_object -> int = "lo_close_stub"
+  external lo_tell : connection -> large_object -> int = "lo_tell_stub"
+  external lo_unlink : connection -> oid -> oid = "lo_unlink_stub"
 
   external lo_read :
-    connection -> large_object -> string -> int -> int -> int
-    = "lo_read_stub" "noalloc"
+    connection -> large_object -> string -> int -> int -> int = "lo_read_stub"
 
   external lo_write :
-    connection -> large_object -> string -> int -> int -> int
-    = "lo_write_stub" "noalloc"
+    connection -> large_object -> string -> int -> int -> int = "lo_write_stub"
 
   external lo_seek :
-    connection -> large_object -> int -> int = "lo_lseek_stub" "noalloc"
-
-  external lo_tell :
-    connection -> large_object -> int = "lo_tell_stub" "noalloc"
-
-  external lo_unlink : connection -> oid -> oid = "lo_unlink_stub" "noalloc"
+    connection -> large_object -> int -> seek_cmd -> int = "lo_lseek_stub"
 end
 
 
@@ -793,9 +787,9 @@ object(self)
     if read = -1 then signal_error ();
     read
 
-  method lo_seek ?(pos = 0) lo =
+  method lo_seek ?(pos = 0) ?(whence = SEEK_SET) lo =
     check_null ();
-    if Stub.lo_seek conn lo pos < 0 then signal_error ()
+    if Stub.lo_seek conn lo pos whence < 0 then signal_error ()
 
   method lo_tell lo =
     check_null ();

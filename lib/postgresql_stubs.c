@@ -213,8 +213,12 @@ static inline void free_conn(value v_conn)
   np_decr_refcount(get_conn_cb(v_conn));
   set_conn_cb(v_conn, NULL);
   conn = get_conn(v_conn);
-  if (conn) PQfinish(conn);
-  set_conn(v_conn, NULL);
+  if (conn) {
+    set_conn(v_conn, NULL);
+    caml_enter_blocking_section();
+      PQfinish(conn);
+    caml_leave_blocking_section();
+  }
 }
 
 CAMLprim value PQconnectdb_stub(value v_conn_info)
@@ -250,8 +254,9 @@ CAMLprim value PQfinish_stub(value v_conn)
 CAMLprim value PQreset_stub(value v_conn)
 {
   CAMLparam1(v_conn);
+  PGconn *conn = get_conn(v_conn);
   caml_enter_blocking_section();
-    PQreset(get_conn(v_conn));
+    PQreset(conn);
   caml_leave_blocking_section();
   CAMLreturn(Val_unit);
 }
@@ -291,18 +296,22 @@ CAMLprim value PQconndefaults_stub(value v_unit)
 }
 
 static inline value make_string(const char *s)
-{ return (s ? caml_copy_string(s) : v_empty_string); }
+{
+  return (s ? caml_copy_string(s) : v_empty_string);
+}
 
 #define conn_info(fun, ret) \
   CAMLprim value fun##_stub(value v_conn) \
   { \
     CAMLparam1(v_conn); \
-    value v_ret = ret(fun(get_conn(v_conn))); \
-    CAMLreturn(v_ret); \
+    CAMLreturn(ret(fun(get_conn(v_conn)))); \
   }
 
 #define noalloc_conn_info(fun, ret) \
-  CAMLprim value fun##_stub(value v_conn) { return ret(fun(get_conn(v_conn))); }
+  CAMLprim value fun##_stub(value v_conn) \
+  { \
+    return ret(fun(get_conn(v_conn))); \
+  }
 
 conn_info(PQdb, make_string)
 conn_info(PQuser, make_string)
@@ -328,19 +337,20 @@ noalloc_conn_info(PQbackendPID, Val_int)
   CAMLprim value fun##_stub(value v_res) \
   { \
     CAMLparam1(v_res); \
-    value v_ret = ret(fun(get_res(v_res))); \
-    CAMLreturn(v_ret); \
+    CAMLreturn(ret(fun(get_res(v_res)))); \
   }
 
 #define noalloc_res_info(fun, ret) \
-  CAMLprim value fun##_stub(value v_res) { return ret(fun(get_res(v_res))); }
+  CAMLprim value fun##_stub(value v_res) \
+  { \
+    return ret(fun(get_res(v_res))); \
+  }
 
 #define fieldnum_info(fun, ret) \
   CAMLprim value fun##_stub(value v_res, value v_field_num) \
   { \
     CAMLparam1(v_res); \
-    value v_ret = ret(fun(get_res(v_res), Int_val(v_field_num))); \
-    CAMLreturn(v_ret); \
+    CAMLreturn(ret(fun(get_res(v_res), Int_val(v_field_num)))); \
   }
 
 #define noalloc_fieldnum_info(fun, ret) \
@@ -353,9 +363,8 @@ noalloc_conn_info(PQbackendPID, Val_int)
   CAMLprim value fun##_stub(value v_res, value v_tup_num, value v_field_num) \
   { \
     CAMLparam1(v_res); \
-    value v_ret = \
-      ret(fun(get_res(v_res), Int_val(v_tup_num), Int_val(v_field_num))); \
-    CAMLreturn(v_ret); \
+    CAMLreturn( \
+      ret(fun(get_res(v_res), Int_val(v_tup_num), Int_val(v_field_num)))); \
   }
 
 #define noalloc_field_info(fun, ret) \
@@ -370,8 +379,10 @@ static inline void free_result(value v_res)
   np_decr_refcount(get_res_cb(v_res));
   set_res_cb(v_res, NULL);
   res = get_res(v_res);
-  if (res) PQclear(res);
-  set_res(v_res, NULL);
+  if (res) {
+    set_res(v_res, NULL);
+    PQclear(res);
+  }
 }
 
 CAMLprim value PQres_isnull(value v_res)
@@ -390,10 +401,18 @@ static inline value alloc_result(PGresult *res, np_callback *cb)
 
 CAMLprim value PQexec_stub(value v_conn, value v_query)
 {
-  CAMLparam2(v_conn, v_query);
-  value v_res = alloc_result(PQexec(get_conn(v_conn), String_val(v_query)),
-                             get_conn_cb(v_conn));
-  CAMLreturn(v_res);
+  CAMLparam1(v_conn);
+  PGconn *conn = get_conn(v_conn);
+  np_callback *np_cb = get_conn_cb(v_conn);
+  PGresult *res;
+  int len = string_length(v_query) + 1;
+  char *query = caml_stat_alloc(len);
+  memcpy(query, String_val(v_query), len);
+  caml_enter_blocking_section();
+    res = PQexec(conn, query);
+    free(query);
+  caml_leave_blocking_section();
+  CAMLreturn(alloc_result(res, np_cb));
 }
 
 noalloc_res_info(PQresultStatus, Val_int)
@@ -471,9 +490,13 @@ CAMLprim value PQsendQuery_stub(value v_conn, value v_query)
 CAMLprim value PQgetResult_stub(value v_conn)
 {
   CAMLparam1(v_conn);
-  value v_res =
-    alloc_result(PQgetResult(get_conn(v_conn)), get_conn_cb(v_conn));
-  CAMLreturn(v_res);
+  PGconn *conn = get_conn(v_conn);
+  np_callback *np_cb = get_conn_cb(v_conn);
+  PGresult *res;
+  caml_enter_blocking_section();
+    res = PQgetResult(conn);
+  caml_leave_blocking_section();
+  CAMLreturn(alloc_result(res, np_cb));
 }
 
 noalloc_conn_info(PQconsumeInput, Val_int)
@@ -511,7 +534,7 @@ CAMLprim value PQunescapeBytea_stub(value v_from)
   char *buf =
     (char *) PQunescapeBytea((unsigned char *) String_val(v_from), &len);
   if (buf == NULL)
-    failwith("Postgresql.unescape_bytea: illegal bytea string");
+    caml_failwith("Postgresql.unescape_bytea: illegal bytea string");
   else {
     value v_res = caml_alloc_string(len);
     memcpy(String_val(v_res), buf, len);
@@ -529,11 +552,11 @@ CAMLprim value PQnotifies_stub(value v_conn)
   PGnotify *noti = PQnotifies(get_conn(v_conn));
 
   if (noti) {
-    CAMLlocal1(str);
+    CAMLlocal1(v_str);
     value v_pair;
-    str = make_string(noti->relname);
+    v_str = make_string(noti->relname);
     v_pair = caml_alloc_small(2, 0);
-    Field(v_pair, 0) = str;
+    Field(v_pair, 0) = v_str;
     Field(v_pair, 1) = Val_int(noti->be_pid);
     PQfreemem(noti);
     CAMLreturn(make_some(v_pair));
@@ -546,8 +569,17 @@ CAMLprim value PQnotifies_stub(value v_conn)
 CAMLprim value PQgetline_stub(
   value v_conn, value v_buf, value v_pos, value v_len)
 {
-  return Val_int(PQgetline(get_conn(v_conn), String_val(v_buf) + Int_val(v_pos),
-                           Int_val(v_len)));
+  CAMLparam2(v_conn, v_buf);
+  PGconn *conn = get_conn(v_conn);
+  value v_res;
+  int len = Int_val(v_len);
+  char *buf = caml_stat_alloc(len);
+  caml_enter_blocking_section();
+    v_res = Val_int(PQgetline(conn, buf, len));
+  caml_leave_blocking_section();
+  memcpy(String_val(v_buf) + Int_val(v_pos), buf, len);
+  free(buf);
+  CAMLreturn(v_res);
 }
 
 CAMLprim value PQgetlineAsync_stub(
@@ -558,31 +590,55 @@ CAMLprim value PQgetlineAsync_stub(
                                 Int_val(v_len)));
 }
 
-CAMLprim value PQputline_stub(value v_conn, value v_str)
+CAMLprim value PQputline_stub(value v_conn, value v_buf)
 {
-  return Val_int(PQputline(get_conn(v_conn), String_val(v_str)));
+  CAMLparam1(v_conn);
+  PGconn *conn = get_conn(v_conn);
+  value v_res;
+  int len = string_length(v_buf) + 1;
+  char *buf = caml_stat_alloc(len);
+  memcpy(buf, String_val(v_buf), len);
+  caml_enter_blocking_section();
+    v_res = Val_int(PQputline(conn, buf));
+    free(buf);
+  caml_leave_blocking_section();
+  CAMLreturn(v_res);
 }
 
 CAMLprim value PQputnbytes_stub(
   value v_conn, value v_buf, value v_pos, value v_len)
 {
-  return
-    Val_int(PQputnbytes(get_conn(v_conn), String_val(v_buf) + Int_val(v_pos),
-                        Int_val(v_len)));
+  CAMLparam1(v_conn);
+  PGconn *conn = get_conn(v_conn);
+  value v_res;
+  int len = Int_val(v_len);
+  char *buf = caml_stat_alloc(len);
+  memcpy(buf, String_val(v_buf) + Int_val(v_pos), len);
+  caml_enter_blocking_section();
+    v_res = Val_int(PQputnbytes(conn, buf, len));
+    free(buf);
+  caml_leave_blocking_section();
+  CAMLreturn(v_res);
 }
 
 CAMLprim value PQendcopy_stub(value v_conn)
 {
-  return Val_int(PQendcopy(get_conn(v_conn)));
+  CAMLparam1(v_conn);
+  PGconn *conn = get_conn(v_conn);
+  value v_res;
+  caml_enter_blocking_section();
+    v_res = Val_int(PQendcopy(conn));
+  caml_leave_blocking_section();
+  CAMLreturn(v_res);
 }
 
 
 /* libpq Control Functions */
 
-static inline void notice_ml(void *cb, const char *message)
+static inline void notice_ml(void *cb, const char *msg)
 {
-  value v_message = make_string(message);
-  caml_callback(((np_callback *) cb)->v_cb, v_message);
+  value v_msg = make_string(msg);
+  caml_callback(((np_callback *) cb)->v_cb, v_msg);
 }
 
 CAMLprim value PQsetNoticeProcessor_stub(value v_conn, value v_cb)
@@ -598,56 +654,136 @@ CAMLprim value PQsetNoticeProcessor_stub(value v_conn, value v_cb)
 
 CAMLprim value lo_open_stub(value v_conn, value v_oid)
 {
-  return
-    Val_int(lo_open(get_conn(v_conn), Int_val(v_oid), INV_READ | INV_WRITE));
+  CAMLparam1(v_conn);
+  PGconn *conn = get_conn(v_conn);
+  value v_res;
+  caml_enter_blocking_section();
+    v_res = Val_int(lo_open(conn, Int_val(v_oid), INV_READ | INV_WRITE));
+  caml_leave_blocking_section();
+  CAMLreturn(v_res);
 }
 
 CAMLprim value lo_close_stub(value v_conn, value v_fd)
 {
-  return Val_int(lo_close(get_conn(v_conn), Int_val(v_fd)));
+  CAMLparam1(v_conn);
+  PGconn *conn = get_conn(v_conn);
+  value v_res;
+  caml_enter_blocking_section();
+    v_res = Val_int(lo_close(conn, Int_val(v_fd)));
+  caml_leave_blocking_section();
+  CAMLreturn(v_res);
 }
 
 CAMLprim value lo_read_stub(value v_conn, value v_fd,
                             value v_buf, value v_pos, value v_len)
 {
-  return Val_int(lo_read(get_conn(v_conn), Int_val(v_fd),
-                         String_val(v_buf) + Int_val(v_pos), Int_val(v_len)));
+  CAMLparam2(v_conn, v_buf);
+  PGconn *conn = get_conn(v_conn);
+  value v_res;
+  int len = Int_val(v_len);
+  char *buf = caml_stat_alloc(len);
+  caml_enter_blocking_section();
+    v_res = Val_int(lo_read(conn, Int_val(v_fd), buf, len));
+  caml_leave_blocking_section();
+  memcpy(String_val(v_buf) + Int_val(v_pos), buf, len);
+  free(buf);
+  CAMLreturn(v_res);
 }
 
 CAMLprim value lo_write_stub(value v_conn, value v_fd,
                              value v_buf, value v_pos, value v_len)
 {
-  return Val_int(lo_write(get_conn(v_conn), Int_val(v_fd),
-                          String_val(v_buf) + Int_val(v_pos), Int_val(v_len)));
+  CAMLparam1(v_conn);
+  PGconn *conn = get_conn(v_conn);
+  value v_res;
+  int len = Int_val(v_len);
+  char *buf = caml_stat_alloc(len);
+  memcpy(buf, String_val(v_buf) + Int_val(v_pos), len);
+  caml_enter_blocking_section();
+    v_res = Val_int(lo_write(conn, Int_val(v_fd), buf, len));
+    free(buf);
+  caml_leave_blocking_section();
+  CAMLreturn(v_res);
 }
 
-CAMLprim value lo_lseek_stub(value v_conn, value v_fd, value v_pos)
+CAMLprim value lo_lseek_stub(
+  value v_conn, value v_fd, value v_pos, value v_whence)
 {
-  return Val_int(lo_lseek(get_conn(v_conn), Int_val(v_fd), Int_val(v_pos), 0));
+
+  CAMLparam1(v_conn);
+  PGconn *conn = get_conn(v_conn);
+  value v_res;
+  int whence;
+  switch (Int_val(v_whence)) {
+    case 0 : whence = SEEK_SET; break;
+    case 1 : whence = SEEK_CUR; break;
+    default : whence = SEEK_END; break;
+  }
+  caml_enter_blocking_section();
+    v_res = Val_int(lo_lseek(conn, Int_val(v_fd), Int_val(v_pos), whence));
+  caml_leave_blocking_section();
+  CAMLreturn(v_res);
 }
 
 CAMLprim value lo_creat_stub(value v_conn)
 {
-  return Val_int(lo_creat(get_conn(v_conn), INV_READ | INV_WRITE));
+  CAMLparam1(v_conn);
+  PGconn *conn = get_conn(v_conn);
+  value v_res;
+  caml_enter_blocking_section();
+    v_res = Val_int(lo_creat(conn, INV_READ | INV_WRITE));
+  caml_leave_blocking_section();
+  CAMLreturn(v_res);
 }
 
 CAMLprim value lo_tell_stub(value v_conn, value v_fd)
 {
-  return Val_int(lo_tell(get_conn(v_conn), Int_val(v_fd)));
+  CAMLparam1(v_conn);
+  PGconn *conn = get_conn(v_conn);
+  value v_res;
+  caml_enter_blocking_section();
+    v_res = Val_int(lo_tell(conn, Int_val(v_fd)));
+  caml_leave_blocking_section();
+  CAMLreturn(v_res);
 }
 
 CAMLprim value lo_unlink_stub(value v_conn, value v_oid)
 {
-  return Val_int(lo_unlink(get_conn(v_conn), Int_val(v_oid)));
+  CAMLparam1(v_conn);
+  PGconn *conn = get_conn(v_conn);
+  value v_res;
+  caml_enter_blocking_section();
+    v_res = Val_int(lo_unlink(conn, Int_val(v_oid)));
+  caml_leave_blocking_section();
+  CAMLreturn(v_res);
 }
 
 CAMLprim value lo_import_stub(value v_conn, value v_fname)
 {
-  return Val_int(lo_import(get_conn(v_conn), String_val(v_fname)));
+  CAMLparam1(v_conn);
+  PGconn *conn = get_conn(v_conn);
+  value v_res;
+  int len = string_length(v_fname) + 1;
+  char *fname = caml_stat_alloc(len);
+  memcpy(fname, String_val(v_fname), len);
+  caml_enter_blocking_section();
+    v_res = Val_int(lo_import(conn, fname));
+    free(fname);
+  caml_leave_blocking_section();
+  CAMLreturn(v_res);
 }
 
 CAMLprim value lo_export_stub(value v_conn, value v_oid, value v_fname)
 {
-  return
-    Val_int(lo_export(get_conn(v_conn), Int_val(v_oid), String_val(v_fname)));
+  CAMLparam1(v_conn);
+  PGconn *conn = get_conn(v_conn);
+  value v_res;
+  int len = string_length(v_fname) + 1;
+  char *fname = caml_stat_alloc(len);
+  memcpy(fname, String_val(v_fname), len);
+  caml_enter_blocking_section();
+    v_res = Val_int(lo_export(conn, Int_val(v_oid), fname));
+    free(fname);
+  caml_leave_blocking_section();
+  CAMLreturn(v_res);
 }

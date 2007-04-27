@@ -133,6 +133,12 @@ type getline_async_result =
   | DataRead of int      (** [DataRead n] indicates [n] bytes of read data *)
   | PartDataRead of int  (** Like [DataRead], but data only partially read *)
 
+(** Seek command ("whence") *)
+type seek_cmd =
+  | SEEK_SET  (** Seek from start of large object *)
+  | SEEK_CUR  (** Seek from current read/write position of large object *)
+  | SEEK_END  (** Seek from end of large object *)
+
 
 (** {6 Exceptions and error handling} *)
 
@@ -143,7 +149,8 @@ type getline_async_result =
     [Binary] - result consists of binary tuple data
     [Connection_failure msg] - connection failed due to reason [msg]
     [Unexpected_status (stat, msg, expected)] - result status [stat] was not in
-                                                [expected] due to error [msg] *)
+                                                [expected] due to error [msg]
+*)
 type error =
   | Field_out_of_range of int * int
   | Tuple_out_of_range of int * int
@@ -166,8 +173,10 @@ exception Oid of oid
 val escape_string : ?pos : int -> ?len : int -> string -> string
 (** [escape_string pos len str] escapes ASCII-substring [str] of length
     [len] starting at position [pos] for use within SQL.
+
     @param pos default = 0
-    @param len default = String.length str - pos *)
+    @param len default = String.length str - pos
+*)
 
 external unescape_bytea : string -> string = "PQunescapeBytea_stub"
 (** [unescape_bytea str] unescapes binary string [str]. *)
@@ -193,8 +202,11 @@ external result_status : result_status -> string = "PQresStatus_stub"
 val invalid_oid : oid
 (** [invalid_oid] invalid Oid. *)
 
-(** Class type of query results
-    Indices of tuples and fields start at 0! *)
+
+(** Class type of query results.
+
+    Indices of tuples and fields start at 0!
+*)
 class type result = object
   (** Main routines *)
 
@@ -215,28 +227,40 @@ class type result = object
 
   method fname : int -> string
   (** [#fname n] @return the name of the [n]th field.
-      @raise Error if field out of range. *)
+
+      @raise Error if field out of range.
+  *)
 
   method fnumber : string -> int
   (** [#fnumber field] @return the index of the field named [field].
-      @raise Not_found if no such named field. *)
+
+      @raise Not_found if no such named field.
+  *)
 
   method fformat : int -> FFormat.t
   (** [#fformat n] @return the format of the [n]th field.
-      @raise Error if field out of range. *)
+
+      @raise Error if field out of range.
+  *)
 
   method ftype : int -> ftype
   (** [#ftype n] @return the type of the [n]th field.
+
       @raise Oid if there was no corresponding ftype for the internal [oid].
-      @raise Error if field out of range. *)
+      @raise Error if field out of range.
+  *)
 
   method fmod : int -> int
   (** [#fmod n] @return type-specific modification data of the [n]th field.
-      @raise Error if field out of range. *)
+
+      @raise Error if field out of range.
+  *)
 
   method fsize : int -> int
   (** [#fsize n] @return size in bytes of the [n]th field.
-      @raise Error if field out of range. *)
+
+      @raise Error if field out of range.
+  *)
 
   method binary_tuples : bool
   (** [#binary_tuples] @return [true] iff result contains binary tuple data. *)
@@ -246,19 +270,25 @@ class type result = object
 
   method getvalue : int -> int -> string
   (** [#getvalue tuple field] @return value of [field] in [tuple].
+
       @raise Error if tuple out of range.
-      @raise Error if field out of range. *)
+      @raise Error if field out of range.
+  *)
 
   method getisnull : int -> int -> bool
   (** [#getisnull tuple field] tests for a NULL-value of [field] in [tuple].
+
       @raise Error if tuple out of range.
-      @raise Error if field out of range. *)
+      @raise Error if field out of range.
+  *)
 
   method getlength : int -> int -> int
   (** [#getlength tuple field] @return length of value in [field] of
       [tuple] in bytes.
+
       @raise Error if tuple out of range.
-      @raise Error if field out of range. *)
+      @raise Error if field out of range.
+  *)
 
 
   (** Retrieving Non-SELECT Result Information *)
@@ -285,11 +315,15 @@ class type result = object
 
   method get_tuple : int -> string array
   (** [#get_tuple n] @return all fields of the [n]th tuple.
-      @raise Error if tuple out of range. *)
+
+      @raise Error if tuple out of range.
+  *)
 
   method get_tuple_lst : int -> string list
   (** [#get_tuple_lst n] @return all fields of the [n]th tuple as list.
-      @raise Error if tuple out of range. *)
+
+      @raise Error if tuple out of range.
+  *)
 
   method get_all : string array array
   (** [#get_all] @return all tuples with all fields. *)
@@ -319,9 +353,12 @@ type conninfo_option =
 external conndefaults : unit -> conninfo_option array = "PQconndefaults_stub"
 (** [conndefaults ()] @return array of all records of type [conninfo_option] *)
 
-(** Class of connections
+
+(** Class of connections.
+
     When [conninfo] is given, it will be used instead of all other
-    optional arguments. *)
+    optional arguments.
+*)
 class connection :
   ?host : string ->  (* Default: none *)
   ?hostaddr : string ->  (* Default: none *)
@@ -340,17 +377,23 @@ object
 
   method finish : unit
   (** [#finish] closes the connection.
-      @raise Error if there is a connection error. *)
+
+      @raise Error if there is a connection error.
+  *)
 
   method try_reset : unit
   (** [#try_reset] tries to reset the connection if it is bad. If
       resetting fails, the [error] exception will be raised with
       [Connection_failure].
-      @raise Error if there is a connection error. *)
+
+      @raise Error if there is a connection error.
+  *)
 
   method reset : unit
   (** [#reset] resets the connection.
-      @raise Error if there is a connection error. *)
+
+      @raise Error if there is a connection error.
+  *)
 
 
   (** Asynchronous Notification *)
@@ -359,7 +402,9 @@ object
   (** [#notifies] @return [Some (name, pid)] if available ([None]
       otherwise), where [name] is the name the of relation containing
       data, [pid] the process id of the backend.
-      @raise Error if there is a connection error. *)
+
+      @raise Error if there is a connection error.
+  *)
 
 
   (** Control Functions *)
@@ -367,77 +412,109 @@ object
   method set_notice_processor : (string -> unit) -> unit
   (** [#set_notice_processor] controls reporting of notice and warning
       messages generated by a connection.
-      @raise Error if there is a connection error. *)
+
+      @raise Error if there is a connection error.
+  *)
 
 
   (** Accessors *)
 
   method db : string
   (** [#db] @return database name of the connection.
-      @raise Error if there is a connection error. *)
+
+      @raise Error if there is a connection error.
+  *)
 
   method user : string
   (** [#user] @return user name of the connection.
-      @raise Error if there is a connection error. *)
+
+      @raise Error if there is a connection error.
+  *)
 
   method pass : string
   (** [#pass] @return password of the connection.
-      @raise Error if there is a connection error. *)
+
+      @raise Error if there is a connection error.
+  *)
 
   method host : string
   (** [#host] @return server host name of the connection.
-      @raise Error if there is a connection error. *)
+
+      @raise Error if there is a connection error.
+  *)
 
   method port : string
   (** [#port] @return port of the connection.
-      @raise Error if there is a connection error. *)
+
+      @raise Error if there is a connection error.
+  *)
 
   method tty : string
   (** [#tty] @return debug tty of the connection.
-      @raise Error if there is a connection error. *)
+
+      @raise Error if there is a connection error.
+  *)
 
   method options : string
   (** [#options] @return backend options of the connection.
-      @raise Error if there is a connection error. *)
+
+      @raise Error if there is a connection error.
+  *)
 
   method status : connection_status
   (** [#status] @return current connection status.
-      @raise Error if there is a connection error. *)
+
+      @raise Error if there is a connection error.
+  *)
 
   method error_message : string
   (** [#error_message] @return most recent error message of the connection.
-      @raise Error if there is a connection error. *)
+
+      @raise Error if there is a connection error.
+  *)
 
   method backend_pid : int
   (** [#backend] @return process id of the backend server of the connection.
-      @raise Error if there is a connection error. *)
+
+      @raise Error if there is a connection error.
+  *)
 
 
   (** Commands and Queries *)
 
   method empty_result : result_status -> result
   (** [empty_result stat] @return dummy result with a given status [stat].
-      @raise Error if there is a connection error. *)
+
+      @raise Error if there is a connection error.
+  *)
 
   method exec : ?expect : result_status list -> string -> result
   (** [exec ?expect query] synchronous execution of query or command
       [query]. The result status will be checked against all elements
       in [expect]. If [expect] is not empty and if there is no match,
       the exception [Unexpected_status] will be raised.
+
       @return result of query.
+
       @param expect default = []
+
       @raise Error if there is a connection error.
-      @raise Error if there is an unexpected result status. *)
+      @raise Error if there is an unexpected result status.
+  *)
 
   method send_query : string -> unit
   (** [send_query query] asynchronous execution of query or command
       [query].
-      @raise Error if there is a connection error. *)
+
+      @raise Error if there is a connection error.
+  *)
 
   method get_result : result option
   (** [get_result] @return [Some result] of an asynchronous query if
       available or [None].
-      @raise Error if there is a connection error. *)
+
+      @raise Error if there is a connection error.
+  *)
 
 
   (** Copy operations *)
@@ -445,59 +522,81 @@ object
   (** Low level *)
 
   method getline : ?pos : int -> ?len : int -> string -> getline_result
-  (** [getline pos len buf] reads a newline-terminated line of at most
+  (** [getline ?pos ?len buf] reads a newline-terminated line of at most
       [len] characters into [buf] starting at position [pos].
+
       @return getline_result
+
       @param pos default = 0
       @param len default = String.length buf - pos
+
       @raise Invalid_argument if the buffer parameters are invalid.
-      @raise Error if there is a connection error. *)
+      @raise Error if there is a connection error.
+  *)
 
   method getline_async :
     ?pos : int -> ?len : int -> string -> getline_async_result
-  (** [getline_async pos len buf] reads a newline-terminated line of
+  (** [getline_async ?pos ?len buf] reads a newline-terminated line of
       at most [len] characters into [buf] starting at position [pos]
-      (asynchronously). No need to call [endcopy] after receiving [EndOfData].
+      (asynchronously). No need to call [endcopy] after receiving
+      [EndOfData].
+
       @return getline_async_result
+
       @param pos default = 0
       @param len default = String.length buf - pos
+
       @raise Invalid_argument if the buffer parameters are invalid.
-      @raise Error if there is a connection error. *)
+      @raise Error if there is a connection error.
+  *)
 
   method putline : string -> unit
   (** [putline str] sends [str] to backend server. Don't use this method
       for binary data, use putnbytes instead!
-      @raise Error if there is a connection error. *)
+
+      @raise Error if there is a connection error.
+  *)
 
   method putnbytes : ?pos : int -> ?len : int -> string -> unit
-  (** [putnbytes pos len buf] sends the substring of [buf] of length
+  (** [putnbytes ?pos ?len buf] sends the substring of [buf] of length
       [len] starting at [pos] to backend server (use this method for
       binary data).
+
       @param pos default = 0
       @param len default = String.length buf - pos
+
       @raise Invalid_argument if the buffer parameters are invalid.
-      @raise Error if there is a connection error. *)
+      @raise Error if there is a connection error.
+  *)
 
   method endcopy : unit
   (** [endcopy] synchronizes with the backend.
-      @raise Error if there is a connection error. *)
+
+      @raise Error if there is a connection error.
+  *)
 
 
   (** High level *)
 
   method copy_out : (string -> unit) -> unit
   (** [copy_out f] applies [f] to each line returned by backend server.
-      @raise Error if there is a connection error. *)
+
+      @raise Error if there is a connection error.
+  *)
 
   method copy_out_channel : out_channel -> unit
   (** [copy_out_channel ch] sends each line returned by backend server
       to output channel [ch].
-      @raise Error if there is a connection error. *)
+
+      @raise Error if there is a connection error.
+  *)
 
   method copy_in_channel : in_channel -> unit
   (** [copy_in_channel ch] sends each line in input channel [ch] to
       backend server.
-      @raise Error if there is a connection error. *)
+
+      @raise Error if there is a connection error.
+  *)
 
 
   (** Asynchronous operations and non blocking mode *)
@@ -505,44 +604,63 @@ object
   method set_nonblocking : bool -> unit
   (** [set_nonblocking b] sets state of the connection to nonblocking if
       [b] is true and to blocking otherwise.
-      @raise Error if there is a connection error. *)
+
+      @raise Error if there is a connection error.
+  *)
 
   method is_nonblocking : bool
   (** [is_nonblocking] @return the blocking status of the connection.
-      @raise Error if there is a connection error. *)
+
+      @raise Error if there is a connection error.
+  *)
 
   method consume_input : unit
   (** [consume_input] consume any available input from backend.
-      @raise Error if there is a connection error. *)
+
+      @raise Error if there is a connection error.
+  *)
 
   method is_busy : bool
   (** [is_busy] @return busy status of a query.
-      @raise Error if there is a connection error. *)
+
+      @raise Error if there is a connection error.
+  *)
 
   method flush : unit
   (** [flush] attempts to flush any data queued to the backend.
-      @raise Error if there is a connection error. *)
+
+      @raise Error if there is a connection error.
+  *)
 
   method socket : Unix.file_descr
-  (** [socket] obtains the file descriptor for the backend connection socket.
-      @raise Error if there is a connection error. *)
+  (** [socket] obtains the file descriptor for the backend connection
+      socket.
+
+      @raise Error if there is a connection error.
+  *)
 
   method request_cancel : unit
   (** [request_cancel] requests that PostgreSQL abandon processing of
       the current command.
-      @raise Error if there is a connection error. *)
+
+      @raise Error if there is a connection error.
+  *)
 
 
   (** Large objects *)
 
   method lo_creat : oid
   (** [lo_creat] creates a new large object and returns its oid.
-      @raise Error if there is a connection error. *)
+
+      @raise Error if there is a connection error.
+  *)
 
   method lo_import : string -> oid
   (** [lo_import filename] imports an operating system file given by
       [filename] as a large object.
-      @raise Error if there is a connection error. *)
+
+      @raise Error if there is a connection error.
+  *)
 
   method lo_export : oid -> string -> unit
   (** [lo_export oid filename] exports the large object given by [oid]
@@ -552,11 +670,14 @@ object
   method lo_open : oid -> large_object
   (** [lo_open oid] opens the large object given by [oid] for reading and
       writing.
-      @raise Error if there is a connection error. *)
+
+      @raise Error if there is a connection error.
+  *)
 
   method lo_write : ?pos : int -> ?len : int -> string -> large_object -> unit
-  (** [lo_write pos len buf lo] writes [len] bytes of buffer [buf]
+  (** [lo_write ?pos ?len buf lo] writes [len] bytes of buffer [buf]
       starting at position [pos] to large object [lo].
+
       @param pos default = 0
       @param len default = String.length buf - pos
       @raise Invalid_argument if the buffer parameters are invalid.
@@ -564,36 +685,53 @@ object
       @raise Error if there is a connection error. *)
 
   method lo_read : large_object -> ?pos : int -> ?len : int -> string -> int
-  (** [lo_read lo pos len buf] reads [len] bytes from large object [lo]
+  (** [lo_read lo ?pos ?len buf] reads [len] bytes from large object [lo]
       to buffer [buf] starting at position [pos].
+
       @param pos default = 0
       @param len default = String.length buf - pos
+
       @raise Invalid_argument if the buffer parameters are invalid.
       @raise Error if [len] bytes could not be read.
-      @raise Error if there is a connection error. *)
+      @raise Error if there is a connection error.
+  *)
 
-  method lo_seek : ?pos : int -> large_object -> unit
-  (** [lo_seek lo pos] seeks position [pos] in large object [lo]
-      for the current read or write operation.
+  method lo_seek : ?pos : int -> ?whence : seek_cmd -> large_object -> unit
+  (** [lo_seek ?pos ?whence lo] seeks read/write position [pos] in
+      large object [lo] relative to the start, current read/write
+      position, or end of the object ([whence] is SEEK_SET, SEEK_CUR,
+      SEEK_END respectively).
+
       @param pos default = 0
-      @raise Error if there is a connection error. *)
+      @param whence default = [SEEK_SET]
+
+      @raise Error if there is a connection error.
+  *)
 
   method lo_tell : large_object -> int
   (** [lo_tell lo] @return current read/write position of large object [lo].
-      @raise Error if there is a connection error. *)
+
+      @raise Error if there is a connection error.
+  *)
 
   method lo_close : large_object -> unit
   (** [lo_close lo] closes large object [lo].
-      @raise Error if there is a connection error. *)
+
+      @raise Error if there is a connection error.
+  *)
 
   method lo_unlink : oid -> unit
   (** [lo_unlink oid] removes the large object specified by [oid] from the
       database.
-      @raise Error if there is a connection error. *)
+
+      @raise Error if there is a connection error.
+  *)
 
   method escape_bytea : ?pos : int -> ?len : int -> string -> string
-  (** [escape_bytea pos len str] escapes binary substring [str]  of length
-      [len] starting at position [pos] for use within SQL.
+  (** [escape_bytea ?pos ?len str] escapes binary substring [str]
+      of length [len] starting at position [pos] for use within SQL.
+
       @param pos default = 0
-      @param len default = String.length str - pos *)
+      @param len default = String.length str - pos
+  *)
 end
