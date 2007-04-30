@@ -714,12 +714,12 @@ CAMLprim value lo_lseek_stub(
   PGconn *conn = get_conn(v_conn);
   value v_res;
   int whence;
-  switch (Int_val(v_whence)) {
-    case 0 : whence = SEEK_SET; break;
-    case 1 : whence = SEEK_CUR; break;
-    default : whence = SEEK_END; break;
-  }
   caml_enter_blocking_section();
+    switch (Int_val(v_whence)) {
+      case 0 : whence = SEEK_SET; break;
+      case 1 : whence = SEEK_CUR; break;
+      default : whence = SEEK_END; break;
+    }
     v_res = Val_int(lo_lseek(conn, Int_val(v_fd), Int_val(v_pos), whence));
   caml_leave_blocking_section();
   CAMLreturn(v_res);
