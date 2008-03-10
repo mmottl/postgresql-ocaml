@@ -1,0 +1,8 @@
+*.cma
+*.cmi
+*.cmxa
+*.cmo
+*.cmx
+*.annot
+lib/._bcdi
+lib/._d

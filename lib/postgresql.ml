@@ -24,8 +24,6 @@
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 *)
 
-(* $Id: postgresql.ml,v 1.7 2006/01/24 21:11:09 mottl Exp $ *)
-
 open Printf
 
 type oid = int
@@ -325,7 +323,9 @@ module Stub = struct
   (* Command Execution Functions *)
 
   external result_isnull : result -> bool = "PQres_isnull" "noalloc"
-  external exec : connection -> string -> result = "PQexec_stub"
+
+  external exec_params :
+    connection -> string -> string array -> result = "PQexecParams_stub"
 
   external result_status :
     result -> result_status = "PQresultStatus_stub" "noalloc"
@@ -366,8 +366,9 @@ module Stub = struct
   external is_nonblocking :
     connection -> bool = "PQisnonblocking_stub" "noalloc"
 
-  external send_query :
-    connection -> string -> int = "PQsendQuery_stub" "noalloc"
+  external send_query_params :
+    connection -> string -> string array -> int
+    = "PQsendQueryParams_stub" "noalloc"
 
   external get_result : connection -> result = "PQgetResult_stub"
   external consume_input : connection -> int = "PQconsumeInput_stub" "noalloc"
@@ -629,9 +630,9 @@ object(self)
   method empty_result status =
     check_null (); new result (Stub.make_empty_res conn status)
 
-  method exec ?(expect = []) query =
+  method exec ?(expect = []) ?(params = [||]) query =
     check_null ();
-    let r = Stub.exec conn query in
+    let r = Stub.exec_params conn query params in
     if Stub.result_isnull r then signal_error ();
     let res = new result r in
     let stat = res#status in
@@ -639,9 +640,9 @@ object(self)
       raise (Error (Unexpected_status (stat, res#error, expect)));
     res
 
-  method send_query query =
+  method send_query ?(params = [||]) query =
     check_null ();
-    if Stub.send_query conn query <> 1 then signal_error ()
+    if Stub.send_query_params conn query params <> 1 then signal_error ()
 
   method get_result =
     check_null ();

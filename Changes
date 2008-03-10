@@ -1,3 +1,8 @@
+2008-03-10:  Improved portability to Windows.  Added support for
+             parameters in queries.  Some internal cleanups.
+
+             Thanks to Alain Frisch <alain@frisch.fr> for this patch!
+
 2007-03-28:  Greatly improved multi-thread support.
 
              Added seek options.

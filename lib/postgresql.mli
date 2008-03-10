@@ -24,8 +24,6 @@
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 *)
 
-(* $Id: postgresql.mli,v 1.5 2006/01/24 21:11:09 mottl Exp $ *)
-
 (** Client-interface to the PostgreSQL database. *)
 
 (** Please learn about more details in the database documentation! *)
@@ -488,23 +486,31 @@ object
       @raise Error if there is a connection error.
   *)
 
-  method exec : ?expect : result_status list -> string -> result
-  (** [exec ?expect query] synchronous execution of query or command
-      [query]. The result status will be checked against all elements
-      in [expect]. If [expect] is not empty and if there is no match,
-      the exception [Unexpected_status] will be raised.
+  method exec :
+    ?expect : result_status list -> ?params : string array -> string -> result
+  (** [exec ?expect ?params query] synchronous execution of query
+      or command [query].  The result status will be checked against
+      all elements in [expect].  If [expect] is not empty and if there
+      is no match, the exception [Unexpected_status] will be raised.
+
+      Additional query parameters can be passed in the [params] array.
+      They must not be escaped and they can be referred to in [query]
+      as $1, $2, ...
 
       @return result of query.
 
       @param expect default = []
+      @param params default = [||]
 
       @raise Error if there is a connection error.
       @raise Error if there is an unexpected result status.
   *)
 
-  method send_query : string -> unit
-  (** [send_query query] asynchronous execution of query or command
-      [query].
+  method send_query : ?params : string array -> string -> unit
+  (** [send_query ?params query] asynchronous execution of query or
+      command [query].
+
+      @param params default = [||]
 
       @raise Error if there is a connection error.
   *)
