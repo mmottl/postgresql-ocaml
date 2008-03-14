@@ -9,7 +9,7 @@ open Printf
 open GMain
 open Postgresql
 
-let _ =
+let () =
   if (Array.length Sys.argv <> 2) then (
     eprintf "Usage:  %s conninfo\n" Sys.argv.(0);
     exit 1)
@@ -62,7 +62,7 @@ let show_tuples res =
   window#show ()
 
 let show_copy_out conn =
-  let window, hbox, sbv, sbh = make_window "Result (copy_out)" in
+  let window, hbox, _sbv, _sbh = make_window "Result (copy_out)" in
   let txt = GText.view ~packing:hbox#add () in
   let buf = txt#buffer in
   conn#copy_out (fun s -> buf#insert (s ^ "\n"));

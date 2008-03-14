@@ -1,3 +1,6 @@
+2008-03-14:  Merged with Jane Street Capital version (some minor
+             cleanups).
+
 2008-03-10:  Improved portability to Windows.  Added support for
              parameters in queries.  Some internal cleanups.
 

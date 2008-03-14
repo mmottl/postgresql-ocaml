@@ -3,7 +3,7 @@
 OCAMLMAKEFILE = ../OCamlMakefile
 
 SOURCES = postgresql.mli postgresql.ml postgresql_stubs.c
-CFLAGS += -O2 -Wall -pedantic -Wno-long-long
+CFLAGS += -O2 -Wall -pedantic -Wno-long-long -fPIC -DPIC
 CLIBS   = pq
 RESULT  = postgresql
 

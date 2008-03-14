@@ -24,8 +24,12 @@
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#ifndef __GNU__C
-#define inline
+#if __GNUC__ >= 3
+# define inline inline __attribute__ ((always_inline))
+# define __unused __attribute__ ((unused))
+#else
+# define __unused
+# define inline
 #endif
 
 #include <string.h>
@@ -115,7 +119,7 @@ static inline value make_some(value v)
 /* Cache for exceptions */
 static value *v_exc_Oid = NULL;  /* Exception [Oid] */
 
-CAMLprim value PQocaml_init(value v_unit)
+CAMLprim value PQocaml_init(value __unused v_unit)
 {
   caml_register_global_root(&v_empty_string);
   v_empty_string = caml_alloc_string(0);
@@ -263,7 +267,7 @@ CAMLprim value PQreset_stub(value v_conn)
   CAMLreturn(Val_unit);
 }
 
-CAMLprim value PQconndefaults_stub(value v_unit)
+CAMLprim value PQconndefaults_stub(value __unused v_unit)
 {
   CAMLparam0();
   CAMLlocal1(v_res);
