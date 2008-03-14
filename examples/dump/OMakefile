@@ -1,0 +1,3 @@
+OCamlMakeProjDefaults(dump.exe)
+
+InstantiateOCamlEnv()

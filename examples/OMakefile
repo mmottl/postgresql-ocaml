@@ -1,0 +1,3 @@
+OCAML_LIBRARIES = postgresql
+
+.SUBDIRS: cursor dump populate prompt prompt_gtk test_lo
