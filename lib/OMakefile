@@ -1,7 +1,7 @@
 OCAML_LIBRARIES =
 OCAMLPACKS =
 
-OCAML_LIB_FLAGS += -ccopt -lpq
+OCAML_LIB_FLAGS += -cclib -lpq
 
 LIB_CNAMES = postgresql_stubs
 LIB_MLNAMES = postgresql
