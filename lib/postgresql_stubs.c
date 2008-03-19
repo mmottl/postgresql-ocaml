@@ -458,7 +458,9 @@ CAMLprim value PQexecParams_stub(value v_conn, value v_query, value v_params)
   memcpy(query, String_val(v_query), len);
   caml_enter_blocking_section();
     res =
-      PQexecParams(conn, query, nparams, NULL, params, NULL, NULL, 0);
+      (nparams == 0)
+        ? PQexec(conn, query)
+        : PQexecParams(conn, query, nparams, NULL, params, NULL, NULL, 0);
     free(query);
     free_params(params, nparams);
   caml_leave_blocking_section();
@@ -535,13 +537,16 @@ noalloc_conn_info(PQisnonblocking, Val_bool)
 CAMLprim value PQsendQueryParams_stub(
   value v_conn, value v_query, value v_params)
 {
+  PGconn *conn = get_conn(v_conn);
+  const char *query = String_val(v_query);
   int nparams = Wosize_val(v_params);
   const char * const *params = copy_params_shallow(v_params, nparams);
-  value r = Val_int(PQsendQueryParams(get_conn(v_conn),
-                                      String_val(v_query), nparams, NULL,
-                                      params, NULL, NULL, 0));
+  int res =
+    (nparams == 0)
+      ? PQsendQuery(conn, query)
+      : PQsendQueryParams(conn, query, nparams, NULL, params, NULL, NULL, 0);
   free_params_shallow(params, nparams);
-  return r;
+  return Val_int(res);
 }
 
 CAMLprim value PQgetResult_stub(value v_conn)

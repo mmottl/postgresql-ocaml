@@ -497,6 +497,9 @@ object
       They must not be escaped and they can be referred to in [query]
       as $1, $2, ...
 
+      If no (or an empty) query parameter is passed, it is possible to
+      emit several commands with a single call.
+
       @return result of query.
 
       @param expect default = []
@@ -509,6 +512,13 @@ object
   method send_query : ?params : string array -> string -> unit
   (** [send_query ?params query] asynchronous execution of query or
       command [query].
+
+      Additional query parameters can be passed in the [params] array.
+      They must not be escaped and they can be referred to in [query]
+      as $1, $2, ...
+
+      If no (or an empty) query parameter is passed, it is possible to
+      emit several commands with a single call.
 
       @param params default = [||]
 

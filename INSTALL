@@ -48,6 +48,14 @@
      If dynamic linking was allowed, you may only be able to run the
      examples after installation of this library (step 4 above)!
 
+   ATTENTION WINDOWS USERS:
+
+   The call to PQconnectdb may fail under Windows if the application
+   has not been linked with the system library wsock32.lib (at least
+   when using a static version of libpq linked with the application,
+   not the DLL).  This can be fixed by also linking unix.cma/unix.cmxa,
+   which forces wsock32.lib.
+
 ---------------------------------------------------------------------------
 
                                  UNINSTALL
@@ -61,7 +69,7 @@
 
 Enjoy!
 
-Vienna, 2004-01-28
+New York, 2008-03-19
 Markus Mottl
 
 email: markus.mottl@gmail.com

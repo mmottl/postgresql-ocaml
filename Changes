@@ -1,3 +1,11 @@
+2008-03-19:  Allow several commands in one query again (was broken after
+             support for query parameters had been added).  Updated the
+             INSTALL file with a hint on how to solve a potential linking
+             problem on Windows.
+
+             Thanks to Alain Frisch <alain@frisch.fr> for this patch
+             and hint!
+
 2008-03-14:  Merged with Jane Street Capital version (some minor
              cleanups).
 
