@@ -220,6 +220,12 @@ class type result = object
   method ntuples : int
   (** [#ntuples] @return the number of tuples of a query result. *)
 
+  method nparams : int
+  (** [#nparams] @return the number of parameters of a prepared
+      statement.  This function is only useful when inspecting the result
+      of [#describe_prepared].  For other types of queries it will return
+      zero. *)
+
   method nfields : int
   (** [#nfields] @return the number of fields in a query result. *)
 
@@ -243,6 +249,16 @@ class type result = object
 
   method ftype : int -> ftype
   (** [#ftype n] @return the type of the [n]th field.
+
+      @raise Oid if there was no corresponding ftype for the internal [oid].
+      @raise Error if field out of range.
+  *)
+
+  method paramtype : int -> ftype
+  (** [#paramtype n] @return the datatype of the indicated statement
+      parameter.  Parameter numbers start at 0.  This function is
+      only useful when inspecting the result of [#describe_prepared].
+      For other types of queries it will return zero.
 
       @raise Oid if there was no corresponding ftype for the internal [oid].
       @raise Error if field out of range.
@@ -507,6 +523,30 @@ object
 
       @raise Error if there is a connection error.
       @raise Error if there is an unexpected result status.
+  *)
+
+  method describe_prepared : string -> result
+  (** [#describe_prepared stm_name] submits a request to obtain
+      information about the specified prepared statement, and waits for
+      completion.  {!describe_prepared} allows an application to obtain
+      information about a previously prepared statement.  The [stm_name]
+      parameter can be the empty string ("") to reference the unnamed
+      statement, otherwise it must be the name of an existing prepared
+      statement.  On success, a {!result} with status [Command_ok] is
+      returned.  The methods {!result.nparams} and {!result.paramtype}
+      of the class [result] can be used to obtain information about
+      the parameters of the prepared statement, and the methods
+      {!result.nfields}, {!result.fname} and {!result.ftype} provide
+      information about the result columns (if any) of the statement.
+
+      To prepare a statement use the SQL command PREPARE.
+
+      @param stm_name The name of the previously prepared query
+
+      @raise Error if there is a connection error.
+
+      @see <http://www.postgresql.org/docs/8.3/interactive/sql-prepare.html>
+      PostgreSQL documentation about [PREPARE]
   *)
 
   method send_query : ?params : string array -> string -> unit

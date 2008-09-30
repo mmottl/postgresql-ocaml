@@ -32,6 +32,11 @@
 # define inline
 #endif
 
+#if PG_OCAML_MAJOR_VERSION > 8 \
+    || ( PG_OCAML_MAJOR_VERSION >= 8 && PG_OCAML_MINOR_VERSION >= 2)
+# define PG_OCAML_8_2
+#endif
+
 #include <string.h>
 
 #include <caml/mlvalues.h>
@@ -467,6 +472,26 @@ CAMLprim value PQexecParams_stub(value v_conn, value v_query, value v_params)
   CAMLreturn(alloc_result(res, np_cb));
 }
 
+CAMLprim value PQdescribePrepared_stub(value v_conn, value v_query)
+{
+#ifdef PG_OCAML_8_2
+  CAMLparam1(v_conn);
+  PGconn *conn = get_conn(v_conn);
+  np_callback *np_cb = get_conn_cb(v_conn);
+  PGresult *res;
+  int len = caml_string_length(v_query) + 1;
+  char *query = caml_stat_alloc(len);
+  memcpy(query, String_val(v_query), len);
+  caml_enter_blocking_section();
+    res = PQdescribePrepared(conn, query);
+    free(query);
+  caml_leave_blocking_section();
+  CAMLreturn(alloc_result(res, np_cb));
+#else
+  caml_failwith("Postgresql.describe_prepared: not supported");
+#endif
+}
+
 noalloc_res_info(PQresultStatus, Val_int)
 
 CAMLprim value PQresStatus_stub(value v_status)
@@ -480,6 +505,15 @@ noalloc_res_info(PQnfields, Val_int)
 noalloc_res_info(PQbinaryTuples, Val_bool)
 fieldnum_info(PQfname, make_string)
 
+#ifdef PG_OCAML_8_2
+noalloc_res_info(PQnparams, Val_int)
+#else
+  CAMLprim value PQnparams_stub(value v_res)
+  {
+    caml_failwith("Postgresql.nparams: not supported");
+  }
+#endif
+
 CAMLprim value PQfnumber_stub(value v_res, value v_field_name)
 {
   return Val_int(PQfnumber(get_res(v_res), String_val(v_field_name)));
@@ -489,6 +523,16 @@ noalloc_fieldnum_info(PQfformat, Val_int)
 noalloc_fieldnum_info(PQftype, Val_int)
 noalloc_fieldnum_info(PQfsize, Val_int)
 noalloc_fieldnum_info(PQfmod, Val_int)
+
+#ifdef PG_OCAML_8_2
+noalloc_fieldnum_info(PQparamtype, Val_int)
+#else
+  CAMLprim value PQparamtype_stub(value v_res, value v_field_num)
+  {
+    caml_failwith("Postgresql.paramtype: not supported");
+  }
+#endif
+
 
 CAMLprim value PQgetvalue_stub(value v_res, value v_tup_num, value v_field_num)
 {

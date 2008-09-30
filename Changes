@@ -1,3 +1,17 @@
+2008-09-29:  Added support for connection methods:
+
+               * describe_prepared
+
+             Added support for result methods:
+
+               * nparams
+               * paramtype
+
+             Thanks to Paolo Donadeo <p.donadeo@ex-nunc.org> for the
+             above contributions!
+
+             Updated OCamlMakefile.
+
 2008-03-19:  Allow several commands in one query again (was broken after
              support for query parameters had been added).  Updated the
              INSTALL file with a hint on how to solve a potential linking

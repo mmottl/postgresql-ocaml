@@ -327,6 +327,9 @@ module Stub = struct
   external exec_params :
     connection -> string -> string array -> result = "PQexecParams_stub"
 
+  external describe_prepared :
+    connection -> string -> result = "PQdescribePrepared_stub"
+
   external result_status :
     result -> result_status = "PQresultStatus_stub" "noalloc"
 
@@ -336,11 +339,21 @@ module Stub = struct
     connection -> result_status -> result = "PQmakeEmptyPGresult_stub"
 
   external ntuples : result -> int = "PQntuples_stub" "noalloc"
+
+(* FIXME: switch to noalloc once PostgreSQL 8.2 is out for CentOS *)
+(*   external nparams : result -> int = "PQnparams_stub" "noalloc" *)
+  external nparams : result -> int = "PQnparams_stub"
+
   external nfields : result -> int = "PQnfields_stub" "noalloc"
   external fname : result -> int -> string = "PQfname_stub"
   external fnumber : result -> string -> int ="PQfnumber_stub" "noalloc"
   external fformat : result -> int -> FFormat.t = "PQfformat_stub" "noalloc"
   external ftype : result -> int -> oid = "PQftype_stub" "noalloc"
+
+(* FIXME: switch to noalloc once PostgreSQL 8.2 is out for CentOS *)
+(*   external paramtype : result -> int -> oid = "PQparamtype_stub" "noalloc" *)
+  external paramtype : result -> int -> oid = "PQparamtype_stub"
+
   external fmod : result -> int -> int = "PQfmod_stub" "noalloc"
   external fsize : result -> int -> int = "PQfsize_stub" "noalloc"
   external binary_tuples : result -> bool = "PQbinaryTuples_stub" "noalloc"
@@ -452,10 +465,14 @@ external unescape_bytea : string -> string = "PQunescapeBytea_stub"
 class result res =
   let nfields = Stub.nfields res in
   let ntuples = Stub.ntuples res in
+  let nparams = Stub.nparams res in
   let binary_tuples = Stub.binary_tuples res in
   let check_field field =
     if field < 0 || field >= nfields then
       raise (Error (Field_out_of_range (field, nfields))) in
+  let check_param param =
+    if param < 0 || param >= nparams then
+      raise (Error (Field_out_of_range (param, nparams))) in
   let check_tuple tuple =
     if tuple < 0 || tuple >= ntuples then
       raise (Error (Tuple_out_of_range (tuple, ntuples))) in
@@ -463,6 +480,7 @@ object
   method status = Stub.result_status res
   method error = Stub.result_error res
   method ntuples = ntuples
+  method nparams = nparams
   method nfields = nfields
   method binary_tuples = binary_tuples
   method fname field = check_field field; Stub.fname res field
@@ -478,6 +496,10 @@ object
   method ftype field =
     check_field field;
     ftype_of_oid (Stub.ftype res field)
+
+  method paramtype field =
+    check_param field;
+    ftype_of_oid (Stub.paramtype res field)
 
   method fmod field = check_field field; Stub.fmod res field
   method fsize field = check_field field; Stub.fsize res field
@@ -637,8 +659,14 @@ object(self)
     let res = new result r in
     let stat = res#status in
     if not (expect = []) && not (List.mem stat expect) then
-      raise (Error (Unexpected_status (stat, res#error, expect)));
-    res
+      raise (Error (Unexpected_status (stat, res#error, expect)))
+    else res
+
+  method describe_prepared query =
+    check_null ();
+    let r = Stub.describe_prepared conn query in
+    if Stub.result_isnull r then signal_error ()
+    else new result r
 
   method send_query ?(params = [||]) query =
     check_null ();
