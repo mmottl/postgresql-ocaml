@@ -465,12 +465,15 @@ external unescape_bytea : string -> string = "PQunescapeBytea_stub"
 class result res =
   let nfields = Stub.nfields res in
   let ntuples = Stub.ntuples res in
-  let nparams = Stub.nparams res in
+(* FIXME: get rid of laziness once PostgreSQL 8.2 is out for CentOS *)
+(*   let nparams = Stub.nparams res in *)
+  let nparams = lazy (Stub.nparams res) in
   let binary_tuples = Stub.binary_tuples res in
   let check_field field =
     if field < 0 || field >= nfields then
       raise (Error (Field_out_of_range (field, nfields))) in
   let check_param param =
+    let nparams = Lazy.force nparams in
     if param < 0 || param >= nparams then
       raise (Error (Field_out_of_range (param, nparams))) in
   let check_tuple tuple =
@@ -480,7 +483,7 @@ object
   method status = Stub.result_status res
   method error = Stub.result_error res
   method ntuples = ntuples
-  method nparams = nparams
+  method nparams = Lazy.force nparams
   method nfields = nfields
   method binary_tuples = binary_tuples
   method fname field = check_field field; Stub.fname res field
