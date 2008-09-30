@@ -1,5 +1,0 @@
-OCAMLPACKS += lablgtk2
-
-OCamlMakeProjDefaults(prompt_gtk.exe)
-
-InstantiateOCamlEnv()
