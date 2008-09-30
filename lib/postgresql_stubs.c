@@ -472,9 +472,9 @@ CAMLprim value PQexecParams_stub(value v_conn, value v_query, value v_params)
   CAMLreturn(alloc_result(res, np_cb));
 }
 
+#ifdef PG_OCAML_8_2
 CAMLprim value PQdescribePrepared_stub(value v_conn, value v_query)
 {
-#ifdef PG_OCAML_8_2
   CAMLparam1(v_conn);
   PGconn *conn = get_conn(v_conn);
   np_callback *np_cb = get_conn_cb(v_conn);
@@ -488,6 +488,9 @@ CAMLprim value PQdescribePrepared_stub(value v_conn, value v_query)
   caml_leave_blocking_section();
   CAMLreturn(alloc_result(res, np_cb));
 #else
+CAMLprim value
+PQdescribePrepared_stub(value __unused v_conn, value __unused v_query)
+{
   caml_failwith("Postgresql.describe_prepared: not supported");
 #endif
 }
@@ -508,10 +511,10 @@ fieldnum_info(PQfname, make_string)
 #ifdef PG_OCAML_8_2
 noalloc_res_info(PQnparams, Val_int)
 #else
-  CAMLprim value PQnparams_stub(value v_res)
-  {
-    caml_failwith("Postgresql.nparams: not supported");
-  }
+CAMLprim value PQnparams_stub(value __unused v_res)
+{
+  caml_failwith("Postgresql.nparams: not supported");
+}
 #endif
 
 CAMLprim value PQfnumber_stub(value v_res, value v_field_name)
@@ -527,10 +530,11 @@ noalloc_fieldnum_info(PQfmod, Val_int)
 #ifdef PG_OCAML_8_2
 noalloc_fieldnum_info(PQparamtype, Val_int)
 #else
-  CAMLprim value PQparamtype_stub(value v_res, value v_field_num)
-  {
-    caml_failwith("Postgresql.paramtype: not supported");
-  }
+CAMLprim value
+PQparamtype_stub(value __unused v_res, value __unused v_field_num)
+{
+  caml_failwith("Postgresql.paramtype: not supported");
+}
 #endif
 
 
