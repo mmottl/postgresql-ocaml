@@ -1,11 +1,11 @@
       
                                         
-                     README: library --PostgreSQL-OCaml--
-                     ************************************
-                  Copyright   (C)   2006  Markus Mottl (1)  
+                      README: library "PostgreSQL-OCaml"
+                      **********************************
+                  Copyright   (C)   2008  Markus Mottl (1)  
                   ==========================================
-                      Vienna, 						16th	January, 2006 
-                      =================================
+                          Vienna, November 29, 2008
+                          =========================
   
 
 1  Directory contents
@@ -19,7 +19,7 @@
    |        INSTALL          |        Short notes on compiling and       |
    |                         |           installing the library          |
    -----------------------------------------------------------------------
-   |        LICENSE          |    --GNU LESSER GENERAL PUBLIC LICENSE--  |
+   |        LICENSE          |     "GNU LESSER GENERAL PUBLIC LICENSE"   |
    -----------------------------------------------------------------------
    |        Makefile         |                Top Makefile               |
    -----------------------------------------------------------------------
@@ -27,23 +27,23 @@
    |                         |         compilation of not so easy        |
    |                         |  OCaml-projects. It generates dependencies|
    |                         |        of OCaml-files automatically,      |
-   |                         |      is able to handle --ocamllex---,     |
-   |                         |    --ocamlyacc---, IDL- and C-files and   |
+   |                         |       is able to handle "ocamllex"-,      |
+   |                         |     "ocamlyacc"-, IDL- and C-files and    |
    |                         |       generates native- or byte-code      |
    |                         |        as executable or as library -      |
    |                         |      with thread-support if you want!     |
    -----------------------------------------------------------------------
-   |         README          |                  This file                |
+   |       README.txt        |                  This file                |
    -----------------------------------------------------------------------
    |        VERSION          |               Current version             |
    -----------------------------------------------------------------------
    |     examples/dump/      |           Dumps a table to stdout         |
    -----------------------------------------------------------------------
-   |   examples/populate/    |        Inverse operation of --dump--      |
+   |   examples/populate/    |         Inverse operation of "dump"       |
    -----------------------------------------------------------------------
    |    examples/prompt/     |        A simple replacement for psql      |
    -----------------------------------------------------------------------
-   |  examples/prompt_gtk/   |      Graphical version of --prompt--.     |
+   |  examples/prompt_gtk/   |       Graphical version of "prompt".      |
    |                         |             Requires lablgtk!!!           |
    -----------------------------------------------------------------------
    |   examples/test_lo/     |   Demonstrates Large Objects manipulation |
@@ -55,8 +55,8 @@
   
   
 
-2  What is the --PostgreSQL-OCaml---library?
-*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=
+2  What is the "PostgreSQL-OCaml"-library?
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=
 
   
   This OCaml-library provides an interface to PostgreSQL (tested with version
@@ -82,20 +82,23 @@ and therefore a good way to get started.
   
   In the case of bugs, feature requests and similar, you can contact me here:
   
-    markus.mottl@gmail.com
+     markus.mottl@gmail.com
   
-  Up-to-date information concerning this library should be available here:
+   Up-to-date information concerning this library should be available here:
   
-    http://www.ocaml.info/ocaml_sources
+     http://www.ocaml.info/ocaml_sources
   
-  Enjoy!!
+   Enjoy!!
   
+   
+-----------------------------------------------------------------------------
+  
+   This document was translated from LaTeX by HeVeA (3).
 --------------------------------------
   
- 
+  
  (1) http://www.ocaml.info/
  
  (2) http://www.postgresql.org
------------------------------------------------------------------------------
-  
-               This document was translated from LaTeX by HeVeA (3).
+ 
+ (3) http://hevea.inria.fr/index.html
