@@ -1,4 +1,4 @@
-2008-01-05:  Switched to generational global root registration of
+2009-01-05:  Switched to generational global root registration of
              callbacks for better performance.
 
              Requires OCaml 3.11 or higher!!!
