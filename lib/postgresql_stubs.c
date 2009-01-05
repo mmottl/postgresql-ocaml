@@ -110,7 +110,7 @@
 #define OPAQUEOID               2282
 #define ANYELEMENTOID           2283
 
-static value v_empty_string = 0;
+static value v_empty_string = Val_unit;
 static value v_None = Val_int(0);
 
 static inline value make_some(value v)
@@ -126,8 +126,8 @@ static value *v_exc_Oid = NULL;  /* Exception [Oid] */
 
 CAMLprim value PQocaml_init(value __unused v_unit)
 {
-  caml_register_global_root(&v_empty_string);
   v_empty_string = caml_alloc_string(0);
+  caml_register_generational_global_root(&v_empty_string);
   v_exc_Oid = caml_named_value("Postgresql.Oid");
   return Val_unit;
 }
@@ -182,7 +182,7 @@ static inline np_callback * np_new(value v_handler)
   c = (np_callback *) caml_stat_alloc(sizeof(np_callback));
   c->v_cb = v_handler;
   c->cnt = 1;
-  caml_register_global_root(&(c->v_cb));
+  caml_register_generational_global_root(&(c->v_cb));
   return c;
 }
 
@@ -193,7 +193,7 @@ static inline void np_decr_refcount(np_callback *c)
   if (c) {
     c->cnt--;
     if (c->cnt == 0) {
-      caml_remove_global_root(&c->v_cb);
+      caml_remove_generational_global_root(&c->v_cb);
       caml_stat_free(c);
     }
   }

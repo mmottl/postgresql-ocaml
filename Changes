@@ -1,3 +1,8 @@
+2008-01-05:  Switched to generational global root registration of
+             callbacks for better performance.
+
+             Requires OCaml 3.11 or higher!!!
+
 2008-10-25:  Fixed portability problem on Mac OS X.
 
 2008-09-30:  Fixed tiny bug that prevented use with PostgreSQL 8.1.
