@@ -325,7 +325,8 @@ module Stub = struct
   external result_isnull : result -> bool = "PQres_isnull" "noalloc"
 
   external exec_params :
-    connection -> string -> string array -> result = "PQexecParams_stub"
+    connection -> string -> string array -> bool array -> result
+    = "PQexecParams_stub"
 
   external describe_prepared :
     connection -> string -> result = "PQdescribePrepared_stub"
@@ -380,7 +381,7 @@ module Stub = struct
     connection -> bool = "PQisnonblocking_stub" "noalloc"
 
   external send_query_params :
-    connection -> string -> string array -> int
+    connection -> string -> string array -> bool array -> int
     = "PQsendQueryParams_stub" "noalloc"
 
   external get_result : connection -> result = "PQgetResult_stub"
@@ -655,9 +656,9 @@ object(self)
   method empty_result status =
     check_null (); new result (Stub.make_empty_res conn status)
 
-  method exec ?(expect = []) ?(params = [||]) query =
+  method exec ?(expect = []) ?(params = [||]) ?(binary_params = [||]) query =
     check_null ();
-    let r = Stub.exec_params conn query params in
+    let r = Stub.exec_params conn query params binary_params in
     if Stub.result_isnull r then signal_error ();
     let res = new result r in
     let stat = res#status in
@@ -671,9 +672,10 @@ object(self)
     if Stub.result_isnull r then signal_error ()
     else new result r
 
-  method send_query ?(params = [||]) query =
+  method send_query ?(params = [||]) ?(binary_params = [||]) query =
     check_null ();
-    if Stub.send_query_params conn query params <> 1 then signal_error ()
+    if Stub.send_query_params conn query params binary_params <> 1 then
+      signal_error ()
 
   method get_result =
     check_null ();

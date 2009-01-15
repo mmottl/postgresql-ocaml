@@ -410,6 +410,40 @@ static inline value alloc_result(PGresult *res, np_callback *cb)
   return v_res;
 }
 
+static inline void copy_binary_params(
+  value v_params, value v_binary_params, int nparams,
+  int **res_formats, int **res_lengths)
+{
+  int i, nbinary, *lengths, *formats;
+  nbinary = Wosize_val(v_binary_params);
+  if (nbinary == 0 || nparams == 0) {
+    *res_formats = NULL;
+    *res_lengths = NULL;
+    return;
+  }
+  lengths = caml_stat_alloc(nparams * sizeof(int));
+  formats = caml_stat_alloc(nparams * sizeof(int));
+  for (i = 0; i < nparams; i++) {
+    formats[i] = 0;
+    lengths[i] = 0;
+  }
+  if (nbinary > nparams) nbinary = nparams;
+  for (i = 0; i < nbinary; i++) {
+    if (Bool_val(Field(v_binary_params, i))) {
+      formats[i] = 1;
+      lengths[i] = caml_string_length(Field(v_params, i));
+    }
+  }
+  *res_formats = formats;
+  *res_lengths = lengths;
+}
+
+static inline void free_binary_params(int *formats, int *lengths)
+{
+  if (formats != NULL) free(formats);
+  if (lengths != NULL) free(lengths);
+}
+
 static inline const char * const * copy_params(value v_params, int nparams)
 {
   char **params;
@@ -450,7 +484,8 @@ static inline void free_params_shallow(const char * const *params, int nparams)
   free((char **) params);
 }
 
-CAMLprim value PQexecParams_stub(value v_conn, value v_query, value v_params)
+CAMLprim value PQexecParams_stub(
+  value v_conn, value v_query, value v_params, value v_binary_params)
 {
   CAMLparam1(v_conn);
   PGconn *conn = get_conn(v_conn);
@@ -460,14 +495,17 @@ CAMLprim value PQexecParams_stub(value v_conn, value v_query, value v_params)
   char *query = caml_stat_alloc(len);
   int nparams = Wosize_val(v_params);
   const char * const *params = copy_params(v_params, nparams);
+  int *formats, *lengths;
+  copy_binary_params(v_params, v_binary_params, nparams, &formats, &lengths);
   memcpy(query, String_val(v_query), len);
   caml_enter_blocking_section();
     res =
       (nparams == 0)
         ? PQexec(conn, query)
-        : PQexecParams(conn, query, nparams, NULL, params, NULL, NULL, 0);
+        : PQexecParams(conn, query, nparams, NULL, params, lengths, formats, 0);
     free(query);
     free_params(params, nparams);
+    free_binary_params(formats, lengths);
   caml_leave_blocking_section();
   CAMLreturn(alloc_result(res, np_cb));
 }
@@ -583,17 +621,20 @@ CAMLprim value PQsetnonblocking_stub(value v_conn, value v_arg)
 noalloc_conn_info(PQisnonblocking, Val_bool)
 
 CAMLprim value PQsendQueryParams_stub(
-  value v_conn, value v_query, value v_params)
+  value v_conn, value v_query, value v_params, value v_binary_params)
 {
   PGconn *conn = get_conn(v_conn);
   const char *query = String_val(v_query);
   int nparams = Wosize_val(v_params);
   const char * const *params = copy_params_shallow(v_params, nparams);
-  int res =
+  int *lengths, *formats, res;
+  copy_binary_params(v_params, v_binary_params, nparams, &formats, &lengths);
+  res =
     (nparams == 0)
       ? PQsendQuery(conn, query)
-      : PQsendQueryParams(conn, query, nparams, NULL, params, NULL, NULL, 0);
+      : PQsendQueryParams(conn, query, nparams, NULL, params, lengths, formats, 0);
   free_params_shallow(params, nparams);
+  free_binary_params(formats, lengths);
   return Val_int(res);
 }
 

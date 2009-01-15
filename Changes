@@ -1,3 +1,7 @@
+2009-01-15:  Addes support for specifying binary parameters in queries.
+
+             Thanks to Alain Frisch <alain@frisch.fr> for the patch!
+
 2009-01-05:  Switched to generational global root registration of
              callbacks for better performance.
 
