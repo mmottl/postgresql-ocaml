@@ -230,8 +230,12 @@ let ftype_of_string = function
   | str -> failwith ("ftype_of_string: unknown ftype: " ^ str)
 
 external init : unit -> unit = "PQocaml_init"
+
+let null = ""
+
 let () =
   Callback.register_exception "Postgresql.Oid" (Oid invalid_oid);
+  Callback.register "Postgresql.null" null;
   init ()
 
 type connection_status = Ok | Bad

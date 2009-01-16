@@ -201,6 +201,13 @@ val invalid_oid : oid
 (** [invalid_oid] invalid Oid. *)
 
 
+(** {6 Query parameters} *)
+
+val null : string
+(** [null] can be used as an element of the optional argument [parameters]
+    passed to the [exec] or [send_query] method to indicate a NULL value. *)
+
+
 (** Class type of query results.
 
     Indices of tuples and fields start at 0!

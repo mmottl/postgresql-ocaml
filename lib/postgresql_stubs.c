@@ -110,7 +110,6 @@
 #define OPAQUEOID               2282
 #define ANYELEMENTOID           2283
 
-static value v_empty_string = Val_unit;
 static value v_None = Val_int(0);
 
 static inline value make_some(value v)
@@ -121,14 +120,17 @@ static inline value make_some(value v)
   CAMLreturn(v_res);
 }
 
-/* Cache for exceptions */
+/* Cache for OCaml-values */
+static value v_empty_string = Val_unit;
 static value *v_exc_Oid = NULL;  /* Exception [Oid] */
+static value *v_null_param = NULL;
 
 CAMLprim value PQocaml_init(value __unused v_unit)
 {
   v_empty_string = caml_alloc_string(0);
   caml_register_generational_global_root(&v_empty_string);
   v_exc_Oid = caml_named_value("Postgresql.Oid");
+  v_null_param = caml_named_value("Postgresql.null");
   return Val_unit;
 }
 
@@ -452,9 +454,12 @@ static inline const char * const * copy_params(value v_params, int nparams)
   params = caml_stat_alloc(nparams * sizeof(char *));
   for (i = 0; i < nparams; i++) {
     value v_param = Field(v_params, i);
-    int param_len = caml_string_length(v_param) + 1;
-    params[i] = caml_stat_alloc(param_len);
-    memcpy(params[i], String_val(v_param), param_len);
+    if (v_param == *v_null_param) params[i] = NULL;
+    else {
+      int param_len = caml_string_length(v_param) + 1;
+      params[i] = caml_stat_alloc(param_len);
+      memcpy(params[i], String_val(v_param), param_len);
+    }
   }
   return (const char * const *) params;
 }
@@ -474,7 +479,10 @@ static inline const char * const * copy_params_shallow(
   int i;
   if (nparams == 0) return NULL;
   params = caml_stat_alloc(nparams * sizeof(char *));
-  for (i = 0; i < nparams; i++) params[i] = String_val(Field(v_params, i));
+  for (i = 0; i < nparams; i++) {
+    value v_param = Field(v_params, i);
+    params[i] = (v_param == *v_null_param) ? NULL : String_val(v_param);
+  }
   return (const char * const *) params;
 }
 
@@ -530,6 +538,7 @@ CAMLprim value
 PQdescribePrepared_stub(value __unused v_conn, value __unused v_query)
 {
   caml_failwith("Postgresql.describe_prepared: not supported");
+  return Val_unit;
 #endif
 }
 
@@ -552,6 +561,7 @@ noalloc_res_info(PQnparams, Val_int)
 CAMLprim value PQnparams_stub(value __unused v_res)
 {
   caml_failwith("Postgresql.nparams: not supported");
+  return Val_unit;
 }
 #endif
 
@@ -572,6 +582,7 @@ CAMLprim value
 PQparamtype_stub(value __unused v_res, value __unused v_field_num)
 {
   caml_failwith("Postgresql.paramtype: not supported");
+  return Val_unit;
 }
 #endif
 
