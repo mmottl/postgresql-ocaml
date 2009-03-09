@@ -16,3 +16,6 @@ name = postgresql
 OCamlMakeLib(postgresql)
 
 InstantiateOCamlEnv()
+
+doc: postgresql $(OCAMLDOC_PP)
+  $(OCamlDocs Postgresql, *.mli *.ml, "PostgreSQL bindings for OCaml")
