@@ -222,11 +222,10 @@ CAMLprim value PQconn_isnull(value v_conn)
 
 static inline void free_conn(value v_conn)
 {
-  PGconn *conn;
-  np_decr_refcount(get_conn_cb(v_conn));
-  set_conn_cb(v_conn, NULL);
-  conn = get_conn(v_conn);
+  PGconn *conn = get_conn(v_conn);
   if (conn) {
+    np_decr_refcount(get_conn_cb(v_conn));
+    set_conn_cb(v_conn, NULL);
     set_conn(v_conn, NULL);
     caml_enter_blocking_section();
       PQfinish(conn);
@@ -250,7 +249,7 @@ CAMLprim value PQconnectdb_stub(value v_conn_info)
 
   /* One may raise this 30 to 500 for instance if the program takes
      responsibility of closing connections */
-  v_conn = caml_alloc_final(3, free_conn, 1, 30);
+  v_conn = caml_alloc_small(2, Abstract_tag);
 
   set_conn(v_conn, conn);
   set_conn_cb(v_conn, NULL);

@@ -569,6 +569,18 @@ end
 
 external conndefaults : unit -> conninfo_option array = "PQconndefaults_stub"
 
+exception Finally of exn * exn
+
+let protectx ~f x ~(finally : 'a -> unit) =
+  let res =
+    try f x
+    with exn ->
+      (try finally x with final_exn -> raise (Finally (exn, final_exn)));
+      raise exn
+  in
+  finally x;
+  res
+
 class connection ?host ?hostaddr ?port ?dbname ?user ?password ?options ?tty
     ?requiressl ?conninfo =
 
@@ -599,71 +611,84 @@ class connection ?host ?hostaddr ?port ?dbname ?user ?password ?options ?tty
         Buffer.contents b in
 
   fun () ->
-    let conn = Stub.connect conn_info in
+    let my_conn = Stub.connect conn_info in
     let () =
-      if Stub.connection_status conn <> Ok then (
-        let s = Stub.error_message conn in
-        Stub.finish conn;
-        raise (Error (Connection_failure s))) in
-    let signal_error () =
-      raise (Error (Connection_failure (Stub.error_message conn))) in
-    let check_null () = if Stub.conn_isnull conn then signal_error () in
+      if Stub.connection_status my_conn <> Ok then (
+        let s = Stub.error_message my_conn in
+        Stub.finish my_conn;
+        raise (Error (Connection_failure s)))
+      else Gc.finalise Stub.finish my_conn
+    in
+    let mtx = Mutex.create () in
+    let wrap_conn f =
+     Mutex.lock mtx;
+     protectx mtx ~finally:Mutex.unlock ~f:(fun _ ->
+       if Stub.conn_isnull my_conn then
+         failwith "Postgresql.wrap_conn: connection already finished"
+       else f my_conn)
+   in
+   let signal_error conn =
+     raise (Error (Connection_failure (Stub.error_message conn)))
+   in
 
-object(self)
+object (self)
   (* Main routines *)
 
-  method finish = check_null (); Stub.finish conn
+  method finish = wrap_conn Stub.finish
 
   method escape_bytea ?(pos = 0) ?len str =
     let str_len = String.length str in
     let len = match len with Some len -> len | None -> str_len in
     if pos < 0 || len < 0 || pos + len > str_len then
       invalid_arg "Postgresql.escape_bytea";
-    Stub.escape_bytea_conn conn str pos len
+    wrap_conn (fun conn -> Stub.escape_bytea_conn conn str pos len)
 
   method try_reset =
-    check_null ();
+    wrap_conn (fun conn ->
     if Stub.connection_status conn = Bad then (
       Stub.reset conn;
-      if Stub.connection_status conn <> Ok then signal_error ())
+      if Stub.connection_status conn <> Ok then signal_error conn))
 
-  method reset = check_null (); Stub.reset conn
+  method reset = wrap_conn Stub.reset
 
 
   (* Asynchronous Notification *)
 
-  method notifies = check_null (); Stub.notifies conn
+  method notifies = wrap_conn Stub.notifies
 
 
   (* Control Functions *)
 
   method set_notice_processor f =
-    check_null (); Stub.set_notice_processor conn f
+    wrap_conn (fun conn -> Stub.set_notice_processor conn f)
 
 
   (* Accessors *)
 
-  method db = check_null (); Stub.db conn
-  method user = check_null (); Stub.user conn
-  method pass = check_null (); Stub.pass conn
-  method host = check_null (); Stub.host conn
-  method port = check_null (); Stub.port conn
-  method tty = check_null (); Stub.tty conn
-  method options = check_null (); Stub.options conn
-  method status = check_null (); Stub.connection_status conn
-  method error_message = check_null (); Stub.error_message conn
-  method backend_pid = check_null (); Stub.backend_pid conn
+  method db = wrap_conn Stub.db
+  method user = wrap_conn Stub.user
+  method pass = wrap_conn Stub.pass
+  method host = wrap_conn Stub.host
+  method port = wrap_conn Stub.port
+  method tty = wrap_conn Stub.tty
+  method options = wrap_conn Stub.options
+  method status = wrap_conn Stub.connection_status
+  method error_message = wrap_conn Stub.error_message
+  method backend_pid = wrap_conn Stub.backend_pid
 
 
   (* Commands and Queries *)
 
   method empty_result status =
-    check_null (); new result (Stub.make_empty_res conn status)
+    new result (wrap_conn (fun conn -> (Stub.make_empty_res conn status)))
 
   method exec ?(expect = []) ?(params = [||]) ?(binary_params = [||]) query =
-    check_null ();
-    let r = Stub.exec_params conn query params binary_params in
-    if Stub.result_isnull r then signal_error ();
+    let r =
+      wrap_conn (fun conn ->
+        let r = Stub.exec_params conn query params binary_params in
+        if Stub.result_isnull r then signal_error conn
+        else r)
+    in
     let res = new result r in
     let stat = res#status in
     if not (expect = []) && not (List.mem stat expect) then
@@ -671,19 +696,19 @@ object(self)
     else res
 
   method describe_prepared query =
-    check_null ();
-    let r = Stub.describe_prepared conn query in
-    if Stub.result_isnull r then signal_error ()
-    else new result r
+    new result (
+      wrap_conn (fun conn ->
+        let r = Stub.describe_prepared conn query in
+        if Stub.result_isnull r then signal_error conn
+        else r))
 
   method send_query ?(params = [||]) ?(binary_params = [||]) query =
-    check_null ();
-    if Stub.send_query_params conn query params binary_params <> 1 then
-      signal_error ()
+    wrap_conn (fun conn ->
+      if Stub.send_query_params conn query params binary_params <> 1 then
+        signal_error conn)
 
   method get_result =
-    check_null ();
-    let res = Stub.get_result conn in
+    let res = wrap_conn Stub.get_result in
     if Stub.result_isnull res then None else Some (new result res)
 
 
@@ -692,63 +717,64 @@ object(self)
   (* Low level *)
 
   method getline ?(pos = 0) ?len buf =
-    check_null ();
     let buf_len = String.length buf in
     let len = match len with Some len -> len | None -> buf_len - pos in
     if len < 0 || pos < 0 || pos + len > buf_len then
       invalid_arg "Postgresql.connection#getline";
-    match Stub.getline conn buf pos len with
-    | -1 -> EOF
-    | 0 -> LineRead
-    | 1 -> BufFull
-    | _ -> assert false
+    wrap_conn (fun conn ->
+      match Stub.getline conn buf pos len with
+      | -1 -> EOF
+      | 0 -> LineRead
+      | 1 -> BufFull
+      | _ -> assert false)
 
   method getline_async ?(pos = 0) ?len buf =
-    check_null ();
     let buf_len = String.length buf in
     let len = match len with Some len -> len | None -> buf_len - pos in
     if len < 0 || pos < 0 || pos + len > buf_len then
       invalid_arg "Postgresql.connection#getline_async";
-    match Stub.getline_async conn buf pos len with
-    | -1 -> if Stub.endcopy conn <> 0 then signal_error () else EndOfData
-    | 0 -> NoData
-    | n when n > 0 ->
-       if buf.[pos + n - 1] = '\n' then DataRead n else PartDataRead n
-    | _ -> assert false
+    wrap_conn (fun conn ->
+      match Stub.getline_async conn buf pos len with
+      | -1 -> if Stub.endcopy conn <> 0 then signal_error conn else EndOfData
+      | 0 -> NoData
+      | n when n > 0 ->
+         if buf.[pos + n - 1] = '\n' then DataRead n else PartDataRead n
+      | _ -> assert false)
 
   method putline buf =
-    check_null (); if Stub.putline conn buf <> 0 then signal_error ()
+    wrap_conn (fun conn -> if Stub.putline conn buf <> 0 then signal_error conn)
 
   method putnbytes ?(pos = 0) ?len buf =
-    check_null ();
     let buf_len = String.length buf in
     let len = match len with Some len -> len | None -> buf_len - pos in
     if len < 0 || pos < 0 || pos + len > buf_len then
       invalid_arg "Postgresql.connection#putnbytes";
-    if Stub.putnbytes conn buf pos len <> 0 then signal_error ()
+    wrap_conn (fun conn ->
+      if Stub.putnbytes conn buf pos len <> 0 then signal_error conn)
 
-  method endcopy = check_null (); if Stub.endcopy conn <> 0 then signal_error ()
+  method endcopy =
+    wrap_conn (fun conn -> if Stub.endcopy conn <> 0 then signal_error conn)
 
 
   (* High level *)
 
   method copy_out f =
-    check_null ();
     let buf = Buffer.create 1024 in
     let len = 512 in
     let s = String.create len in
-    let rec loop r =
-      let zero = String.index s '\000' in
-      Buffer.add_substring buf s 0 zero;
-      match r with
-       | 0 -> f (Buffer.contents buf); Buffer.clear buf; line ()
-       | 1 -> loop (Stub.getline conn s 0 len)
-       | _ -> f (Buffer.contents buf); self#endcopy
-    and line () =
-      let r = Stub.getline conn s 0 len in
-      if s.[0] = '\\' && s.[1] = '.' && s.[2] = '\000' then self#endcopy
-      else loop r in
-    line ()
+    wrap_conn (fun conn ->
+      let rec loop r =
+        let zero = String.index s '\000' in
+        Buffer.add_substring buf s 0 zero;
+        match r with
+         | 0 -> f (Buffer.contents buf); Buffer.clear buf; line ()
+         | 1 -> loop (Stub.getline conn s 0 len)
+         | _ -> f (Buffer.contents buf); self#endcopy
+      and line () =
+        let r = Stub.getline conn s 0 len in
+        if s.[0] = '\\' && s.[1] = '.' && s.[2] = '\000' then self#endcopy
+        else loop r in
+      line ())
 
   method copy_out_channel oc =
     self#copy_out (fun s -> output_string oc (s ^ "\n"))
@@ -761,86 +787,89 @@ object(self)
   (* Asynchronous operations and non blocking mode *)
 
   method set_nonblocking b =
-    check_null ();
-    if Stub.set_nonblocking conn b <> 0 then signal_error ()
+    wrap_conn (fun conn ->
+      if Stub.set_nonblocking conn b <> 0 then signal_error conn)
 
-  method is_nonblocking = check_null (); Stub.is_nonblocking conn
+  method is_nonblocking = wrap_conn Stub.is_nonblocking
 
   method consume_input =
-    check_null (); if Stub.consume_input conn <> 1 then signal_error ()
+    wrap_conn (fun conn ->
+      if Stub.consume_input conn <> 1 then signal_error conn)
 
-  method is_busy = check_null (); Stub.is_busy conn
-  method flush = check_null (); if Stub.flush conn <> 0 then signal_error ()
+  method is_busy = wrap_conn Stub.is_busy
+
+  method flush =
+    wrap_conn (fun conn -> if Stub.flush conn <> 0 then signal_error conn)
 
   method socket =
-    check_null ();
-    let s = Stub.socket conn in
-    if Obj.magic s = -1 then signal_error () else s
+    wrap_conn (fun conn ->
+      let s = Stub.socket conn in
+      if Obj.magic s = -1 then signal_error conn else s)
 
   method request_cancel =
-    check_null ();
-    if Stub.request_cancel conn = 0 then signal_error ()
+    wrap_conn (fun conn ->
+      if Stub.request_cancel conn = 0 then signal_error conn)
 
 
   (* Large objects *)
 
   method lo_creat =
-    check_null ();
-    let lo = Stub.lo_creat conn in
-    if lo <= 0 then signal_error ();
-    lo
+    wrap_conn (fun conn ->
+      let lo = Stub.lo_creat conn in
+      if lo <= 0 then signal_error conn;
+      lo)
 
   method lo_import filename =
-    check_null ();
-    let oid = Stub.lo_import conn filename in
-    if oid = 0 then signal_error ();
-    oid
+    wrap_conn (fun conn ->
+      let oid = Stub.lo_import conn filename in
+      if oid = 0 then signal_error conn;
+      oid)
 
   method lo_export oid filename =
-    check_null ();
-    if Stub.lo_export conn oid filename <= 0 then signal_error ()
+    wrap_conn (fun conn ->
+      if Stub.lo_export conn oid filename <= 0 then signal_error conn)
 
   method lo_open oid =
-    check_null ();
-    let lo = Stub.lo_open conn oid in
-    if lo = -1 then signal_error ();
-    lo
+    wrap_conn (fun conn ->
+      let lo = Stub.lo_open conn oid in
+      if lo = -1 then signal_error conn;
+      lo)
 
   method lo_write ?(pos = 0) ?len buf lo =
-    check_null ();
     let buf_len = String.length buf in
     let len = match len with Some len -> len | None -> buf_len - pos in
     if len < 0 || pos < 0 || pos + len > String.length buf then
       invalid_arg "Postgresql.connection#lo_write";
-    let w = Stub.lo_write conn lo buf pos len in
-    if w < len then signal_error ()
+    wrap_conn (fun conn ->
+      let w = Stub.lo_write conn lo buf pos len in
+      if w < len then signal_error conn)
 
   method lo_read lo ?(pos = 0) ?len buf =
-    check_null ();
     let buf_len = String.length buf in
     let len = match len with Some len -> len | None -> buf_len - pos in
     if len < 0 || pos < 0 || pos + len > String.length buf then
       invalid_arg "Postgresql.connection#lo_read";
-    let read = Stub.lo_read conn lo buf pos len in
-    if read = -1 then signal_error ();
-    read
+    wrap_conn (fun conn ->
+      let read = Stub.lo_read conn lo buf pos len in
+      if read = -1 then signal_error conn;
+      read)
 
   method lo_seek ?(pos = 0) ?(whence = SEEK_SET) lo =
-    check_null ();
-    if Stub.lo_seek conn lo pos whence < 0 then signal_error ()
+    wrap_conn (fun conn ->
+      if Stub.lo_seek conn lo pos whence < 0 then signal_error conn)
 
   method lo_tell lo =
-    check_null ();
-    let pos = Stub.lo_tell conn lo in
-    if pos = -1 then signal_error ();
-    pos
+    wrap_conn (fun conn ->
+      let pos = Stub.lo_tell conn lo in
+      if pos = -1 then signal_error conn;
+      pos)
 
   method lo_close oid =
-    check_null ();
-    if Stub.lo_close conn oid = -1 then signal_error ()
+    wrap_conn (fun conn ->
+      if Stub.lo_close conn oid = -1 then signal_error conn)
 
   method lo_unlink oid =
-    check_null ();
-    let oid = Stub.lo_unlink conn oid in
-    if oid = -1 then signal_error ()
+    wrap_conn (fun conn ->
+      let oid = Stub.lo_unlink conn oid in
+      if oid = -1 then signal_error conn)
 end
