@@ -1,6 +1,6 @@
 ###########################################################################
 #                              OCamlMakefile
-#                  Copyright (C) 1999-2007  Markus Mottl
+#                  Copyright (C) 1999-  Markus Mottl
 #
 #                             For updates see:
 #                http://www.ocaml.info/home/ocaml_sources.html
@@ -112,10 +112,31 @@ endif
 
 ####################  variables depending on your OCaml-installation
 
+SYSTEM := $(shell ocamlc -config 2>/dev/null | grep system | sed 's/system: //')
+    # This may be
+    # - mingw
+    # - win32
+    # - cygwin
+    # - some other string means Unix
+    # - empty means ocamlc does not support -config
+
+ifeq ($(SYSTEM),mingw)
+  MINGW=1
+endif
+ifeq ($(SYSTEM),win32)
+  MSVC=1
+endif
+
 ifdef MINGW
   export MINGW
-  WIN32   := 1
+  WIN32 := 1
+  # We are compiling with cygwin tools:
   CFLAGS_WIN32 := -mno-cygwin
+  # The default value 'cc' makes 'ocamlc -cc "cc"' raises the error 'The
+  # NTVDM CPU has encountered an illegal instruction'.
+  CC := gcc
+  # The OCaml C header files use this flag:
+  CFLAGS += -D__MINGW32__
 endif
 ifdef MSVC
   export MSVC
@@ -481,7 +502,7 @@ ifneq ($(strip $(OBJ_LINK)),)
 endif
 
 ifdef WIN32
-DLLSONAME := $(CLIB_BASE).dll
+DLLSONAME := dll$(CLIB_BASE).dll
 else
 DLLSONAME := dll$(CLIB_BASE).so
 endif
@@ -589,7 +610,7 @@ else
 endif
 
 ifdef LIB_PACK_NAME
-  FOR_PACK_NAME := $(shell echo $(LIB_PACK_NAME) | sed -e 's/^\(.\)/\U\1/')
+  FOR_PACK_NAME := $(shell echo $(LIB_PACK_NAME) | awk '{print toupper(substr($$0,1,1))substr($$0,2)}')
 endif
 
 # If we have to make byte-code
@@ -940,18 +961,30 @@ endif
 
 ifndef STATIC
 ifdef MINGW
+# From OCaml 3.11.0, ocamlmklib is available on windows
+OCAMLMLIB_EXISTS = $(shell which $(OCAMLMKLIB))
+ifeq ($(strip $(OCAMLMLIB_EXISTS)),)
 $(DLLSONAME):		$(OBJ_LINK)
 			$(CC) $(CFLAGS) $(CFLAGS_WIN32) $(OBJ_LINK) -shared -o $@ \
-			-Wl,--whole-archive $(wildcard $(foreach dir,$(LIBDIRS),$(CLIBS:%=$(dir)/lib%.a))) \
-			 $(OCAMLLIBPATH)/ocamlrun.a \
+			$(wildcard $(foreach dir,$(LIBDIRS),$(CLIBS:%=$(dir)/lib%.a))) \
+			 '$(OCAMLLIBPATH)/ocamlrun.a' \
+			-Wl,--whole-archive \
 			-Wl,--export-all-symbols \
-			-Wl,--no-whole-archive
+			-Wl,--allow-multiple-definition \
+			-Wl,--enable-auto-import
+else
+$(DLLSONAME):		$(OBJ_LINK)
+			$(OCAMLMKLIB) $(INCFLAGS) $(CLIBFLAGS) \
+				-o $(CLIB_BASE) $(OBJ_LINK) $(CLIBS:%=-l%) \
+				$(CFRAMEWORKS:%=-framework %) \
+				$(OCAMLMKLIB_FLAGS)
+endif
 else
 ifdef MSVC
 $(DLLSONAME):		$(OBJ_LINK)
 			link /NOLOGO /DLL /OUT:$@ $(OBJ_LINK) \
 			 $(wildcard $(foreach dir,$(LIBDIRS),$(CLIBS:%=$(dir)/%.lib))) \
-			 $(OCAMLLIBPATH)/ocamlrun.lib
+			 '$(OCAMLLIBPATH)/ocamlrun.lib'
 
 else
 $(DLLSONAME):		$(OBJ_LINK)
