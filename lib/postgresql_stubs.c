@@ -209,14 +209,14 @@ static inline void np_decr_refcount(np_callback *c)
      PQgetssl: the SSL structure used in the connection
 */
 
-#define get_conn(v) ((PGconn *) Field(v, 1))
-#define set_conn(v, conn) (Field(v, 1) = (value) conn)
+#define get_conn(v) ((PGconn *) Field(v, 0))
+#define set_conn(v, conn) (Field(v, 0) = (value) conn)
 
-#define get_conn_cb(v) ((np_callback *) Field(v, 2))
-#define set_conn_cb(v, cb) (Field(v, 2) = (value) cb)
+#define get_conn_cb(v) ((np_callback *) Field(v, 1))
+#define set_conn_cb(v, cb) (Field(v, 1) = (value) cb)
 
-#define get_cancel_obj(v) ((PGcancel *) Field(v, 3))
-#define set_cancel_obj(v, cancel) (Field(v, 3) = (value) cancel)
+#define get_cancel_obj(v) ((PGcancel *) Field(v, 2))
+#define set_cancel_obj(v, cancel) (Field(v, 2) = (value) cancel)
 
 CAMLprim value PQconn_isnull(value v_conn)
 {
@@ -245,20 +245,23 @@ CAMLprim value PQconnectdb_stub(value v_conn_info)
   value v_conn;
 
   int len = caml_string_length(v_conn_info) + 1;
+  PGcancel *cancel;
   char *conn_info = caml_stat_alloc(len);
   memcpy(conn_info, String_val(v_conn_info), len);
 
   caml_enter_blocking_section();
     conn = PQconnectdb(conn_info);
+    cancel = PQgetCancel(conn);
     free(conn_info);
   caml_leave_blocking_section();
 
   /* One may raise this 30 to 500 for instance if the program takes
      responsibility of closing connections */
-  v_conn = caml_alloc_small(2, Abstract_tag);
+  v_conn = caml_alloc_small(3, Abstract_tag);
 
   set_conn(v_conn, conn);
   set_conn_cb(v_conn, NULL);
+  set_cancel_obj(v_conn, cancel);
 
   return v_conn;
 }
