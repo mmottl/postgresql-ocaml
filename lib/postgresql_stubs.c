@@ -215,6 +215,9 @@ static inline void np_decr_refcount(np_callback *c)
 #define get_conn_cb(v) ((np_callback *) Field(v, 2))
 #define set_conn_cb(v, cb) (Field(v, 2) = (value) cb)
 
+#define get_cancel_obj(v) ((PGcancel *) Field(v, 3))
+#define set_cancel_obj(v, cancel) (Field(v, 3) = (value) cancel)
+
 CAMLprim value PQconn_isnull(value v_conn)
 {
   return Val_bool((get_conn(v_conn)) ? 0 : 1);
@@ -224,10 +227,13 @@ static inline void free_conn(value v_conn)
 {
   PGconn *conn = get_conn(v_conn);
   if (conn) {
+    PGcancel *cancel = get_cancel_obj(v_conn);
+    set_cancel_obj(v_conn, NULL);
     np_decr_refcount(get_conn_cb(v_conn));
     set_conn_cb(v_conn, NULL);
     set_conn(v_conn, NULL);
     caml_enter_blocking_section();
+      PQfreeCancel(cancel);
       PQfinish(conn);
     caml_leave_blocking_section();
   }
@@ -664,7 +670,23 @@ noalloc_conn_info(PQconsumeInput, Val_int)
 noalloc_conn_info(PQisBusy, Val_bool)
 noalloc_conn_info(PQflush, Val_int)
 noalloc_conn_info(PQsocket, Val_int)
-noalloc_conn_info(PQrequestCancel, Val_int)
+
+CAMLprim value PQCancel_stub(value v_conn)
+{
+  CAMLparam1(v_conn);
+  PGconn *conn = get_conn(v_conn);
+  if (conn == NULL) CAMLreturn(v_None);
+  else {
+    PGcancel *cancel = get_cancel_obj(v_conn);
+    char errbuf[256];
+    int res;
+    caml_enter_blocking_section();
+      res = PQcancel(cancel, errbuf, 256);
+    caml_leave_blocking_section();
+    if (res == 0) CAMLreturn(v_None);
+    else CAMLreturn(make_some(caml_copy_string(errbuf)));
+  }
+}
 
 CAMLprim value PQescapeString_stub(value v_from, value v_pos_from,
                                    value v_to, value v_pos_to, value v_len)
@@ -797,8 +819,14 @@ CAMLprim value PQendcopy_stub(value v_conn)
 
 static inline void notice_ml(void *cb, const char *msg)
 {
-  value v_msg = make_string(msg);
-  caml_callback(((np_callback *) cb)->v_cb, v_msg);
+  value v_msg;
+  /* FIXME: this is not reliable and can lead to segfaults, because
+     the runtime lock may already be held (but not usually).  A runtime
+     feature is needed to fully support this. */
+  caml_leave_blocking_section();
+    v_msg = make_string(msg);
+    caml_callback(((np_callback *) cb)->v_cb, v_msg);
+  caml_enter_blocking_section();
 }
 
 CAMLprim value PQsetNoticeProcessor_stub(value v_conn, value v_cb)

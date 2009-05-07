@@ -282,6 +282,7 @@ type error =
   | Binary
   | Connection_failure of string
   | Unexpected_status of result_status * string * (result_status list)
+  | Cancel_failure of string
 
 let string_of_error = function
   | Field_out_of_range (i, n) ->
@@ -289,11 +290,12 @@ let string_of_error = function
   | Tuple_out_of_range (i, n) ->
       sprintf "Tuple number %i is out of range [0..%i]" i (n - 1)
   | Binary -> sprintf "This function does not accept binary tuples"
-  | Connection_failure s -> s
+  | Connection_failure s -> "Connection failure: " ^ s
   | Unexpected_status (s, msg, sl) ->
       sprintf "Result status %s unexpected (expected status:%s); %s"
         (result_status s) (String.concat "," (List.map result_status sl))
         msg
+  | Cancel_failure s -> "Cancel failure: " ^ s
 
 exception Error of error
 
@@ -393,7 +395,7 @@ module Stub = struct
   external is_busy : connection -> bool = "PQisBusy_stub" "noalloc"
   external flush : connection -> int = "PQflush_stub" "noalloc"
   external socket : connection -> Unix.file_descr = "PQsocket_stub" "noalloc"
-  external request_cancel : connection -> int = "PQrequestCancel_stub" "noalloc"
+  external request_cancel : connection -> string option = "PQCancel_stub"
 
 
   (* Asynchronous Notification *)
@@ -619,22 +621,52 @@ class connection ?host ?hostaddr ?port ?dbname ?user ?password ?options ?tty
         raise (Error (Connection_failure s)))
       else Gc.finalise Stub.finish my_conn
     in
-    let mtx = Mutex.create () in
-    let wrap_conn f =
-     Mutex.lock mtx;
-     protectx mtx ~finally:Mutex.unlock ~f:(fun _ ->
-       if Stub.conn_isnull my_conn then
-         failwith "Postgresql.wrap_conn: connection already finished"
-       else f my_conn)
-   in
-   let signal_error conn =
-     raise (Error (Connection_failure (Stub.error_message conn)))
-   in
+    let conn_mtx = Mutex.create () in
+    let conn_cnd = Condition.create () in
+    let conn_state = ref `Free in
+    let check_null () =
+      if Stub.conn_isnull my_conn then
+        failwith "Postgresql.check_null: connection already finished"
+    in
+    let wrap_mtx f =
+      Mutex.lock conn_mtx;
+      protectx conn_mtx
+        ~f:(fun _ ->
+          check_null ();  (* Check now to avoid blocking *)
+          f ())
+        ~finally:Mutex.unlock
+    in
+    let wrap_conn ?(state = `Used) f =
+      wrap_mtx (fun () ->
+        while !conn_state <> `Free do Condition.wait conn_cnd conn_mtx done;
+        conn_state := state);
+      protectx conn_state
+        ~f:(fun _ ->
+          check_null ();  (* Check again in case the world has changed *)
+          f my_conn)
+        ~finally:(fun _ ->
+          Mutex.lock conn_mtx;
+          conn_state := `Free;
+          Condition.signal conn_cnd;
+          Mutex.unlock conn_mtx)
+    in
+    let signal_error conn =
+      raise (Error (Connection_failure (Stub.error_message conn)))
+    in
+    let request_cancel () =
+      wrap_mtx (fun _ ->
+        match !conn_state with
+        | `Finishing | `Free -> ()
+        | `Used ->
+            match Stub.request_cancel my_conn with
+            | None -> ()
+            | Some err -> raise (Error (Cancel_failure err)))
+    in
 
 object (self)
   (* Main routines *)
 
-  method finish = wrap_conn Stub.finish
+  method finish = wrap_conn ~state:`Finishing Stub.finish
 
   method escape_bytea ?(pos = 0) ?len str =
     let str_len = String.length str in
@@ -806,9 +838,7 @@ object (self)
       let s = Stub.socket conn in
       if Obj.magic s = -1 then signal_error conn else s)
 
-  method request_cancel =
-    wrap_conn (fun conn ->
-      if Stub.request_cancel conn = 0 then signal_error conn)
+  method request_cancel = request_cancel ()
 
 
   (* Large objects *)

@@ -155,6 +155,7 @@ type error =
   | Binary
   | Connection_failure of string
   | Unexpected_status of result_status * string * (result_status list)
+  | Cancel_failure of string
 
 (** [Error error] indicates an [error] *)
 exception Error of error
@@ -717,7 +718,7 @@ object
   (** [request_cancel] requests that PostgreSQL abandon processing of
       the current command.
 
-      @raise Error if there is a connection error.
+      @raise Error if there is a connection or cancel error.
   *)
 
 
