@@ -1,3 +1,5 @@
+2009-05-07:  Significant improvements to thread-safety.
+
 2009-01-16:  Added missing null parameter.
 
              Thanks to Alain Frisch <alain@frisch.fr> for the patch!
