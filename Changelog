@@ -1,3 +1,8 @@
+2009-09-08:  API-change: deleted "escape_string" function.
+
+             There is now a method "escape_string" in the connection
+             class, which is not deprecated and hence safer.
+
 2009-05-07:  Significant improvements to thread-safety.
 
 2009-01-16:  Added missing null parameter.

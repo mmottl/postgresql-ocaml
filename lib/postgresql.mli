@@ -169,14 +169,6 @@ exception Oid of oid
 
 (** {6 Utility functions}*)
 
-val escape_string : ?pos : int -> ?len : int -> string -> string
-(** [escape_string pos len str] escapes ASCII-substring [str] of length
-    [len] starting at position [pos] for use within SQL.
-
-    @param pos default = 0
-    @param len default = String.length str - pos
-*)
-
 external unescape_bytea : string -> string = "PQunescapeBytea_stub"
 (** [unescape_bytea str] unescapes binary string [str]. *)
 
@@ -800,6 +792,17 @@ object
       database.
 
       @raise Error if there is a connection error.
+  *)
+
+
+  (** Escaping *)
+
+  method escape_string : ?pos : int -> ?len : int -> string -> string
+  (** [escape_string ?pos ?len str] escapes ASCII-substring [str]
+      of length [len] starting at position [pos] for use within SQL.
+
+      @param pos default = 0
+      @param len default = String.length str - pos
   *)
 
   method escape_bytea : ?pos : int -> ?len : int -> string -> string

@@ -418,12 +418,13 @@ module Stub = struct
 
   external endcopy : connection -> int = "PQendcopy_stub"
 
-  external escape_string :
-    string -> int -> string -> int -> int -> int
-    = "PQescapeString_stub" "noalloc"
+  external escape_string_conn :
+    connection -> string -> pos : int -> len : int -> string
+    = "PQescapeStringConn_stub"
 
   external escape_bytea_conn :
-    connection -> string -> int -> int -> string = "PQescapeByteaConn_stub"
+    connection -> string -> pos : int -> len : int -> string
+    = "PQescapeByteaConn_stub"
 
 
   (* Control Functions *)
@@ -454,15 +455,6 @@ end
 
 
 (* Escaping *)
-
-let escape_string ?(pos = 0) ?len str =
-  let str_len = String.length str in
-  let len = match len with Some len -> len | None -> str_len in
-  if pos < 0 || len < 0 || pos + len > str_len then
-    invalid_arg "Postgresql.escape_string";
-  let buf = String.create (len + len + 1) in
-  let n = Stub.escape_string str pos buf 0 len in
-  String.sub buf 0 n
 
 external unescape_bytea : string -> string = "PQunescapeBytea_stub"
 
@@ -662,18 +654,29 @@ class connection ?host ?hostaddr ?port ?dbname ?user ?password ?options ?tty
             | None -> ()
             | Some err -> raise (Error (Cancel_failure err)))
     in
+    let get_str_pos_len ~loc ?pos ?len str =
+      let str_len = String.length str in
+      match pos, len with
+      | None, None -> 0, str_len
+      | Some pos, _ when pos < 0 ->
+          invalid_arg (sprintf "Postgresql.%s: pos < 0" loc)
+      | _, Some len when len < 0 ->
+          invalid_arg (sprintf "Postgresql.%s: len < 0" loc)
+      | Some pos, None when pos > str_len ->
+          invalid_arg (sprintf "Postgresql.%s: pos > length(str)" loc)
+      | Some pos, None -> pos, str_len - pos
+      | None, Some len when len > str_len ->
+          invalid_arg (sprintf "Postgresql.%s: len > length(str)" loc)
+      | None, Some len -> 0, len
+      | Some pos, Some len when pos + len > str_len ->
+          invalid_arg (sprintf "Postgresql.%s: pos + len > length(str)" loc)
+      | Some pos, Some len -> pos, len
+    in
 
 object (self)
   (* Main routines *)
 
   method finish = wrap_conn ~state:`Finishing Stub.finish
-
-  method escape_bytea ?(pos = 0) ?len str =
-    let str_len = String.length str in
-    let len = match len with Some len -> len | None -> str_len in
-    if pos < 0 || len < 0 || pos + len > str_len then
-      invalid_arg "Postgresql.escape_bytea";
-    wrap_conn (fun conn -> Stub.escape_bytea_conn conn str pos len)
 
   method try_reset =
     wrap_conn (fun conn ->
@@ -902,4 +905,16 @@ object (self)
     wrap_conn (fun conn ->
       let oid = Stub.lo_unlink conn oid in
       if oid = -1 then signal_error conn)
+
+
+  (* Escaping *)
+
+  method escape_string ?pos ?len str =
+    let pos, len = get_str_pos_len ~loc:"escape_string" ?pos ?len str in
+    wrap_conn (fun conn -> Stub.escape_string_conn conn str ~pos ~len)
+
+  method escape_bytea ?pos ?len str =
+    let pos, len = get_str_pos_len ~loc:"escape_bytea" ?pos ?len str in
+    wrap_conn (fun conn -> Stub.escape_bytea_conn conn str ~pos ~len)
+
 end

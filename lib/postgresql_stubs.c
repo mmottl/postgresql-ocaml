@@ -691,12 +691,27 @@ CAMLprim value PQCancel_stub(value v_conn)
   }
 }
 
-CAMLprim value PQescapeString_stub(value v_from, value v_pos_from,
-                                   value v_to, value v_pos_to, value v_len)
+CAMLprim value PQescapeStringConn_stub(
+  value v_conn, value v_from, value v_pos_from, value v_len)
 {
-  return Val_int(PQescapeString(String_val(v_to) + Int_val(v_pos_to),
-                                String_val(v_from) + Int_val(v_pos_from),
-                                Int_val(v_len)));
+  size_t len = Int_val(v_len);
+  size_t to_len = len + len + 1;
+  char *buf = malloc(to_len);
+  int error;
+  size_t n_written =
+    PQescapeStringConn(
+      get_conn(v_conn),
+      buf, String_val(v_from) + Int_val(v_pos_from),
+      len, &error);
+  if (error) {
+    free(buf);
+    caml_failwith("Postgresql.escape_string_conn: failed to escape string");
+  } else {
+    value v_res = caml_alloc_string(n_written);
+    memcpy(String_val(v_res), buf, len);
+    free(buf);
+    return v_res;
+  }
 }
 
 CAMLprim value PQescapeByteaConn_stub(
