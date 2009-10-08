@@ -699,9 +699,9 @@ object
       @raise Error if there is a connection error.
   *)
 
-  method socket : Unix.file_descr
+  method socket : int
   (** [socket] obtains the file descriptor for the backend connection
-      socket.
+      socket as an integer.
 
       @raise Error if there is a connection error.
   *)

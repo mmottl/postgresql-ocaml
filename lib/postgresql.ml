@@ -394,7 +394,7 @@ module Stub = struct
   external consume_input : connection -> int = "PQconsumeInput_stub" "noalloc"
   external is_busy : connection -> bool = "PQisBusy_stub" "noalloc"
   external flush : connection -> int = "PQflush_stub" "noalloc"
-  external socket : connection -> Unix.file_descr = "PQsocket_stub" "noalloc"
+  external socket : connection -> int = "PQsocket_stub" "noalloc"
   external request_cancel : connection -> string option = "PQCancel_stub"
 
 
@@ -839,7 +839,7 @@ object (self)
   method socket =
     wrap_conn (fun conn ->
       let s = Stub.socket conn in
-      if Obj.magic s = -1 then signal_error conn else s)
+      if s = -1 then signal_error conn else s)
 
   method request_cancel = request_cancel ()
 

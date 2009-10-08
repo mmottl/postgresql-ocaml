@@ -1,3 +1,9 @@
+2009-10-07:  Minor API change.
+
+             "socket" method now returns an integer instead of a
+             Unix file descriptor to avoid type problems under
+             Windows.
+
 2009-09-18:  Fixed serious bug in new escape_string method.
 
              PLEASE UPGRADE!!!
