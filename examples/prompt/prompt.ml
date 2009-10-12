@@ -56,7 +56,8 @@ let rec dump_notification conn =
 let listener conn =
   try
     while true do
-      let _ = Unix.select [conn#socket] [] [] 1. in
+      let socket : Unix.file_descr = Obj.magic conn#socket in
+      let _ = Unix.select [socket] [] [] 1. in
       conn#consume_input;
       dump_notification conn
     done
@@ -65,6 +66,8 @@ let listener conn =
   | e -> prerr_endline (Printexc.to_string e)
 
 let main () =
+  if Obj.is_block (Obj.repr Unix.stdin) then
+    failwith "cannot run on Windows";
   let conn = new connection ~conninfo () in
   print_conn_info conn;
   flush stdout;
