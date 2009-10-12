@@ -1,3 +1,5 @@
+2009-10-12:  Fixed example build problem.
+
 2009-10-07:  Minor API change.
 
              "socket" method now returns an integer instead of a
