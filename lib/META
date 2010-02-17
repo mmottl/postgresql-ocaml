@@ -1,6 +1,7 @@
 name="postgresql"
-version="1.12.3"
+version="1.12.4"
 description="PostgreSQL bindings for OCaml"
 requires="unix"
 archive(byte)="postgresql.cma"
 archive(native)="postgresql.cmxa"
+error(-mt)="This library requires multi-threading support"
