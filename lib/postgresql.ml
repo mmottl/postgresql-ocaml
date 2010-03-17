@@ -804,12 +804,14 @@ object (self)
         match r with
          | 0 -> f (Buffer.contents buf); Buffer.clear buf; line ()
          | 1 -> loop (Stub.getline conn s 0 len)
-         | _ -> f (Buffer.contents buf); self#endcopy
+         | _ -> f (Buffer.contents buf)
       and line () =
         let r = Stub.getline conn s 0 len in
-        if s.[0] = '\\' && s.[1] = '.' && s.[2] = '\000' then self#endcopy
-        else loop r in
-      line ())
+        if r < 3 || s.[0] <> '\\' || s.[1] <> '.' || s.[2] <> '\000' then
+          loop r
+      in
+      line ());
+    self#endcopy
 
   method copy_out_channel oc =
     self#copy_out (fun s -> output_string oc (s ^ "\n"))

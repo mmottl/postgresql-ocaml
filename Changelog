@@ -1,3 +1,5 @@
+2010-03-17:  Fixed small copy_out bug.
+
 2010-02-17:  Signal an error at link time if multi-threading support is
              not available.
 
