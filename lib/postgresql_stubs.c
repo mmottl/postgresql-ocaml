@@ -838,9 +838,9 @@ CAMLprim value PQendcopy_stub(value v_conn)
 static inline void notice_ml(void *cb, const char *msg)
 {
   value v_msg;
-  /* FIXME: this is not reliable and can lead to segfaults, because
-     the runtime lock may already be held (but not usually).  A runtime
-     feature is needed to fully support this. */
+  /* CR mmottl for mmottl: this is not reliable and can lead to segfaults,
+     because the runtime lock may already be held (but not usually).
+     A runtime feature is needed to fully support this. */
   caml_leave_blocking_section();
     v_msg = make_string(msg);
     caml_callback(((np_callback *) cb)->v_cb, v_msg);
