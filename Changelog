@@ -1,3 +1,12 @@
+2010-10-17:  Added better support for prepared statements.
+
+             Added support for zero-copy I/O with large objects.
+
+             Thanks to Chris King <colanderman@gmail.com> for the above two
+             patches!
+
+             Improved handling of sizes in C-bindings.
+
 2010-03-17:  Fixed small copy_out bug.
 
 2010-02-17:  Signal an error at link time if multi-threading support is
