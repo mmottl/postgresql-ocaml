@@ -1,3 +1,4 @@
 (^|/)\.bzr($|/)
 (^|/)\.hg($|/)
 (^|/)\.hgtags($|/)
+\.(di?|a|so|cm(i|o|x|a)|cmxa|o|annot)$
