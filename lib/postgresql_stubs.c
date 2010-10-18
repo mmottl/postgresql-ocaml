@@ -45,6 +45,7 @@
 #include <caml/callback.h>
 #include <caml/signals.h>
 #include <caml/fail.h>
+#include <caml/bigarray.h>
 
 #include <libpq-fe.h>
 #include <libpq/libpq-fs.h>
@@ -244,7 +245,7 @@ CAMLprim value PQconnectdb_stub(value v_conn_info)
   PGconn *conn;
   value v_conn;
 
-  int len = caml_string_length(v_conn_info) + 1;
+  size_t len = caml_string_length(v_conn_info) + 1;
   PGcancel *cancel;
   char *conn_info = caml_stat_alloc(len);
   memcpy(conn_info, String_val(v_conn_info), len);
@@ -371,13 +372,13 @@ noalloc_conn_info(PQbackendPID, Val_int)
   CAMLprim value fun##_stub(value v_res, value v_field_num) \
   { \
     CAMLparam1(v_res); \
-    CAMLreturn(ret(fun(get_res(v_res), Int_val(v_field_num)))); \
+    CAMLreturn(ret(fun(get_res(v_res), Long_val(v_field_num)))); \
   }
 
 #define noalloc_fieldnum_info(fun, ret) \
   CAMLprim value fun##_stub(value v_res, value v_field_num) \
   { \
-    return ret(fun(get_res(v_res), Int_val(v_field_num))); \
+    return ret(fun(get_res(v_res), Long_val(v_field_num))); \
   }
 
 #define field_info(fun, ret) \
@@ -385,13 +386,14 @@ noalloc_conn_info(PQbackendPID, Val_int)
   { \
     CAMLparam1(v_res); \
     CAMLreturn( \
-      ret(fun(get_res(v_res), Int_val(v_tup_num), Int_val(v_field_num)))); \
+      ret(fun(get_res(v_res), Long_val(v_tup_num), Long_val(v_field_num)))); \
   }
 
 #define noalloc_field_info(fun, ret) \
   CAMLprim value fun##_stub(value v_res, value v_tup_num, value v_field_num) \
   { \
-    return ret(fun(get_res(v_res), Int_val(v_tup_num), Int_val(v_field_num))); \
+    return \
+      ret(fun(get_res(v_res), Long_val(v_tup_num), Long_val(v_field_num))); \
   }
 
 static inline void free_result(value v_res)
@@ -421,7 +423,7 @@ static inline value alloc_result(PGresult *res, np_callback *cb)
 }
 
 static inline void copy_binary_params(
-  value v_params, value v_binary_params, int nparams,
+  value v_params, value v_binary_params, size_t nparams,
   int **res_formats, int **res_lengths)
 {
   int i, nbinary, *lengths, *formats;
@@ -454,17 +456,17 @@ static inline void free_binary_params(int *formats, int *lengths)
   if (lengths != NULL) free(lengths);
 }
 
-static inline const char * const * copy_params(value v_params, int nparams)
+static inline const char * const * copy_params(value v_params, size_t nparams)
 {
   char **params;
-  int i;
+  size_t i;
   if (nparams == 0) return NULL;
   params = caml_stat_alloc(nparams * sizeof(char *));
   for (i = 0; i < nparams; i++) {
     value v_param = Field(v_params, i);
     if (v_param == *v_null_param) params[i] = NULL;
     else {
-      int param_len = caml_string_length(v_param) + 1;
+      size_t param_len = caml_string_length(v_param) + 1;
       params[i] = caml_stat_alloc(param_len);
       memcpy(params[i], String_val(v_param), param_len);
     }
@@ -472,19 +474,19 @@ static inline const char * const * copy_params(value v_params, int nparams)
   return (const char * const *) params;
 }
 
-static inline void free_params(const char * const *params, int nparams)
+static inline void free_params(const char * const *params, size_t nparams)
 {
-  int i;
+  size_t i;
   if (nparams == 0) return;
   for (i = 0; i < nparams; i++) caml_stat_free((char *) params[i]);
   free((char **) params);
 }
 
 static inline const char * const * copy_params_shallow(
-  value v_params, int nparams)
+  value v_params, size_t nparams)
 {
   char **params;
-  int i;
+  size_t i;
   if (nparams == 0) return NULL;
   params = caml_stat_alloc(nparams * sizeof(char *));
   for (i = 0; i < nparams; i++) {
@@ -494,7 +496,8 @@ static inline const char * const * copy_params_shallow(
   return (const char * const *) params;
 }
 
-static inline void free_params_shallow(const char * const *params, int nparams)
+static inline void free_params_shallow(
+  const char * const *params, size_t nparams)
 {
   if (nparams == 0) return;
   free((char **) params);
@@ -507,9 +510,9 @@ CAMLprim value PQexecParams_stub(
   PGconn *conn = get_conn(v_conn);
   np_callback *np_cb = get_conn_cb(v_conn);
   PGresult *res;
-  int len = caml_string_length(v_query) + 1;
+  size_t len = caml_string_length(v_query) + 1;
   char *query = caml_stat_alloc(len);
-  int nparams = Wosize_val(v_params);
+  size_t nparams = Wosize_val(v_params);
   const char * const *params = copy_params(v_params, nparams);
   int *formats, *lengths;
   copy_binary_params(v_params, v_binary_params, nparams, &formats, &lengths);
@@ -533,7 +536,7 @@ CAMLprim value PQdescribePrepared_stub(value v_conn, value v_query)
   PGconn *conn = get_conn(v_conn);
   np_callback *np_cb = get_conn_cb(v_conn);
   PGresult *res;
-  int len = caml_string_length(v_query) + 1;
+  size_t len = caml_string_length(v_query) + 1;
   char *query = caml_stat_alloc(len);
   memcpy(query, String_val(v_query), len);
   caml_enter_blocking_section();
@@ -558,13 +561,13 @@ CAMLprim value PQresStatus_stub(value v_status)
 }
 
 res_info(PQresultErrorMessage, make_string)
-noalloc_res_info(PQntuples, Val_int)
-noalloc_res_info(PQnfields, Val_int)
+noalloc_res_info(PQntuples, Val_long)
+noalloc_res_info(PQnfields, Val_long)
 noalloc_res_info(PQbinaryTuples, Val_bool)
 fieldnum_info(PQfname, make_string)
 
 #ifdef PG_OCAML_8_2
-noalloc_res_info(PQnparams, Val_int)
+noalloc_res_info(PQnparams, Val_long)
 #else
 CAMLprim value PQnparams_stub(value __unused v_res)
 {
@@ -575,16 +578,16 @@ CAMLprim value PQnparams_stub(value __unused v_res)
 
 CAMLprim value PQfnumber_stub(value v_res, value v_field_name)
 {
-  return Val_int(PQfnumber(get_res(v_res), String_val(v_field_name)));
+  return Val_long(PQfnumber(get_res(v_res), String_val(v_field_name)));
 }
 
 noalloc_fieldnum_info(PQfformat, Val_int)
 noalloc_fieldnum_info(PQftype, Val_int)
-noalloc_fieldnum_info(PQfsize, Val_int)
+noalloc_fieldnum_info(PQfsize, Val_long)
 noalloc_fieldnum_info(PQfmod, Val_int)
 
 #ifdef PG_OCAML_8_2
-noalloc_fieldnum_info(PQparamtype, Val_int)
+noalloc_fieldnum_info(PQparamtype, Val_long)
 #else
 CAMLprim value
 PQparamtype_stub(value __unused v_res, value __unused v_field_num)
@@ -600,20 +603,20 @@ CAMLprim value PQgetvalue_stub(value v_res, value v_tup_num, value v_field_num)
   CAMLparam1(v_res);
   value v_str;
   PGresult *res = get_res(v_res);
-  int field_num = Int_val(v_field_num);
-  int tup_num = Int_val(v_tup_num);
+  size_t field_num = Long_val(v_field_num);
+  size_t tup_num = Long_val(v_tup_num);
   char *str = PQgetvalue(res, tup_num, field_num);
   if (PQfformat(res, field_num) == 0) v_str = make_string(str);
   else {
     /* Assume binary format! */
-    int len = PQgetlength(res, tup_num, field_num);
+    size_t len = PQgetlength(res, tup_num, field_num);
     v_str = len ? v_empty_string : caml_alloc_string(len);
     memcpy(String_val(v_str), str, len);
   }
   CAMLreturn(v_str);
 }
 
-noalloc_field_info(PQgetlength, Val_int)
+noalloc_field_info(PQgetlength, Val_long)
 noalloc_field_info(PQgetisnull, Val_bool)
 
 res_info(PQcmdStatus, make_string)
@@ -644,7 +647,7 @@ CAMLprim value PQsendQueryParams_stub(
 {
   PGconn *conn = get_conn(v_conn);
   const char *query = String_val(v_query);
-  int nparams = Wosize_val(v_params);
+  size_t nparams = Wosize_val(v_params);
   const char * const *params = copy_params_shallow(v_params, nparams);
   int *lengths, *formats, res;
   copy_binary_params(v_params, v_binary_params, nparams, &formats, &lengths);
@@ -694,14 +697,14 @@ CAMLprim value PQCancel_stub(value v_conn)
 CAMLprim value PQescapeStringConn_stub(
   value v_conn, value v_from, value v_pos_from, value v_len)
 {
-  size_t len = Int_val(v_len);
+  size_t len = Long_val(v_len);
   size_t to_len = len + len + 1;
   char *buf = malloc(to_len);
   int error;
   size_t n_written =
     PQescapeStringConn(
       get_conn(v_conn),
-      buf, String_val(v_from) + Int_val(v_pos_from),
+      buf, String_val(v_from) + Long_val(v_pos_from),
       len, &error);
   if (error) {
     free(buf);
@@ -721,8 +724,8 @@ CAMLprim value PQescapeByteaConn_stub(
   char *buf =
     (char *) PQescapeByteaConn(
       get_conn(v_conn),
-      (unsigned char *) String_val(v_from) + Int_val(v_pos_from),
-      Int_val(v_len), &len);
+      (unsigned char *) String_val(v_from) + Long_val(v_pos_from),
+      Long_val(v_len), &len);
   value v_res = caml_alloc_string(--len);
   memcpy(String_val(v_res), buf, len);
   PQfreemem(buf);
@@ -772,12 +775,12 @@ CAMLprim value PQgetline_stub(
   CAMLparam2(v_conn, v_buf);
   PGconn *conn = get_conn(v_conn);
   value v_res;
-  int len = Int_val(v_len);
+  size_t len = Long_val(v_len);
   char *buf = caml_stat_alloc(len);
   caml_enter_blocking_section();
     v_res = Val_int(PQgetline(conn, buf, len));
   caml_leave_blocking_section();
-  memcpy(String_val(v_buf) + Int_val(v_pos), buf, len);
+  memcpy(String_val(v_buf) + Long_val(v_pos), buf, len);
   free(buf);
   CAMLreturn(v_res);
 }
@@ -786,8 +789,8 @@ CAMLprim value PQgetlineAsync_stub(
   value v_conn, value v_buf, value v_pos, value v_len)
 {
   return Val_int(PQgetlineAsync(get_conn(v_conn),
-                                String_val(v_buf) + Int_val(v_pos),
-                                Int_val(v_len)));
+                                String_val(v_buf) + Long_val(v_pos),
+                                Long_val(v_len)));
 }
 
 CAMLprim value PQputline_stub(value v_conn, value v_buf)
@@ -795,7 +798,7 @@ CAMLprim value PQputline_stub(value v_conn, value v_buf)
   CAMLparam1(v_conn);
   PGconn *conn = get_conn(v_conn);
   value v_res;
-  int len = caml_string_length(v_buf) + 1;
+  size_t len = caml_string_length(v_buf) + 1;
   char *buf = caml_stat_alloc(len);
   memcpy(buf, String_val(v_buf), len);
   caml_enter_blocking_section();
@@ -811,9 +814,9 @@ CAMLprim value PQputnbytes_stub(
   CAMLparam1(v_conn);
   PGconn *conn = get_conn(v_conn);
   value v_res;
-  int len = Int_val(v_len);
+  size_t len = Long_val(v_len);
   char *buf = caml_stat_alloc(len);
-  memcpy(buf, String_val(v_buf) + Int_val(v_pos), len);
+  memcpy(buf, String_val(v_buf) + Long_val(v_pos), len);
   caml_enter_blocking_section();
     v_res = Val_int(PQputnbytes(conn, buf, len));
     free(buf);
@@ -886,13 +889,27 @@ CAMLprim value lo_read_stub(value v_conn, value v_fd,
   CAMLparam2(v_conn, v_buf);
   PGconn *conn = get_conn(v_conn);
   value v_res;
-  int len = Int_val(v_len);
+  size_t len = Long_val(v_len);
   char *buf = caml_stat_alloc(len);
   caml_enter_blocking_section();
-    v_res = Val_int(lo_read(conn, Int_val(v_fd), buf, len));
+    v_res = Val_long(lo_read(conn, Int_val(v_fd), buf, len));
   caml_leave_blocking_section();
-  memcpy(String_val(v_buf) + Int_val(v_pos), buf, len);
+  memcpy(String_val(v_buf) + Long_val(v_pos), buf, len);
   free(buf);
+  CAMLreturn(v_res);
+}
+
+CAMLprim value lo_read_ba_stub(value v_conn, value v_fd,
+                               value v_buf, value v_pos, value v_len)
+{
+  CAMLparam2(v_conn, v_buf);
+  PGconn *conn = get_conn(v_conn);
+  value v_res;
+  size_t len = Long_val(v_len);
+  char *buf = ((char *) Caml_ba_data_val(v_buf)) + Long_val(v_pos);
+  caml_enter_blocking_section();
+    v_res = Val_long(lo_read(conn, Int_val(v_fd), buf, len));
+  caml_leave_blocking_section();
   CAMLreturn(v_res);
 }
 
@@ -902,12 +919,26 @@ CAMLprim value lo_write_stub(value v_conn, value v_fd,
   CAMLparam1(v_conn);
   PGconn *conn = get_conn(v_conn);
   value v_res;
-  int len = Int_val(v_len);
+  size_t len = Long_val(v_len);
   char *buf = caml_stat_alloc(len);
-  memcpy(buf, String_val(v_buf) + Int_val(v_pos), len);
+  memcpy(buf, String_val(v_buf) + Long_val(v_pos), len);
   caml_enter_blocking_section();
-    v_res = Val_int(lo_write(conn, Int_val(v_fd), buf, len));
+    v_res = Val_long(lo_write(conn, Int_val(v_fd), buf, len));
     free(buf);
+  caml_leave_blocking_section();
+  CAMLreturn(v_res);
+}
+
+CAMLprim value lo_write_ba_stub(value v_conn, value v_fd,
+                                value v_buf, value v_pos, value v_len)
+{
+  CAMLparam2(v_conn, v_buf);
+  PGconn *conn = get_conn(v_conn);
+  value v_res;
+  size_t len = Long_val(v_len);
+  char *buf = ((char *) Caml_ba_data_val(v_buf)) + Long_val(v_pos);
+  caml_enter_blocking_section();
+    v_res = Val_long(lo_write(conn, Int_val(v_fd), buf, len));
   caml_leave_blocking_section();
   CAMLreturn(v_res);
 }
@@ -926,7 +957,7 @@ CAMLprim value lo_lseek_stub(
       case 1 : whence = SEEK_CUR; break;
       default : whence = SEEK_END; break;
     }
-    v_res = Val_int(lo_lseek(conn, Int_val(v_fd), Int_val(v_pos), whence));
+    v_res = Val_int(lo_lseek(conn, Int_val(v_fd), Long_val(v_pos), whence));
   caml_leave_blocking_section();
   CAMLreturn(v_res);
 }
@@ -969,7 +1000,7 @@ CAMLprim value lo_import_stub(value v_conn, value v_fname)
   CAMLparam1(v_conn);
   PGconn *conn = get_conn(v_conn);
   value v_res;
-  int len = caml_string_length(v_fname) + 1;
+  size_t len = caml_string_length(v_fname) + 1;
   char *fname = caml_stat_alloc(len);
   memcpy(fname, String_val(v_fname), len);
   caml_enter_blocking_section();
@@ -984,7 +1015,7 @@ CAMLprim value lo_export_stub(value v_conn, value v_oid, value v_fname)
   CAMLparam1(v_conn);
   PGconn *conn = get_conn(v_conn);
   value v_res;
-  int len = caml_string_length(v_fname) + 1;
+  size_t len = caml_string_length(v_fname) + 1;
   char *fname = caml_stat_alloc(len);
   memcpy(fname, String_val(v_fname), len);
   caml_enter_blocking_section();

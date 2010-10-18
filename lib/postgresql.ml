@@ -446,8 +446,18 @@ module Stub = struct
   external lo_read :
     connection -> large_object -> string -> int -> int -> int = "lo_read_stub"
 
+  external lo_read_ba :
+    connection -> large_object ->
+    (char, Bigarray.int8_unsigned_elt, Bigarray.c_layout) Bigarray.Array1.t ->
+    int -> int -> int = "lo_read_ba_stub"
+
   external lo_write :
     connection -> large_object -> string -> int -> int -> int = "lo_write_stub"
+
+  external lo_write_ba :
+    connection -> large_object ->
+    (char, Bigarray.int8_unsigned_elt, Bigarray.c_layout) Bigarray.Array1.t ->
+    int -> int -> int = "lo_write_ba_stub"
 
   external lo_seek :
     connection -> large_object -> int -> seek_cmd -> int = "lo_lseek_stub"
@@ -879,6 +889,15 @@ object (self)
       let w = Stub.lo_write conn lo buf pos len in
       if w < len then signal_error conn)
 
+  method lo_write_ba ?(pos = 0) ?len buf lo =
+    let buf_len = Bigarray.Array1.dim buf in
+    let len = match len with Some len -> len | None -> buf_len - pos in
+    if len < 0 || pos < 0 || pos + len > buf_len then
+      invalid_arg "Postgresql.connection#lo_write_ba";
+    wrap_conn (fun conn ->
+      let w = Stub.lo_write_ba conn lo buf pos len in
+      if w < len then signal_error conn)
+
   method lo_read lo ?(pos = 0) ?len buf =
     let buf_len = String.length buf in
     let len = match len with Some len -> len | None -> buf_len - pos in
@@ -886,6 +905,16 @@ object (self)
       invalid_arg "Postgresql.connection#lo_read";
     wrap_conn (fun conn ->
       let read = Stub.lo_read conn lo buf pos len in
+      if read = -1 then signal_error conn;
+      read)
+
+  method lo_read_ba lo ?(pos = 0) ?len buf =
+    let buf_len = Bigarray.Array1.dim buf in
+    let len = match len with Some len -> len | None -> buf_len - pos in
+    if len < 0 || pos < 0 || pos + len > buf_len then
+      invalid_arg "Postgresql.connection#lo_read_ba";
+    wrap_conn (fun conn ->
+      let read = Stub.lo_read_ba conn lo buf pos len in
       if read = -1 then signal_error conn;
       read)
 

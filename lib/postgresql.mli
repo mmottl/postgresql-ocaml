@@ -751,6 +751,12 @@ object
       @raise Error if [len] bytes could not be written.
       @raise Error if there is a connection error. *)
 
+  method lo_write_ba :
+    ?pos : int -> ?len : int ->
+    (char, Bigarray.int8_unsigned_elt, Bigarray.c_layout) Bigarray.Array1.t ->
+    large_object -> unit
+  (** As [lo_write], but performs a zero-copy write from the given Bigarray. *)
+
   method lo_read : large_object -> ?pos : int -> ?len : int -> string -> int
   (** [lo_read lo ?pos ?len buf] reads [len] bytes from large object [lo]
       to buffer [buf] starting at position [pos].
@@ -762,6 +768,11 @@ object
       @raise Error if [len] bytes could not be read.
       @raise Error if there is a connection error.
   *)
+
+  method lo_read_ba :
+    large_object -> ?pos : int -> ?len : int ->
+    (char, Bigarray.int8_unsigned_elt, Bigarray.c_layout) Bigarray.Array1.t -> int
+  (** As [lo_read], but performs a zero-copy read into the given Bigarray. *)
 
   method lo_seek : ?pos : int -> ?whence : seek_cmd -> large_object -> unit
   (** [lo_seek ?pos ?whence lo] seeks read/write position [pos] in
