@@ -530,6 +530,66 @@ CAMLprim value PQexecParams_stub(
 }
 
 #ifdef PG_OCAML_8_2
+CAMLprim value PQprepare_stub(value v_conn, value v_stm_name, value v_query)
+{
+  CAMLparam1(v_conn);
+  PGconn *conn = get_conn(v_conn);
+  np_callback *np_cb = get_conn_cb(v_conn);
+  PGresult *res;
+  int stm_name_len = caml_string_length(v_stm_name) + 1;
+  int query_len = caml_string_length(v_query) + 1;
+  char *stm_name = caml_stat_alloc(stm_name_len);
+  char *query = caml_stat_alloc(query_len);
+  memcpy(stm_name, String_val(v_stm_name), stm_name_len);
+  memcpy(query, String_val(v_query), query_len);
+  caml_enter_blocking_section();
+    res = PQprepare(conn, stm_name, query, 0, NULL);
+    free(stm_name);
+    free(query);
+  caml_leave_blocking_section();
+  CAMLreturn(alloc_result(res, np_cb));
+#else
+CAMLprim value PQprepare_stub(
+  value __unused v_conn, value __unused v_stm_name, value __unused v_query)
+{
+  caml_failwith("Postgresql.prepare: not supported");
+  return Val_unit;
+#endif
+}
+
+#ifdef PG_OCAML_8_2
+CAMLprim value PQexecPrepared_stub(
+  value v_conn, value v_stm_name, value v_params, value v_binary_params)
+{
+  CAMLparam1(v_conn);
+  PGconn *conn = get_conn(v_conn);
+  np_callback *np_cb = get_conn_cb(v_conn);
+  PGresult *res;
+  int len = caml_string_length(v_stm_name) + 1;
+  char *stm_name = caml_stat_alloc(len);
+  int nparams = Wosize_val(v_params);
+  const char * const *params = copy_params(v_params, nparams);
+  int *formats, *lengths;
+  copy_binary_params(v_params, v_binary_params, nparams, &formats, &lengths);
+  memcpy(stm_name, String_val(v_stm_name), len);
+  caml_enter_blocking_section();
+    res = PQexecPrepared(conn, stm_name, nparams, params, lengths, formats, 0);
+    free(stm_name);
+    free_params(params, nparams);
+    free_binary_params(formats, lengths);
+  caml_leave_blocking_section();
+  CAMLreturn(alloc_result(res, np_cb));
+#else
+CAMLprim value PQexecPrepared_stub(
+  value __unused v_conn, value __unused v_stm_name, value __unused v_params,
+  value __unused v_binary_params)
+{
+  caml_failwith("Postgresql.exec_prepared: not supported");
+  return Val_unit;
+#endif
+}
+
+#ifdef PG_OCAML_8_2
 CAMLprim value PQdescribePrepared_stub(value v_conn, value v_query)
 {
   CAMLparam1(v_conn);
