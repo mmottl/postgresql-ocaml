@@ -334,6 +334,12 @@ module Stub = struct
     connection -> string -> string array -> bool array -> result
     = "PQexecParams_stub"
 
+  external prepare : connection -> string -> string -> result = "PQprepare_stub"
+
+  external exec_prepared :
+    connection -> string -> string array -> bool array -> result
+    = "PQexecPrepared_stub"
+
   external describe_prepared :
     connection -> string -> result = "PQdescribePrepared_stub"
 
@@ -721,6 +727,27 @@ object (self)
     let r =
       wrap_conn (fun conn ->
         let r = Stub.exec_params conn query params binary_params in
+        if Stub.result_isnull r then signal_error conn
+        else r)
+    in
+    let res = new result r in
+    let stat = res#status in
+    if not (expect = []) && not (List.mem stat expect) then
+      raise (Error (Unexpected_status (stat, res#error, expect)))
+    else res
+
+  method prepare stm_name query =
+    new result (
+      wrap_conn (fun conn ->
+        let r = Stub.prepare conn stm_name query in
+        if Stub.result_isnull r then signal_error conn
+        else r))
+
+  method exec_prepared
+    ?(expect = []) ?(params = [||]) ?(binary_params = [||]) stm_name =
+    let r =
+      wrap_conn (fun conn ->
+        let r = Stub.exec_prepared conn stm_name params binary_params in
         if Stub.result_isnull r then signal_error conn
         else r)
     in

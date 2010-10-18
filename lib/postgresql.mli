@@ -530,6 +530,17 @@ object
       @raise Error if there is an unexpected result status.
   *)
 
+  method prepare : string -> string -> result
+  (** [prepare stm_name query] creates a prepared query named [stm_name]
+      which will execute the query or command [query] when passed to
+      [#exec_prepared]. *)
+
+  method exec_prepared :
+    ?expect : result_status list -> ?params : string array ->
+    ?binary_params : bool array -> string -> result
+  (** [exec_prepared ?expect ?params ?binary_params stm_name] acts as
+      [#exec], except executes the prepared query [stm_name]. *)
+
   method describe_prepared : string -> result
   (** [#describe_prepared stm_name] submits a request to obtain
       information about the specified prepared statement, and waits for
