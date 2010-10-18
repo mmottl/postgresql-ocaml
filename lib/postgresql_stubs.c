@@ -536,8 +536,8 @@ CAMLprim value PQprepare_stub(value v_conn, value v_stm_name, value v_query)
   PGconn *conn = get_conn(v_conn);
   np_callback *np_cb = get_conn_cb(v_conn);
   PGresult *res;
-  int stm_name_len = caml_string_length(v_stm_name) + 1;
-  int query_len = caml_string_length(v_query) + 1;
+  size_t stm_name_len = caml_string_length(v_stm_name) + 1;
+  size_t query_len = caml_string_length(v_query) + 1;
   char *stm_name = caml_stat_alloc(stm_name_len);
   char *query = caml_stat_alloc(query_len);
   memcpy(stm_name, String_val(v_stm_name), stm_name_len);
@@ -565,9 +565,9 @@ CAMLprim value PQexecPrepared_stub(
   PGconn *conn = get_conn(v_conn);
   np_callback *np_cb = get_conn_cb(v_conn);
   PGresult *res;
-  int len = caml_string_length(v_stm_name) + 1;
+  size_t len = caml_string_length(v_stm_name) + 1;
   char *stm_name = caml_stat_alloc(len);
-  int nparams = Wosize_val(v_params);
+  size_t nparams = Wosize_val(v_params);
   const char * const *params = copy_params(v_params, nparams);
   int *formats, *lengths;
   copy_binary_params(v_params, v_binary_params, nparams, &formats, &lengths);
