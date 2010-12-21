@@ -456,8 +456,28 @@ end
 
 (* Escaping *)
 
-external unescape_bytea : string -> string = "PQunescapeBytea_stub"
+external unescape_bytea_stub : string -> string = "PQunescapeBytea_stub"
 
+let unhexdigit = function
+  | '0'..'9' as c -> Char.code c - Char.code '0'
+  | 'a'..'f' as c -> Char.code c - Char.code 'a' + 10
+  | 'A'..'F' as c -> Char.code c - Char.code 'A' + 10
+  | _ -> assert false
+
+let unescape_bytea s =
+  if String.length s >= 2 && s.[0] = '\\' && s.[1] = 'x' then
+    (* This is Postgresql's 9.0 new hex format for encoding bytea.
+       This format is not recognized by older client, but sent by
+       default by the server. *)
+    let len = (String.length s - 2) / 2 in
+    let r = String.create len in
+    for i = 0 to len - 1 do
+      let pos = 2 + i * 2 in
+      r.[i] <- Char.chr (16 * unhexdigit s.[pos] + unhexdigit s.[pos + 1])
+    done;
+    r
+  else
+    unescape_bytea_stub s
 
 (* Query results *)
 
