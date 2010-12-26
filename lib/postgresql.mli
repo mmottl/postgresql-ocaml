@@ -169,8 +169,11 @@ exception Oid of oid
 
 (** {6 Utility functions}*)
 
-external unescape_bytea : string -> string = "PQunescapeBytea_stub"
-(** [unescape_bytea str] unescapes binary string [str]. *)
+val unescape_bytea : string -> string
+(** [unescape_bytea str] unescapes binary string [str].  This function
+    supports the new hex format for encoding bytea strings (introduced
+    in Postgresql 9.0) even if the local libpq library is from an
+    older version. *)
 
 external ftype_of_oid : oid -> ftype = "ftype_of_oid_stub"
 (** [ftype_of_oid oid] converts [oid] to an [ftype]. *)

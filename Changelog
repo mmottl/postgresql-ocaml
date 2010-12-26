@@ -1,3 +1,7 @@
+2010-12-25:  Added support for the new bytea hex format in PostgreSQL 9.0.
+
+             Thanks to Alain Frisch <alain@frisch.fr> for the initial patch!
+
 2010-12-08:  Fixed findlib linking problem with bigarrays.
 
 2010-10-17:  Added better support for prepared statements.
