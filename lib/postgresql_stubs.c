@@ -286,7 +286,7 @@ CAMLprim value PQreset_stub(value v_conn)
 CAMLprim value PQconndefaults_stub(value __unused v_unit)
 {
   CAMLparam0();
-  CAMLlocal1(v_res);
+  CAMLlocal2(v_res, v_el);
   PQconninfoOption *cios = PQconndefaults(), *p = cios;
   int i, j, n;
 
@@ -296,21 +296,26 @@ CAMLprim value PQconndefaults_stub(value __unused v_unit)
   v_res = caml_alloc_tuple(n);
 
   for (i = 0; i < n; i++, cios++) {
-    value v_el = caml_alloc_small(7, 0);
-    for (j = 0; j < 7; j++) { Field(v_el, j) = v_None; };
+    value v_field;
+    v_el = caml_alloc_small(7, 0);
+    for (j = 0; j < 7; j++) Field(v_el, j) = v_None;
     Store_field(v_res, i, v_el);
-    Field(v_el, 0) = caml_copy_string(cios->keyword);
-    caml_modify(&Field(v_el, 1), caml_copy_string(cios->envvar));
+    v_field = caml_copy_string(cios->keyword);
+    Field(v_el, 0) = v_field;
+    v_field = caml_copy_string(cios->envvar);
+    caml_modify(&Field(v_el, 1), v_field);
     if (cios->compiled) {
-      value v_Some = make_some(caml_copy_string(cios->compiled));
-      caml_modify(&Field(v_el, 2), v_Some);
+      v_field = make_some(caml_copy_string(cios->compiled));
+      caml_modify(&Field(v_el, 2), v_field);
     };
     if (cios->val) {
-      value v_Some = make_some(caml_copy_string(cios->val));
-      caml_modify(&Field(v_el, 3), v_Some);
+      v_field = make_some(caml_copy_string(cios->val));
+      caml_modify(&Field(v_el, 3), v_field);
     };
-    caml_modify(&Field(v_el, 4), caml_copy_string(cios->label));
-    caml_modify(&Field(v_el, 5), caml_copy_string(cios->dispchar));
+    v_field = caml_copy_string(cios->label);
+    caml_modify(&Field(v_el, 4), v_field);
+    v_field = caml_copy_string(cios->dispchar);
+    caml_modify(&Field(v_el, 5), v_field);
     caml_modify(&Field(v_el, 6), Val_int(cios->dispsize));
   };
 
@@ -812,10 +817,10 @@ CAMLprim value PQunescapeBytea_stub(value v_from)
 CAMLprim value PQnotifies_stub(value v_conn)
 {
   CAMLparam1(v_conn);
+  CAMLlocal1(v_str);
   PGnotify *noti = PQnotifies(get_conn(v_conn));
 
   if (noti) {
-    CAMLlocal1(v_str);
     value v_pair;
     v_str = make_string(noti->relname);
     v_pair = caml_alloc_small(2, 0);
