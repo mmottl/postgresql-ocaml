@@ -243,7 +243,7 @@ type connection_status = Ok | Bad
 type conninfo_option =
   {
     cio_keyword : string;
-    cio_envvar : string;
+    cio_envvar : string option;
     cio_compiled : string option;
     cio_val : string option;
     cio_label : string;

@@ -293,31 +293,36 @@ CAMLprim value PQconndefaults_stub(value __unused v_unit)
   while (p->keyword != NULL) p++;
 
   n = p - cios;
+  p = cios;
   v_res = caml_alloc_tuple(n);
 
-  for (i = 0; i < n; i++, cios++) {
+  for (i = 0; i < n; i++, p++) {
     value v_field;
     v_el = caml_alloc_small(7, 0);
     for (j = 0; j < 7; j++) Field(v_el, j) = v_None;
     Store_field(v_res, i, v_el);
-    v_field = caml_copy_string(cios->keyword);
+    v_field = caml_copy_string(p->keyword);
     Field(v_el, 0) = v_field;
-    v_field = caml_copy_string(cios->envvar);
-    caml_modify(&Field(v_el, 1), v_field);
-    if (cios->compiled) {
-      v_field = make_some(caml_copy_string(cios->compiled));
+    if (p->envvar) {
+      v_field = make_some(caml_copy_string(p->envvar));
+      caml_modify(&Field(v_el, 1), v_field);
+    }
+    if (p->compiled) {
+      v_field = make_some(caml_copy_string(p->compiled));
       caml_modify(&Field(v_el, 2), v_field);
     };
-    if (cios->val) {
-      v_field = make_some(caml_copy_string(cios->val));
+    if (p->val) {
+      v_field = make_some(caml_copy_string(p->val));
       caml_modify(&Field(v_el, 3), v_field);
     };
-    v_field = caml_copy_string(cios->label);
+    v_field = caml_copy_string(p->label);
     caml_modify(&Field(v_el, 4), v_field);
-    v_field = caml_copy_string(cios->dispchar);
+    v_field = caml_copy_string(p->dispchar);
     caml_modify(&Field(v_el, 5), v_field);
-    caml_modify(&Field(v_el, 6), Val_int(cios->dispsize));
+    caml_modify(&Field(v_el, 6), Val_int(p->dispsize));
   };
+
+  PQconninfoFree(cios);
 
   CAMLreturn(v_res);
 }

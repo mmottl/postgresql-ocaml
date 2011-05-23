@@ -359,7 +359,7 @@ type connection_status = Ok | Bad
 type conninfo_option =
   {
     cio_keyword : string;  (** Keyword of option *)
-    cio_envvar : string;  (** Fallback environment variable name *)
+    cio_envvar : string option;  (** Fallback environment variable name *)
     cio_compiled : string option;  (** Fallback compiled in default value *)
     cio_val : string option;  (** Current value of option, or NULL *)
     cio_label : string;  (** Label for field in connect dialog *)
