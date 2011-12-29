@@ -680,7 +680,7 @@ CAMLprim value PQgetvalue_stub(value v_res, value v_tup_num, value v_field_num)
   else {
     /* Assume binary format! */
     size_t len = PQgetlength(res, tup_num, field_num);
-    v_str = len ? v_empty_string : caml_alloc_string(len);
+    v_str = len == 0 ? v_empty_string : caml_alloc_string(len);
     memcpy(String_val(v_str), str, len);
   }
   CAMLreturn(v_str);

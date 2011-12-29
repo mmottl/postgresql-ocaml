@@ -1,3 +1,7 @@
+2011-12-29:  Fixed a memory allocation bug getting values of binary format.
+
+             Thanks to Igor Plotnikov <igor@xambala.com> for the patch!
+
 2011-05-23:  Fixed conndefaults bindings some more due to unclear PostgreSQL
              documentation.
 
