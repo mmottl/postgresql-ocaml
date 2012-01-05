@@ -38,6 +38,7 @@
 #endif
 
 #include <string.h>
+#include <ctype.h>
 
 #include <caml/mlvalues.h>
 #include <caml/alloc.h>
@@ -134,6 +135,9 @@ CAMLprim value PQocaml_init(value __unused v_unit)
   v_null_param = caml_named_value("Postgresql.null");
   return Val_unit;
 }
+
+CAMLprim value unescape_bytea_9x (char *s);
+CAMLprim value unescape_bytea(char *s);
 
 
 /* Conversion functions */
@@ -686,6 +690,29 @@ CAMLprim value PQgetvalue_stub(value v_res, value v_tup_num, value v_field_num)
   CAMLreturn(v_str);
 }
 
+CAMLprim value PQgetescvalue_stub(value v_res, value v_tup_num, value v_field_num)
+{
+  CAMLparam1(v_res);
+  value v_str;
+  PGresult *res = get_res(v_res);
+  size_t field_num = Long_val(v_field_num);
+  size_t tup_num = Long_val(v_tup_num);
+  char *str = PQgetvalue(res, tup_num, field_num);
+  if (PQfformat(res, field_num) == 0) {
+    if (str != NULL && *str == '\\' && *(str+1) == 'x') {
+      v_str = unescape_bytea_9x(str);
+    } else {
+      v_str = unescape_bytea(str);
+    }
+  } else {
+    /* Assume binary format! */
+    size_t len = PQgetlength(res, tup_num, field_num);
+    v_str = len ? v_empty_string : caml_alloc_string(len);
+    memcpy(String_val(v_str), str, len);
+  }
+  CAMLreturn(v_str);
+}
+
 noalloc_field_info(PQgetlength, Val_long)
 noalloc_field_info(PQgetisnull, Val_bool)
 
@@ -803,20 +830,85 @@ CAMLprim value PQescapeByteaConn_stub(
   return v_res;
 }
 
-CAMLprim value PQunescapeBytea_stub(value v_from)
+CAMLprim value unescape_bytea(char *s)
 {
   size_t len;
   value v_res;
-  char *buf =
-    (char *) PQunescapeBytea((unsigned char *) String_val(v_from), &len);
-  if (buf == NULL)
+  char *buf = (char *) PQunescapeBytea((unsigned char*) s, &len);
+  if (buf == NULL) {
     caml_failwith("Postgresql.unescape_bytea: illegal bytea string");
+    return Val_unit;
+  }
   v_res = caml_alloc_string(len);
   memcpy(String_val(v_res), buf, len);
   PQfreemem(buf);
   return v_res;
 }
 
+CAMLprim value PQunescapeBytea_stub(value v_from)
+{
+  return unescape_bytea(String_val(v_from));
+}
+
+int unhexdigit(char c) {
+  if ((c) >= '0' && (c) <= '9') {
+    return (c) - '0';
+  } else if ((c) >= 'a' && (c) <= 'f')
+    return (c) - 'a' + 10;
+  else if ((c) >= 'A' && (c) <= 'F')
+    return (c) - 'A' + 10;
+  else {
+    caml_failwith("Postgresql.unescape_bytea_9x: invalid hex character");
+    return '\0';
+  }
+}
+
+CAMLprim value unescape_bytea_9x (char *s)
+{
+  if (s != NULL && *s == '\\' && *(s+1) == 'x') {
+    value v_res;
+    size_t len = 0;
+    int s_index = 0;
+    int s_length = 0;
+    char *ptr;
+    int result_index = 0;
+    s += 2; /* skip \x */
+
+    /* compute unescaped string length */
+    ptr = s;
+    while(*ptr != '\0') {
+      s_length++;
+      if (!isspace(*ptr ))
+        len++;
+      ptr++;
+    }
+    len /= 2;
+
+    v_res = caml_alloc_string(len);
+    ptr = String_val(v_res);
+    while (s_index < s_length) {
+      char low;
+      char high = s[s_index];
+      s_index++;
+      if (isspace(high)) {
+        continue;
+      }
+      low = s[s_index];
+      s_index++;
+      ptr[result_index] = (char)(((unhexdigit(high)) << 4) | (unhexdigit(low)));
+      result_index++;
+    }
+    return v_res;
+  } else {
+    caml_failwith("Postgresql.unescape_bytea_9x: hex prefix not found");
+    return Val_unit;
+  }
+}
+
+CAMLprim value PQunescapeBytea9x_stub(value v_from)
+{
+  return unescape_bytea_9x(String_val(v_from));
+}
 
 /* Asynchronous Notification */
 

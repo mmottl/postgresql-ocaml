@@ -292,6 +292,13 @@ class type result = object
       @raise Error if field out of range.
   *)
 
+  method get_escaped_value : int -> int -> string
+  (** [#get_escaped_value tuple field] @return escaped value of [field] in [tuple].
+
+      @raise Error if tuple out of range.
+      @raise Error if field out of range.
+  *)
+
   method getisnull : int -> int -> bool
   (** [#getisnull tuple field] tests for a NULL-value of [field] in [tuple].
 

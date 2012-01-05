@@ -372,6 +372,7 @@ module Stub = struct
   external binary_tuples : result -> bool = "PQbinaryTuples_stub" "noalloc"
 
   external getvalue : result -> int -> int -> string = "PQgetvalue_stub"
+  external get_escaped_value : result -> int -> int -> string = "PQgetescvalue_stub"
 
   external getisnull :
     result -> int -> int -> bool = "PQgetisnull_stub" "noalloc"
@@ -473,6 +474,7 @@ end
 (* Escaping *)
 
 external unescape_bytea_stub : string -> string = "PQunescapeBytea_stub"
+external unescape_bytea_9x_stub : string -> string = "PQunescapeBytea9x_stub"
 
 let unescape_bytea str =
   let str_len = String.length str in
@@ -481,48 +483,7 @@ let unescape_bytea str =
   else
     (* This is the new Postgresql 9.0 hex format for encoding bytea.  Older
        clients do not recognize this format, but servers send it by default. *)
-    let rec count_hex ~pos ~count =
-      if pos = str_len then count
-      else
-        match str.[pos] with
-        | ' ' | '\t' | '\n' | '\r' | '\b' -> count_hex ~pos:(pos + 1) ~count
-        | '0'..'9' | 'a'..'f' | 'A'..'F' ->
-            let pos = pos + 1 in
-            if pos = str_len then
-              failwith "Postgresql.unescape_bytea: incomplete hex code"
-            else
-              begin match str.[pos] with
-              | '0'..'9' | 'a'..'f' | 'A'..'F' ->
-                  count_hex ~pos:(pos + 1) ~count:(count + 1)
-              | _ ->
-                  failwith "Postgresql.unescape_bytea: short hex code"
-              end
-        | _ -> failwith "Postgresql.unescape_bytea: illegal hex code"
-    in
-    let n_grps = count_hex ~pos:2 ~count:0 in
-    let res = String.create n_grps in
-    let rec res_loop ~str_pos ~res_pos =
-      if res_pos = n_grps then res
-      else
-        match str.[str_pos] with
-        | ' ' | '\t' | '\n' | '\r' | '\b' ->
-            res_loop ~str_pos:(str_pos + 1) ~res_pos
-        | c ->
-            let unhexdigit = function
-              | '0'..'9' as c -> Char.code c - Char.code '0'
-              | 'a'..'f' as c -> Char.code c - Char.code 'a' + 10
-              | 'A'..'F' as c -> Char.code c - Char.code 'A' + 10
-              | _ -> assert false
-            in
-            let high = unhexdigit c lsl 4 in
-            let str_pos = str_pos + 1 in
-            let low = unhexdigit str.[str_pos] in
-            let res_char = Char.chr (high + low) in
-            res.[res_pos] <- res_char;
-            res_loop ~str_pos:(str_pos + 1) ~res_pos:(res_pos + 1)
-    in
-    res_loop ~str_pos:2 ~res_pos:0
-
+    unescape_bytea_9x_stub str
 
 (* Query results *)
 
@@ -575,6 +536,11 @@ object
     check_field field;
     check_tuple tuple;
     Stub.getvalue res tuple field
+
+  method get_escaped_value tuple field =
+    check_field field;
+    check_tuple tuple;
+    Stub.get_escaped_value res tuple field
 
   method getisnull tuple field =
     check_field field; check_tuple tuple;
