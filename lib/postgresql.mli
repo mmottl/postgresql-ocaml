@@ -293,7 +293,8 @@ class type result = object
   *)
 
   method get_escaped_value : int -> int -> string
-  (** [#get_escaped_value tuple field] @return escaped value of [field] in [tuple].
+  (** [#get_escaped_value tuple field] @return escaped value of [field] in
+      [tuple].
 
       @raise Error if tuple out of range.
       @raise Error if field out of range.

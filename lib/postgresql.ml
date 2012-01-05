@@ -352,9 +352,6 @@ module Stub = struct
     connection -> result_status -> result = "PQmakeEmptyPGresult_stub"
 
   external ntuples : result -> int = "PQntuples_stub" "noalloc"
-
-(* FIXME: switch to noalloc once PostgreSQL 8.2 is out for CentOS *)
-(*   external nparams : result -> int = "PQnparams_stub" "noalloc" *)
   external nparams : result -> int = "PQnparams_stub"
 
   external nfields : result -> int = "PQnfields_stub" "noalloc"
@@ -362,9 +359,6 @@ module Stub = struct
   external fnumber : result -> string -> int ="PQfnumber_stub" "noalloc"
   external fformat : result -> int -> FFormat.t = "PQfformat_stub" "noalloc"
   external ftype : result -> int -> oid = "PQftype_stub" "noalloc"
-
-(* FIXME: switch to noalloc once PostgreSQL 8.2 is out for CentOS *)
-(*   external paramtype : result -> int -> oid = "PQparamtype_stub" "noalloc" *)
   external paramtype : result -> int -> oid = "PQparamtype_stub"
 
   external fmod : result -> int -> int = "PQfmod_stub" "noalloc"
@@ -372,7 +366,9 @@ module Stub = struct
   external binary_tuples : result -> bool = "PQbinaryTuples_stub" "noalloc"
 
   external getvalue : result -> int -> int -> string = "PQgetvalue_stub"
-  external get_escaped_value : result -> int -> int -> string = "PQgetescvalue_stub"
+
+  external get_escaped_value :
+    result -> int -> int -> string = "PQgetescval_stub"
 
   external getisnull :
     result -> int -> int -> bool = "PQgetisnull_stub" "noalloc"
@@ -490,10 +486,7 @@ let unescape_bytea str =
 class result res =
   let nfields = Stub.nfields res in
   let ntuples = Stub.ntuples res in
-(* FIXME: get rid of laziness once PostgreSQL 8.2 is out for CentOS *)
-(*   let nparams = Stub.nparams res in *)
   let nparams = lazy (Stub.nparams res) in
-  let binary_tuples = Stub.binary_tuples res in
   let check_field field =
     if field < 0 || field >= nfields then
       raise (Error (Field_out_of_range (field, nfields))) in
@@ -510,7 +503,7 @@ object
   method ntuples = ntuples
   method nparams = Lazy.force nparams
   method nfields = nfields
-  method binary_tuples = binary_tuples
+  method binary_tuples = Stub.binary_tuples res
   method fname field = check_field field; Stub.fname res field
 
   method fnumber s =
