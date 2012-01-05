@@ -779,6 +779,7 @@ CAMLprim value PQescapeStringConn_stub(
   if (error) {
     free(buf);
     caml_failwith("Postgresql.escape_string_conn: failed to escape string");
+    return Val_unit;
   } else {
     value v_res = caml_alloc_string(n_written);
     memcpy(String_val(v_res), buf, n_written);
