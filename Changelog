@@ -1,3 +1,10 @@
+2012-01-10:  Added new function:
+
+               * Postgresql.get_escaped_value
+
+             Thanks to Jonathan Derque <jonathan.derque@lexifi.com> for the
+             patch!
+
 2011-12-29:  Fixed a memory allocation bug getting values of binary format.
 
              Thanks to Igor Plotnikov <igor@xambala.com> for the patch!
