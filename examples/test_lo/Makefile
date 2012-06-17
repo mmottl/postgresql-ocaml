@@ -3,7 +3,7 @@ OCAMLMAKEFILE = ../../OCamlMakefile
 SOURCES = test_lo.ml
 INCDIRS = ../../lib
 LIBDIRS = ../../lib
-LIBS    = postgresql
+LIBS    = bigarray postgresql
 OCAMLFLAGS = -w Aer -strict-sequence
 RESULT  = test_lo
 
