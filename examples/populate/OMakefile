@@ -1,3 +1,0 @@
-OCamlMakeProjDefaults(populate.exe)
-
-InstantiateOCamlEnv()

@@ -1,3 +1,0 @@
-OCamlMakeProjDefaults(prompt.exe)
-
-InstantiateOCamlEnv()

@@ -1,3 +1,0 @@
-OCamlMakeProjDefaults(test_lo.exe)
-
-InstantiateOCamlEnv()
