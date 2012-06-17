@@ -4,6 +4,7 @@ SOURCES = prompt.ml
 INCDIRS = ../../lib
 LIBDIRS = ../../lib
 LIBS    = postgresql
+OCAMLFLAGS = -w Aer -strict-sequence
 THREADS = yes
 RESULT  = prompt
 
