@@ -1,6 +1,6 @@
 OASISFormat:      0.3
 Name:             postgresql-ocaml
-Version:          6.2.6
+Version:          1.19.0
 Synopsis:         postgresql-ocaml - bindings to the PostgreSQL library
 Description:      postgresql-ocaml offers library functions for accessing PostgreSQL databases
 Authors:          Alain Frisch <alain.frisch@lexifi.com>,
