@@ -507,25 +507,41 @@ let () =
 
         (* Add correct PostgreSQL compilation and link flags *)
         let pgsql_clibs, opgsql_cflags, opgsql_clibs =
-          let cmd = "pg_config --includedir --libdir" in
-          print_endline cmd;
+          let cmd = "pg_config --includedir --libdir --version" in
           let ic = Unix.open_process_in cmd in
           try
             let pgsql_includedir = A ("-I" ^ input_line ic) in
             let pgsql_libdir = A ("-L" ^ input_line ic) in
+            let major, minor =
+              let line = input_line ic in
+              let major_start = String.index line ' ' + 1 in
+              let major_dot = String.index_from line major_start '.' in
+              let major =
+                String.sub line major_start (major_dot - major_start)
+              in
+              let minor_start = major_dot + 1 in
+              let minor_dot = String.index_from line minor_start '.' in
+              let minor =
+                String.sub line minor_start (minor_dot - minor_start)
+              in
+              A ("-DP_OCAML_MAJOR_VERSION=" ^ major),
+              A ("-DP_OCAML_MINOR_VERSION=" ^ minor)
+            in
+            close_in ic;
             let pgsql_lib = A "-lpq" in
-            [pgsql_libdir; pgsql_lib],
-            [A "-ccopt"; pgsql_includedir],
-            [A "-cclib"; pgsql_libdir; A "-cclib"; pgsql_lib]
+            let cclib = A "-cclib" in
+            let ccopt = A "-ccopt" in
+            S [pgsql_libdir; pgsql_lib],
+            S [ccopt; pgsql_includedir; ccopt; major; ccopt; minor],
+            S [cclib; pgsql_libdir; cclib; pgsql_lib]
           with exn ->
             close_in ic;
             raise exn
         in
-        flag ["compile"; "c"] (S opgsql_cflags);
-        flag ["link"; "ocaml"; "library"] (S opgsql_clibs);
-        flag ["oasis_library_postgresql_cclib"; "ocamlmklib"; "c"]
-          (S pgsql_clibs);
-        flag ["oasis_library_postgresql_cclib"; "link"] (S opgsql_clibs)
+        flag ["compile"; "c"] opgsql_cflags;
+        flag ["link"; "ocaml"; "library"] opgsql_clibs;
+        flag ["oasis_library_postgresql_cclib"; "ocamlmklib"; "c"] pgsql_clibs;
+        flag ["oasis_library_postgresql_cclib"; "link"] opgsql_clibs
       | _ -> ()
   in
   dispatch
