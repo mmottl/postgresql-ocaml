@@ -1,7 +1,12 @@
-name="postgresql"
-version="1.18.0"
-description="PostgreSQL bindings for OCaml"
-requires="unix, bigarray"
-archive(byte)="postgresql.cma"
-archive(native)="postgresql.cmxa"
-error(-mt)="This library requires multi-threading support"
+# OASIS_START
+# DO NOT EDIT (digest: c397b9c7a421e612cd1c7a5ce7cd1c94)
+version = "6.2.6"
+description = "postgresql-ocaml - bindings to the PostgreSQL library"
+requires = "threads bigarray"
+archive(byte) = "postgresql.cma"
+archive(byte, plugin) = "postgresql.cma"
+archive(native) = "postgresql.cmxa"
+archive(native, plugin) = "postgresql.cmxs"
+exists_if = "postgresql.cma"
+# OASIS_STOP
+

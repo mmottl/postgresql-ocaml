@@ -1,4 +1,5 @@
-(^|/)\.bzr($|/)
-(^|/)\.hg($|/)
-(^|/)\.hgtags($|/)
-\.(di?|a|so|cm(i|o|x|a)|cmxa|o|annot)$
+^.*\.swp$
+^setup\.(log|data)$
+^_build/.*$
+^.*\.native$
+^API\.docdir$

@@ -1,0 +1,103 @@
+OASISFormat:      0.3
+Name:             postgresql-ocaml
+Version:          6.2.6
+Synopsis:         postgresql-ocaml - bindings to the PostgreSQL library
+Description:      postgresql-ocaml offers library functions for accessing PostgreSQL databases
+Authors:          Alain Frisch <alain.frisch@lexifi.com>,
+                  Markus Mottl <markus.mottl@gmail.com>
+Copyrights:       (C) 2001-2012 Alain Frisch <alain.frisch@lexifi.com>,
+                  (C) 2004-2012 Markus Mottl <markus.mottl@gmail.com>
+Maintainers:      Markus Mottl <markus.mottl@gmail.com>,
+                  Alain Frisch <alain.frisch@lexifi.com>
+LicenseFile:      COPYING.txt
+License:          LGPL-2.1+ with OCaml linking exception
+OCamlVersion:     >= 3.12
+FindlibVersion:   >= 1.3.2
+Homepage:         https://bitbucket.org/mmottl/postgresql-ocaml
+#Categories:
+#FilesAB:
+
+Plugins:          META (0.3), StdFiles (0.3), DevFiles (0.3)
+XStdFilesREADME:  false
+
+Library postgresql
+  Path:           lib
+  FindlibName:    postgresql
+  Modules:        Postgresql
+  CSources:       postgresql_stubs.c
+  CCOpt:          -O2 -DPIC
+  CCLib:          -lpq
+  BuildTools:     ocamlbuild
+  BuildDepends:   threads, bigarray
+
+
+# Examples
+
+Executable cursor
+  Path:           examples
+  MainIs:         cursor.ml
+  BuildDepends:   postgresql
+  Install:        false
+  CompiledObject: best
+  BuildTools:     ocamlbuild
+
+Executable dump
+  Path:           examples
+  MainIs:         dump.ml
+  BuildDepends:   postgresql
+  Install:        false
+  CompiledObject: best
+  BuildTools:     ocamlbuild
+
+Executable populate
+  Path:           examples
+  MainIs:         populate.ml
+  BuildDepends:   postgresql
+  Install:        false
+  CompiledObject: best
+  BuildTools:     ocamlbuild
+
+Executable prompt
+  Path:           examples
+  MainIs:         prompt.ml
+  BuildDepends:   postgresql
+  Install:        false
+  CompiledObject: best
+  BuildTools:     ocamlbuild
+
+Flag lablgtk2
+  Description:    Build applications depending on lablgtk2
+  Default:        false
+
+Executable prompt_gtk
+  Path:           examples
+  MainIs:         prompt_gtk.ml
+  Build$:         flag(lablgtk2)
+  BuildDepends:   postgresql, lablgtk2
+  Install:        false
+  CompiledObject: best
+  BuildTools:     ocamlbuild
+
+Executable test_lo
+  Path:           examples
+  MainIs:         test_lo.ml
+  BuildDepends:   postgresql
+  Install:        false
+  CompiledObject: best
+  BuildTools:     ocamlbuild
+
+#
+
+Document API
+  Title:                API reference for PCRE-OCaml
+  Type:                 OCamlbuild (0.3)
+  InstallDir:           $docdir/api
+  BuildTools:           ocamldoc, ocamlbuild
+  XOCamlbuildPath:      .
+  XOCamlbuildLibraries: postgresql
+
+SourceRepository trunk
+  Type:       hg
+  Location:   ssh://hg@bitbucket.org/mmottl/postgresql-ocaml
+  Browser:    https://bitbucket.org/mmottl/postgresql-ocaml
+  Tag:        release-$(pkg_version)
