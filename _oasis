@@ -20,6 +20,8 @@ Homepage:         https://bitbucket.org/mmottl/postgresql-ocaml
 Plugins:          META (0.3), StdFiles (0.3), DevFiles (0.3)
 XStdFilesREADME:  false
 
+BuildTools:       ocamldoc, ocamlbuild
+
 Library postgresql
   Path:           lib
   FindlibName:    postgresql
@@ -27,7 +29,6 @@ Library postgresql
   CSources:       postgresql_stubs.c
   CCOpt:          -O2 -DPIC
   CCLib:          -lpq
-  BuildTools:     ocamlbuild
   BuildDepends:   threads, bigarray
 
 
@@ -39,7 +40,6 @@ Executable cursor
   BuildDepends:   postgresql
   Install:        false
   CompiledObject: best
-  BuildTools:     ocamlbuild
 
 Executable dump
   Path:           examples
@@ -47,7 +47,6 @@ Executable dump
   BuildDepends:   postgresql
   Install:        false
   CompiledObject: best
-  BuildTools:     ocamlbuild
 
 Executable populate
   Path:           examples
@@ -55,7 +54,6 @@ Executable populate
   BuildDepends:   postgresql
   Install:        false
   CompiledObject: best
-  BuildTools:     ocamlbuild
 
 Executable prompt
   Path:           examples
@@ -63,7 +61,6 @@ Executable prompt
   BuildDepends:   postgresql
   Install:        false
   CompiledObject: best
-  BuildTools:     ocamlbuild
 
 Flag lablgtk2
   Description:    Build applications depending on lablgtk2
@@ -76,7 +73,6 @@ Executable prompt_gtk
   BuildDepends:   postgresql, lablgtk2
   Install:        false
   CompiledObject: best
-  BuildTools:     ocamlbuild
 
 Executable test_lo
   Path:           examples
@@ -84,7 +80,6 @@ Executable test_lo
   BuildDepends:   postgresql
   Install:        false
   CompiledObject: best
-  BuildTools:     ocamlbuild
 
 #
 
@@ -92,7 +87,6 @@ Document API
   Title:                API reference for PCRE-OCaml
   Type:                 OCamlbuild (0.3)
   InstallDir:           $docdir/api
-  BuildTools:           ocamldoc, ocamlbuild
   XOCamlbuildPath:      .
   XOCamlbuildLibraries: postgresql
 

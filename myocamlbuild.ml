@@ -544,7 +544,6 @@ let () =
         flag ["oasis_library_postgresql_cclib"; "link"] opgsql_clibs
       | _ -> ()
   in
-  dispatch
-    (MyOCamlbuildBase.dispatch_combine [
-         MyOCamlbuildBase.dispatch_default package_default;
-         additional_rules ])
+  dispatch (
+    MyOCamlbuildBase.dispatch_combine
+      [MyOCamlbuildBase.dispatch_default package_default; additional_rules])
