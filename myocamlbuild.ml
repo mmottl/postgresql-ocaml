@@ -1,5 +1,5 @@
 (* OASIS_START *)
-(* DO NOT EDIT (digest: 90f04300b15c714b6798df2ebf51a9f7) *)
+(* DO NOT EDIT (digest: 7a01d8524e97cf15aaa9928e9bb6ad68) *)
 module OASISGettext = struct
 (* # 21 "/Users/mmottl/local/darwin11.3.0/src/oasis-0.3.0/src/oasis/OASISGettext.ml" *)
 
@@ -484,7 +484,41 @@ let package_default =
           (["oasis_library_postgresql_ccopt"; "compile"],
             [
                (OASISExpr.EBool true,
-                 S [A "-ccopt"; A "-O2"; A "-ccopt"; A "-DPIC"])
+                 S
+                   [
+                      A "-ccopt";
+                      A "-g";
+                      A "-ccopt";
+                      A "-O2";
+                      A "-ccopt";
+                      A "-fPIC";
+                      A "-ccopt";
+                      A "-DPIC"
+                   ]);
+               (OASISExpr.EAnd
+                  (OASISExpr.EFlag "strict",
+                    OASISExpr.ETest ("ccomp_type", "cc")),
+                 S
+                   [
+                      A "-ccopt";
+                      A "-g";
+                      A "-ccopt";
+                      A "-O2";
+                      A "-ccopt";
+                      A "-fPIC";
+                      A "-ccopt";
+                      A "-DPIC";
+                      A "-ccopt";
+                      A "-Wall";
+                      A "-ccopt";
+                      A "-pedantic";
+                      A "-ccopt";
+                      A "-Wextra";
+                      A "-ccopt";
+                      A "-Wunused";
+                      A "-ccopt";
+                      A "-Wno-long-long"
+                   ])
             ]);
           (["oasis_library_postgresql_cclib"; "link"],
             [(OASISExpr.EBool true, S [A "-cclib"; A "-lpq"])]);
@@ -497,7 +531,7 @@ let package_default =
 
 let dispatch_default = MyOCamlbuildBase.dispatch_default package_default;;
 
-# 501 "myocamlbuild.ml"
+# 535 "myocamlbuild.ml"
 (* OASIS_STOP *)
 
 let () =

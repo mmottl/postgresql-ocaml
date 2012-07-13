@@ -440,8 +440,8 @@ static inline void copy_binary_params(
   value v_params, value v_binary_params, size_t nparams,
   int **res_formats, int **res_lengths)
 {
-  int i, nbinary, *lengths, *formats;
-  nbinary = Wosize_val(v_binary_params);
+  size_t i, nbinary = Wosize_val(v_binary_params);
+  int *lengths, *formats;
   if (nbinary == 0 || nparams == 0) {
     *res_formats = NULL;
     *res_lengths = NULL;

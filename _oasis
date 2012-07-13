@@ -22,12 +22,18 @@ XStdFilesREADME:  false
 
 BuildTools:       ocamldoc, ocamlbuild
 
+Flag strict
+  Description:    Strict compile-time checks
+  Default:        true
+
 Library postgresql
   Path:           lib
   FindlibName:    postgresql
   Modules:        Postgresql
   CSources:       postgresql_stubs.c
-  CCOpt:          -O2 -DPIC
+  CCOpt:          -g -O2 -fPIC -DPIC
+  if flag(strict) && ccomp_type(cc)
+    CCOpt+:       -Wall -pedantic -Wextra -Wunused -Wno-long-long
   CCLib:          -lpq
   BuildDepends:   threads, bigarray
 
