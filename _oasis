@@ -40,9 +40,14 @@ Library postgresql
 
 # Examples
 
+Flag examples
+  Description:    Build examples
+  Default:        true
+
 Executable cursor
   Path:           examples
   MainIs:         cursor.ml
+  Build$:         flag(examples)
   BuildDepends:   postgresql
   Install:        false
   CompiledObject: best
@@ -50,6 +55,7 @@ Executable cursor
 Executable dump
   Path:           examples
   MainIs:         dump.ml
+  Build$:         flag(examples)
   BuildDepends:   postgresql
   Install:        false
   CompiledObject: best
@@ -57,6 +63,7 @@ Executable dump
 Executable populate
   Path:           examples
   MainIs:         populate.ml
+  Build$:         flag(examples)
   BuildDepends:   postgresql
   Install:        false
   CompiledObject: best
@@ -64,6 +71,7 @@ Executable populate
 Executable prompt
   Path:           examples
   MainIs:         prompt.ml
+  Build$:         flag(examples)
   BuildDepends:   postgresql
   Install:        false
   CompiledObject: best
@@ -75,7 +83,7 @@ Flag lablgtk2
 Executable prompt_gtk
   Path:           examples
   MainIs:         prompt_gtk.ml
-  Build$:         flag(lablgtk2)
+  Build$:         flag(examples) && flag(lablgtk2)
   BuildDepends:   postgresql, lablgtk2
   Install:        false
   CompiledObject: best
@@ -83,6 +91,7 @@ Executable prompt_gtk
 Executable test_lo
   Path:           examples
   MainIs:         test_lo.ml
+  Build$:         flag(examples)
   BuildDepends:   postgresql
   Install:        false
   CompiledObject: best
