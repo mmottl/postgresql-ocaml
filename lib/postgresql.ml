@@ -852,7 +852,7 @@ object (self)
          | _ -> f (Buffer.contents buf)
       and line () =
         let r = Stub.getline conn s 0 len in
-        if r < 3 || s.[0] <> '\\' || s.[1] <> '.' || s.[2] <> '\000' then
+        if not ((r = -1) || (r = 0  && s.[0] = '\\' && s.[1] = '.' && s.[2] = '\000')) then
           loop r
       in
       line ());
