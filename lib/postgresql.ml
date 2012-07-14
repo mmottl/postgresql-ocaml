@@ -843,19 +843,22 @@ object (self)
     let len = 512 in
     let s = String.create len in
     wrap_conn (fun conn ->
-      let rec loop r =
-        let zero = String.index s '\000' in
-        Buffer.add_substring buf s 0 zero;
-        match r with
-         | 0 -> f (Buffer.contents buf); Buffer.clear buf; line ()
-         | 1 -> loop (Stub.getline conn s 0 len)
-         | _ -> f (Buffer.contents buf)
-      and line () =
+      let rec loop () =
         let r = Stub.getline conn s 0 len in
-        if r < 3 || s.[0] <> '\\' || s.[1] <> '.' || s.[2] <> '\000' then
-          loop r
+        if r = 1 then begin  (* Buffer full *)
+          Buffer.add_substring buf s 0 len;
+          loop ()
+        end
+        else if r = 0 then  (* Line read *)
+          let zero = String.index s '\000' in
+          Buffer.add_substring buf s 0 zero;
+          match Buffer.contents buf with
+          | "\\." -> ()
+          | line -> Buffer.clear buf; f line; loop ()
+        else if r = -1 then raise End_of_file
+        else assert false  (* impossible *)
       in
-      line ());
+      loop ());
     self#endcopy
 
   method copy_out_channel oc =
