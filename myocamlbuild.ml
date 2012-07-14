@@ -569,7 +569,7 @@ let () =
             S [ccopt; pgsql_includedir; ccopt; major; ccopt; minor],
             S [cclib; pgsql_libdir; cclib; pgsql_lib]
           with exn ->
-            close_in ic;
+            close_in_noerr ic;
             raise exn
         in
         flag ["compile"; "c"] opgsql_cflags;
