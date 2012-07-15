@@ -1,3 +1,12 @@
+2012-07-15:  New major release version 2.0.0:
+
+               * Upgraded to OCaml 4.00
+               * Switched to Oasis for packaging
+               * Switched to OCamlBuild for the build process
+               * Rewrote README in Markdown
+               * Added stricter compilation flags
+               * Fixed broken copy_out method
+
 2012-01-10:  Added new function:
 
                * Postgresql.get_escaped_value
