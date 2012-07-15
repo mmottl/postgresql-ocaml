@@ -15,11 +15,14 @@ objects for representing database connections and results of queries.
 Usage
 -----
 
-The OCaml-API in file `lib/postgresql.mli` is well-documented, and more
-detailed information on how to interact with PostgreSQL is available in the
-[PostgreSQL-documentation](http://www.postgresql.org/docs).  The OCaml-examples
-in the `examples`-directory are mostly very short and comprehensible and
-therefore a good way to get started.
+The OCaml-API in file `lib/postgresql.mli` is well-documented and can be
+built as HTML with `make doc`.  The API-documentation can also be found
+[online](http://mmottl.bitbucket.org/projects/postgresql-ocaml/api/).
+
+More detailed information on how to interact with PostgreSQL is available
+in the [PostgreSQL-documentation](http://www.postgresql.org/docs).
+The OCaml-examples in the `examples`-directory are mostly very short and
+comprehensible and therefore a good way to get started.
 
 ---------------------------------------------------------------------------
 
