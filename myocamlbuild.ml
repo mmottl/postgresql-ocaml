@@ -558,8 +558,8 @@ let () =
               let minor =
                 String.sub line minor_start (minor_dot - minor_start)
               in
-              A ("-DP_OCAML_MAJOR_VERSION=" ^ major),
-              A ("-DP_OCAML_MINOR_VERSION=" ^ minor)
+              A ("-DPG_OCAML_MAJOR_VERSION=" ^ major),
+              A ("-DPG_OCAML_MINOR_VERSION=" ^ minor)
             in
             close_in ic;
             let pgsql_lib = A "-lpq" in
