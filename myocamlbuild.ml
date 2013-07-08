@@ -548,18 +548,34 @@ let () =
             let pgsql_libdir = A ("-L" ^ input_line ic) in
             let major, minor =
               let line = input_line ic in
-              let major_start = String.index line ' ' + 1 in
-              let major_dot = String.index_from line major_start '.' in
-              let major =
-                String.sub line major_start (major_dot - major_start)
-              in
-              let minor_start = major_dot + 1 in
-              let minor_dot = String.index_from line minor_start '.' in
-              let minor =
-                String.sub line minor_start (minor_dot - minor_start)
-              in
-              A ("-DPG_OCAML_MAJOR_VERSION=" ^ major),
-              A ("-DPG_OCAML_MINOR_VERSION=" ^ minor)
+	      let search_version s = 
+		let version = ref "" in
+		let stop = ref false in
+		let check_car c = 
+		  let ascii = Char.code c in
+		  if (ascii >= 48 && ascii <= 57 && not !stop) then
+		    version := !version ^ (String.make 1 c)
+		  else
+		    stop := true
+		in
+		let () = String.iter check_car s in
+		!version
+	      in
+	      try
+		let first_space = String.index line ' ' in
+		let first_dot = String.index line '.' in
+		let first_part = String.sub line (first_space + 1) (first_dot - first_space - 1) in
+		let second_part = String.sub line (first_dot + 1) (String.length line - first_dot - 1) in
+		let major = search_version first_part in
+		let minor = search_version second_part in
+		if (major <> "" && minor <> "") then (
+		  A ("-DPG_OCAML_MAJOR_VERSION=" ^ major),
+		  A ("-DPG_OCAML_MINOR_VERSION=" ^ minor)
+		 ) else (
+		  failwith ("Unable to find versions from line '" ^ line ^ "' (cmd: '" ^ cmd ^ "'")
+		 )
+	      with
+		_ -> failwith ("Unable to find versions from line '" ^ line ^ "' (cmd: '" ^ cmd ^ "'")
             in
             close_in ic;
             let pgsql_lib = A "-lpq" in
