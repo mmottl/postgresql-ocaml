@@ -1,3 +1,8 @@
+2013-07-08:  Fixed a version discovery problem with beta versions of
+             PostgreSQL.
+
+             Thanks to Stephane Legrand <stephleg@free.fr> for the patch!
+
 2012-07-20:  Downgraded findlib version requirement to support the Debian
              testing branch.
 
