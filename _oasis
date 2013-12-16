@@ -1,6 +1,6 @@
-OASISFormat:      0.3
+OASISFormat:      0.4
 Name:             postgresql-ocaml
-Version:          2.0.4
+Version:          2.0.5
 Synopsis:         postgresql-ocaml - bindings to the PostgreSQL library
 Description:      postgresql-ocaml offers library functions for accessing PostgreSQL databases
 Authors:          Alain Frisch <alain.frisch@lexifi.com>,
@@ -17,7 +17,7 @@ Homepage:         https://bitbucket.org/mmottl/postgresql-ocaml
 #Categories:
 #FilesAB:
 
-Plugins:          META (0.3), StdFiles (0.3), DevFiles (0.3)
+Plugins:          META (0.4), StdFiles (0.4), DevFiles (0.4)
 XStdFilesREADME:  false
 
 BuildTools:       ocamldoc, ocamlbuild
@@ -100,7 +100,7 @@ Executable test_lo
 
 Document API
   Title:                API reference for PCRE-OCaml
-  Type:                 OCamlbuild (0.3)
+  Type:                 OCamlbuild (0.4)
   InstallDir:           $docdir/api
   XOCamlbuildPath:      .
   XOCamlbuildLibraries: postgresql
