@@ -755,6 +755,30 @@ CAMLprim value PQsendQueryParams_stub(
   return Val_int(res);
 }
 
+CAMLprim value PQsendPrepare_stub(value v_conn, value v_stm_name, value v_query)
+{
+  PGconn *conn = get_conn(v_conn);
+  const char *stm_name = String_val(v_stm_name);
+  const char *query = String_val(v_query);
+  int res;
+  res = PQsendPrepare(conn, stm_name, query, 0, NULL);
+  return Val_int(res);
+}
+
+CAMLprim value PQsendQueryPrepared_stub(
+  value v_conn, value v_stm_name, value v_params, value v_binary_params)
+{
+  PGconn *conn = get_conn(v_conn);
+  const char *stm_name = String_val(v_stm_name);
+  size_t nparams = Wosize_val(v_params);
+  const char * const *params = copy_params_shallow(v_params, nparams);
+  int *lengths, *formats, res;
+  copy_binary_params(v_params, v_binary_params, nparams, &formats, &lengths);
+  res = PQsendQueryPrepared(
+	  conn, stm_name, nparams, params, lengths, formats, 0);
+  return Val_int(res);
+}
+
 CAMLprim value PQgetResult_stub(value v_conn)
 {
   CAMLparam1(v_conn);

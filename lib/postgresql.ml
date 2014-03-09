@@ -393,6 +393,13 @@ module Stub = struct
     connection -> string -> string array -> bool array -> int
     = "PQsendQueryParams_stub" "noalloc"
 
+  external send_prepare :
+    connection -> string -> string -> int = "PQsendPrepare_stub" "noalloc"
+
+  external send_query_prepared :
+    connection -> string -> string array -> bool array -> int
+    = "PQsendQueryPrepared_stub" "noalloc"
+
   external get_result : connection -> result = "PQgetResult_stub"
   external consume_input : connection -> int = "PQconsumeInput_stub" "noalloc"
   external is_busy : connection -> bool = "PQisBusy_stub" "noalloc"
@@ -786,6 +793,15 @@ object (self)
     wrap_conn (fun conn ->
       if Stub.send_query_params conn query params binary_params <> 1 then
         signal_error conn)
+
+  method send_prepare stm_name query =
+    wrap_conn (fun conn ->
+      if Stub.send_prepare conn stm_name query <> 1 then signal_error conn)
+
+  method send_query_prepared ?(params = [||]) ?(binary_params = [||]) stm_name =
+    wrap_conn (fun conn ->
+      if Stub.send_query_prepared conn stm_name params binary_params <> 1 then
+	signal_error conn)
 
   method get_result =
     let res = wrap_conn Stub.get_result in

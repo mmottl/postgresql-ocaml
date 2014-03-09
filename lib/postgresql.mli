@@ -598,6 +598,25 @@ object
       @raise Error if there is a connection error.
   *)
 
+  method send_prepare : string -> string -> unit
+  (** [#send_prepare stm_name query] sends a query preparation without waiting
+      for the result.  This does the same as {!prepare} except that the status
+      is reported by {!get_result} when available.
+
+      @raise Error if there is a connection error. *)
+
+  method send_query_prepared :
+    ?params : string array -> ?binary_params : bool array
+    -> string -> unit
+  (** [#send_query_prepared ?params ?binary_params stm_name] is an
+      asynchronous version of {!query_prepared}.  The semantics is otherwise
+      the same, and the result is reported by {!get_result} when available.
+
+      @param params default = [||]
+      @param binary_params default = [||]
+
+      @raise Error if there is a connection error. *)
+
   method get_result : result option
   (** [get_result] @return [Some result] of an asynchronous query if
       available or [None].
