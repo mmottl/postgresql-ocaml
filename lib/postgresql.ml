@@ -391,14 +391,14 @@ module Stub = struct
 
   external send_query_params :
     connection -> string -> string array -> bool array -> int
-    = "PQsendQueryParams_stub" "noalloc"
+    = "PQsendQueryParams_stub"
 
   external send_prepare :
     connection -> string -> string -> int = "PQsendPrepare_stub" "noalloc"
 
   external send_query_prepared :
     connection -> string -> string array -> bool array -> int
-    = "PQsendQueryPrepared_stub" "noalloc"
+    = "PQsendQueryPrepared_stub"
 
   external get_result : connection -> result = "PQgetResult_stub"
   external consume_input : connection -> int = "PQconsumeInput_stub" "noalloc"
