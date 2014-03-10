@@ -536,9 +536,9 @@ CAMLprim value PQexecParams_stub(
       (nparams == 0)
         ? PQexec(conn, query)
         : PQexecParams(conn, query, nparams, NULL, params, lengths, formats, 0);
-    free(query);
-    free_params(params, nparams);
     free_binary_params(formats, lengths);
+    free_params(params, nparams);
+    free(query);
   caml_leave_blocking_section();
   CAMLreturn(alloc_result(res, np_cb));
 }
@@ -589,8 +589,8 @@ CAMLprim value PQexecPrepared_stub(
   caml_enter_blocking_section();
     res = PQexecPrepared(conn, stm_name, nparams, params, lengths, formats, 0);
     free(stm_name);
-    free_params(params, nparams);
     free_binary_params(formats, lengths);
+    free_params(params, nparams);
   caml_leave_blocking_section();
   CAMLreturn(alloc_result(res, np_cb));
 #else
@@ -750,8 +750,8 @@ CAMLprim value PQsendQueryParams_stub(
       ? PQsendQuery(conn, query)
       : PQsendQueryParams(
           conn, query, nparams, NULL, params, lengths, formats, 0);
-  free_params_shallow(params, nparams);
   free_binary_params(formats, lengths);
+  free_params_shallow(params, nparams);
   return Val_int(res);
 }
 
