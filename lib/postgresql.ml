@@ -801,7 +801,7 @@ object (self)
   method send_query_prepared ?(params = [||]) ?(binary_params = [||]) stm_name =
     wrap_conn (fun conn ->
       if Stub.send_query_prepared conn stm_name params binary_params <> 1 then
-	signal_error conn)
+        signal_error conn)
 
   method get_result =
     let res = wrap_conn Stub.get_result in

@@ -774,8 +774,8 @@ CAMLprim value PQsendQueryPrepared_stub(
   const char * const *params = copy_params_shallow(v_params, nparams);
   int *lengths, *formats, res;
   copy_binary_params(v_params, v_binary_params, nparams, &formats, &lengths);
-  res = PQsendQueryPrepared(
-	  conn, stm_name, nparams, params, lengths, formats, 0);
+  res =
+    PQsendQueryPrepared(conn, stm_name, nparams, params, lengths, formats, 0);
   return Val_int(res);
 }
 
