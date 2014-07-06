@@ -1,5 +1,0 @@
-^.*\.swp$
-^setup\.(log|data)$
-^_build/.*$
-^.*\.native$
-^API\.docdir$

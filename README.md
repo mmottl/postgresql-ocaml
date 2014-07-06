@@ -17,7 +17,7 @@ Usage
 
 The OCaml-API in file `lib/postgresql.mli` is well-documented and can be
 built as HTML with `make doc`.  The API-documentation can also be found
-[online](http://mmottl.bitbucket.org/projects/postgresql-ocaml/api/).
+[online](http://mmottl.github.io/postgresql-ocaml/api).
 
 More detailed information on how to interact with PostgreSQL is available
 in the [PostgreSQL-documentation](http://www.postgresql.org/docs).
@@ -36,8 +36,8 @@ contact the maintainers:
   * Alain Frisch <alain.frisch@lexifi.com>
 
 Up-to-date information should be available at:
-<https://bitbucket.org/mmottl/postgresql-ocaml>
+<http://mmottl.github.io/postgresql-ocaml>
 
 Enjoy!
 
-Markus Mottl in Rutherford, NJ on July 10, 2012
+Markus Mottl on July 10, 2012

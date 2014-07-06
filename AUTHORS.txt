@@ -1,10 +1,14 @@
 (* OASIS_START *)
-(* DO NOT EDIT (digest: 39a7158c5796d2c7f25e8d398114975e) *)
-Authors of postgresql-ocaml
-Alain Frisch <alain.frisch@lexifi.com>
-Markus Mottl <markus.mottl@gmail.com>
+(* DO NOT EDIT (digest: 32172db7f4f788fae688e747cfda1b0e) *)
 
-Current maintainers of postgresql-ocaml
-Markus Mottl <markus.mottl@gmail.com>
-Alain Frisch <alain.frisch@lexifi.com>
+Authors of postgresql-ocaml:
+
+* Alain Frisch <alain.frisch@lexifi.com>
+* Markus Mottl <markus.mottl@gmail.com>
+
+Current maintainers of postgresql-ocaml:
+
+* Markus Mottl <markus.mottl@gmail.com>
+* Alain Frisch <alain.frisch@lexifi.com>
+
 (* OASIS_STOP *)
