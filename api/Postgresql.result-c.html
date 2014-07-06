@@ -1,0 +1,193 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<link rel="stylesheet" href="style.css" type="text/css">
+<meta content="text/html; charset=iso-8859-1" http-equiv="Content-Type">
+<link rel="Start" href="index.html">
+<link rel="Up" href="Postgresql.html">
+<link title="Index of types" rel=Appendix href="index_types.html">
+<link title="Index of exceptions" rel=Appendix href="index_exceptions.html">
+<link title="Index of values" rel=Appendix href="index_values.html">
+<link title="Index of class methods" rel=Appendix href="index_methods.html">
+<link title="Index of classes" rel=Appendix href="index_classes.html">
+<link title="Index of class types" rel=Appendix href="index_class_types.html">
+<link title="Index of modules" rel=Appendix href="index_modules.html">
+<link title="Postgresql" rel="Chapter" href="Postgresql.html"><title>Postgresql.result</title>
+</head>
+<body>
+<div class="navbar">&nbsp;<a class="up" href="Postgresql.html" title="Postgresql">Up</a>
+&nbsp;</div>
+<h1>Class type <a href="type_Postgresql.result.html">Postgresql.result</a></h1>
+
+<pre><span id="TYPEresult"><span class="keyword">class type</span> result</span> = <code class="code">object</code> <a href="Postgresql.result-c.html">..</a> <code class="code">end</code></pre><div class="info classtype top">
+Class type of query results.
+<p>
+
+    Indices of tuples and fields start at 0!<br>
+</div>
+<hr width="100%">
+<h2 id="2_Mainroutines">Main routines</h2>
+<pre><span id="METHODstatus"><span class="keyword">method</span> status</span> : <code class="type"><a href="Postgresql.html#TYPEresult_status">result_status</a></code></pre><div class="info ">
+<code class="code">#status</code><br>
+<b>Returns</b> status of a command/query result.<br>
+</div>
+
+<pre><span id="METHODerror"><span class="keyword">method</span> error</span> : <code class="type">string</code></pre><div class="info ">
+<code class="code">#error</code><br>
+<b>Returns</b> error string of a result.<br>
+</div>
+<h2 id="2_RetrievingSELECTResultInformation">Retrieving SELECT Result Information</h2>
+<pre><span id="METHODntuples"><span class="keyword">method</span> ntuples</span> : <code class="type">int</code></pre><div class="info ">
+<code class="code">#ntuples</code><br>
+<b>Returns</b> the number of tuples of a query result.<br>
+</div>
+
+<pre><span id="METHODnparams"><span class="keyword">method</span> nparams</span> : <code class="type">int</code></pre><div class="info ">
+<code class="code">#nparams</code><br>
+<b>Returns</b> the number of parameters of a prepared
+      statement.  This function is only useful when inspecting the result
+      of <code class="code">#describe_prepared</code>.  For other types of queries it will return
+      zero.<br>
+</div>
+
+<pre><span id="METHODnfields"><span class="keyword">method</span> nfields</span> : <code class="type">int</code></pre><div class="info ">
+<code class="code">#nfields</code><br>
+<b>Returns</b> the number of fields in a query result.<br>
+</div>
+
+<pre><span id="METHODfname"><span class="keyword">method</span> fname</span> : <code class="type">int -> string</code></pre><div class="info ">
+<code class="code">#fname n</code><br>
+<b>Raises</b> <code>Error</code> if field out of range.<br>
+<b>Returns</b> the name of the <code class="code">n</code>th field.<br>
+</div>
+
+<pre><span id="METHODfnumber"><span class="keyword">method</span> fnumber</span> : <code class="type">string -> int</code></pre><div class="info ">
+<code class="code">#fnumber field</code><br>
+<b>Raises</b> <code>Not_found</code> if no such named field.<br>
+<b>Returns</b> the index of the field named <code class="code">field</code>.<br>
+</div>
+
+<pre><span id="METHODfformat"><span class="keyword">method</span> fformat</span> : <code class="type">int -> <a href="Postgresql.FFormat.html#TYPEt">FFormat.t</a></code></pre><div class="info ">
+<code class="code">#fformat n</code><br>
+<b>Raises</b> <code>Error</code> if field out of range.<br>
+<b>Returns</b> the format of the <code class="code">n</code>th field.<br>
+</div>
+
+<pre><span id="METHODftype"><span class="keyword">method</span> ftype</span> : <code class="type">int -> <a href="Postgresql.html#TYPEftype">ftype</a></code></pre><div class="info ">
+<code class="code">#ftype n</code><br>
+<b>Raises</b><ul><li><code>Oid</code> if there was no corresponding ftype for the internal <code class="code">oid</code>.</li>
+<li><code>Error</code> if field out of range.</li>
+</ul>
+<b>Returns</b> the type of the <code class="code">n</code>th field.<br>
+</div>
+
+<pre><span id="METHODparamtype"><span class="keyword">method</span> paramtype</span> : <code class="type">int -> <a href="Postgresql.html#TYPEftype">ftype</a></code></pre><div class="info ">
+<code class="code">#paramtype n</code><br>
+<b>Raises</b><ul><li><code>Oid</code> if there was no corresponding ftype for the internal <code class="code">oid</code>.</li>
+<li><code>Error</code> if field out of range.</li>
+</ul>
+<b>Returns</b> the datatype of the indicated statement
+      parameter.  Parameter numbers start at 0.  This function is
+      only useful when inspecting the result of <code class="code">#describe_prepared</code>.
+      For other types of queries it will return zero.<br>
+</div>
+
+<pre><span id="METHODfmod"><span class="keyword">method</span> fmod</span> : <code class="type">int -> int</code></pre><div class="info ">
+<code class="code">#fmod n</code><br>
+<b>Raises</b> <code>Error</code> if field out of range.<br>
+<b>Returns</b> type-specific modification data of the <code class="code">n</code>th field.<br>
+</div>
+
+<pre><span id="METHODfsize"><span class="keyword">method</span> fsize</span> : <code class="type">int -> int</code></pre><div class="info ">
+<code class="code">#fsize n</code><br>
+<b>Raises</b> <code>Error</code> if field out of range.<br>
+<b>Returns</b> size in bytes of the <code class="code">n</code>th field.<br>
+</div>
+
+<pre><span id="METHODbinary_tuples"><span class="keyword">method</span> binary_tuples</span> : <code class="type">bool</code></pre><div class="info ">
+<code class="code">#binary_tuples</code><br>
+<b>Returns</b> <code class="code">true</code> iff result contains binary tuple data.<br>
+</div>
+<h2 id="2_RetrievingSELECTResultValues">Retrieving SELECT Result Values</h2>
+<pre><span id="METHODgetvalue"><span class="keyword">method</span> getvalue</span> : <code class="type">int -> int -> string</code></pre><div class="info ">
+<code class="code">#getvalue tuple field</code><br>
+<b>Raises</b><ul><li><code>Error</code> if tuple out of range.</li>
+<li><code>Error</code> if field out of range.</li>
+</ul>
+<b>Returns</b> value of <code class="code">field</code> in <code class="code">tuple</code>.<br>
+</div>
+
+<pre><span id="METHODget_escaped_value"><span class="keyword">method</span> get_escaped_value</span> : <code class="type">int -> int -> string</code></pre><div class="info ">
+<code class="code">#get_escaped_value tuple field</code><br>
+<b>Raises</b><ul><li><code>Error</code> if tuple out of range.</li>
+<li><code>Error</code> if field out of range.</li>
+</ul>
+<b>Returns</b> escaped value of <code class="code">field</code> in
+      <code class="code">tuple</code>.<br>
+</div>
+
+<pre><span id="METHODgetisnull"><span class="keyword">method</span> getisnull</span> : <code class="type">int -> int -> bool</code></pre><div class="info ">
+<code class="code">#getisnull tuple field</code> tests for a NULL-value of <code class="code">field</code> in <code class="code">tuple</code>.<br>
+<b>Raises</b><ul><li><code>Error</code> if tuple out of range.</li>
+<li><code>Error</code> if field out of range.</li>
+</ul>
+</div>
+
+<pre><span id="METHODgetlength"><span class="keyword">method</span> getlength</span> : <code class="type">int -> int -> int</code></pre><div class="info ">
+<code class="code">#getlength tuple field</code><br>
+<b>Raises</b><ul><li><code>Error</code> if tuple out of range.</li>
+<li><code>Error</code> if field out of range.</li>
+</ul>
+<b>Returns</b> length of value in <code class="code">field</code> of
+      <code class="code">tuple</code> in bytes.<br>
+</div>
+<h2 id="2_RetrievingNonSELECTResultInformation">Retrieving Non-SELECT Result Information</h2>
+<pre><span id="METHODcmd_status"><span class="keyword">method</span> cmd_status</span> : <code class="type">string</code></pre><div class="info ">
+<code class="code">#cmd_status</code><br>
+<b>Returns</b> status of SQL-command associated with result.<br>
+</div>
+
+<pre><span id="METHODcmd_tuples"><span class="keyword">method</span> cmd_tuples</span> : <code class="type">string</code></pre><div class="info ">
+<code class="code">#cmd_tuples</code><br>
+<b>Returns</b> number of rows affected by the SQL command.<br>
+</div>
+
+<pre><span id="METHODoid_value"><span class="keyword">method</span> oid_value</span> : <code class="type"><a href="Postgresql.html#TYPEoid">oid</a></code></pre><div class="info ">
+<code class="code">#cmd_tuples</code><br>
+<b>Returns</b> the object ID of the inserted row if the SQL
+      command was an INSERT that inserted exactly one row into a table
+      that has OIDs. Otherwise, returns <code class="code">invalid_oid</code>.<br>
+</div>
+<h2 id="2_Highlevelroutines">High-level routines</h2>
+<pre><span id="METHODget_fnames"><span class="keyword">method</span> get_fnames</span> : <code class="type">string array</code></pre><div class="info ">
+<code class="code">#get_fnames</code><br>
+<b>Returns</b> array of field names.<br>
+</div>
+
+<pre><span id="METHODget_fnames_lst"><span class="keyword">method</span> get_fnames_lst</span> : <code class="type">string list</code></pre><div class="info ">
+<code class="code">#get_fnames_lst</code><br>
+<b>Returns</b> list of field names.<br>
+</div>
+
+<pre><span id="METHODget_tuple"><span class="keyword">method</span> get_tuple</span> : <code class="type">int -> string array</code></pre><div class="info ">
+<code class="code">#get_tuple n</code><br>
+<b>Raises</b> <code>Error</code> if tuple out of range.<br>
+<b>Returns</b> all fields of the <code class="code">n</code>th tuple.<br>
+</div>
+
+<pre><span id="METHODget_tuple_lst"><span class="keyword">method</span> get_tuple_lst</span> : <code class="type">int -> string list</code></pre><div class="info ">
+<code class="code">#get_tuple_lst n</code><br>
+<b>Raises</b> <code>Error</code> if tuple out of range.<br>
+<b>Returns</b> all fields of the <code class="code">n</code>th tuple as list.<br>
+</div>
+
+<pre><span id="METHODget_all"><span class="keyword">method</span> get_all</span> : <code class="type">string array array</code></pre><div class="info ">
+<code class="code">#get_all</code><br>
+<b>Returns</b> all tuples with all fields.<br>
+</div>
+
+<pre><span id="METHODget_all_lst"><span class="keyword">method</span> get_all_lst</span> : <code class="type">string list list</code></pre><div class="info ">
+<code class="code">#get_all</code><br>
+<b>Returns</b> all tuples with all fields as lists.<br>
+</div>
+</body></html>
