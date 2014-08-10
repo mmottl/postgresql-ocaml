@@ -44,6 +44,14 @@ Flag examples
   Description:    Build examples
   Default:        true
 
+Executable async
+  Path:           examples
+  MainIs:         async.ml
+  Build$:         flag(examples)
+  BuildDepends:   postgresql
+  Install:        false
+  CompiledObject: best
+
 Executable cursor
   Path:           examples
   MainIs:         cursor.ml

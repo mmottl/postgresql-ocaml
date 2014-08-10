@@ -781,6 +781,42 @@ CAMLprim value PQsendQueryPrepared_stub(
   return Val_int(res);
 }
 
+#ifdef PG_OCAML_8_2
+CAMLprim value PQsendDescribePrepared_stub(value v_conn, value v_stm_name)
+{
+  PGconn *conn = get_conn(v_conn);
+  const char *stm_name = String_val(v_stm_name);
+  int res;
+  res = PQsendDescribePrepared(conn, stm_name);
+  return Val_int(res);
+}
+#else
+CAMLprim value
+PQsendDescribePrepared_stub(value __unused v_conn, value __unused v_stm_name)
+{
+  caml_failwith("Postgresql.send_describe_prepared: not supported");
+  return Val_unit;
+}
+#endif
+
+#ifdef PG_OCAML_8_2
+CAMLprim value PQsendDescribePortal_stub(value v_conn, value v_portal_name)
+{
+  PGconn *conn = get_conn(v_conn);
+  const char *portal_name = String_val(v_portal_name);
+  int res;
+  res = PQsendDescribePortal(conn, portal_name);
+  return Val_int(res);
+}
+#else
+CAMLprim value
+PQsendDescribePortal_stub(value __unused v_conn, value __unused v_portal_name)
+{
+  caml_failwith("Postgresql.send_describe_portal: not supported");
+  return Val_unit;
+}
+#endif
+
 CAMLprim value PQgetResult_stub(value v_conn)
 {
   CAMLparam1(v_conn);

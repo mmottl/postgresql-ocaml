@@ -400,6 +400,12 @@ module Stub = struct
     connection -> string -> string array -> bool array -> int
     = "PQsendQueryPrepared_stub"
 
+  external send_describe_prepared : connection -> string -> int
+    = "PQsendDescribePrepared_stub"
+
+  external send_describe_portal : connection -> string -> int
+    = "PQsendDescribePortal_stub"
+
   external get_result : connection -> result = "PQgetResult_stub"
   external consume_input : connection -> int = "PQconsumeInput_stub" "noalloc"
   external is_busy : connection -> bool = "PQisBusy_stub" "noalloc"
@@ -801,6 +807,16 @@ object (self)
   method send_query_prepared ?(params = [||]) ?(binary_params = [||]) stm_name =
     wrap_conn (fun conn ->
       if Stub.send_query_prepared conn stm_name params binary_params <> 1 then
+        signal_error conn)
+
+  method send_describe_prepared stm_name =
+    wrap_conn (fun conn ->
+      if Stub.send_describe_prepared conn stm_name <> 1 then
+        signal_error conn)
+
+  method send_describe_portal portal_name =
+    wrap_conn (fun conn ->
+      if Stub.send_describe_portal conn portal_name <> 1 then
         signal_error conn)
 
   method get_result =

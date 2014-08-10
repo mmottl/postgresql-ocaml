@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 13a07b9ae83498d4d812e34d9fb75898)
+# DO NOT EDIT (digest: d32380a8a5d9af5342a2f383d8fb4575)
 # Ignore VCS directories, you can use the same kind of rule outside
 # OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
@@ -27,6 +27,10 @@
 <lib/*.ml{,i}>: pkg_threads
 "lib/postgresql_stubs.c": pkg_bigarray
 "lib/postgresql_stubs.c": pkg_threads
+# Executable async
+<examples/async.{native,byte}>: pkg_bigarray
+<examples/async.{native,byte}>: pkg_threads
+<examples/async.{native,byte}>: use_postgresql
 # Executable cursor
 <examples/cursor.{native,byte}>: pkg_bigarray
 <examples/cursor.{native,byte}>: pkg_threads
