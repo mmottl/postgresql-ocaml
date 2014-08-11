@@ -618,15 +618,15 @@ object
       @raise Error if there is a connection error. *)
 
   method send_describe_prepared : string -> unit
-  (** [#send_describe_prepared stm_name] sends an request for a description of
+  (** [#send_describe_prepared stm_name] sends a request for a description of
       a prepared query without waiting for the result.  The result must be
-      fetched with {!get_result} when it becomes available, otherwise does the
-      same as {!describe_prepared}.
+      fetched with {!get_result} when it becomes available.  Otherwise it
+      does the same as {!describe_prepared}.
 
       @raise Error if there is a connection error. *)
 
   method send_describe_portal : string -> unit
-  (** [#send_describe_portal portal_name] send a request for a description of
+  (** [#send_describe_portal portal_name] sends a request for a description of
       the named portal.  The result must be fetched with {!get_result}.
 
       @raise Error if there is a connection error. *)
