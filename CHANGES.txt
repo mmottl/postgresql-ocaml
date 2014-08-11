@@ -1,3 +1,11 @@
+2014-08-10:  New asynchronous methods:
+
+               * send_describe_prepared
+               * send_describe_portal
+
+            Thanks to Petter Urkedal <paurkedal@gmail.com> for these
+            contributions!
+
 2014-03-10:  New asynchronous methods:
 
                * send_prepare
