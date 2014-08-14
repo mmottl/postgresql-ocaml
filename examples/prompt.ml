@@ -39,6 +39,8 @@ let print_res conn res =
   | Bad_response -> printf "Bad response: %s\n" res#error; conn#reset
   | Nonfatal_error -> printf "Non fatal error: %s\n" res#error
   | Fatal_error -> printf "Fatal error: %s\n" res#error
+  | Copy_both -> printf "Copy in/out, not handled!\n"; exit 1
+  | Single_tuple -> printf "Single tuple, not handled!\n"; exit 1
 
 let rec dump_res conn =
   match conn#get_result with

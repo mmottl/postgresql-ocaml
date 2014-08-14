@@ -117,6 +117,8 @@ type result_status =
   | Bad_response    (** The server's response was not understood *)
   | Nonfatal_error
   | Fatal_error
+  | Copy_both
+  | Single_tuple    (** One tuple of a result set ({!set_single_row_mode}) *)
 
 (** Result of getline *)
 type getline_result =
@@ -630,6 +632,10 @@ object
       the named portal.  The result must be fetched with {!get_result}.
 
       @raise Error if there is a connection error. *)
+
+  method set_single_row_mode : unit
+  (** [#set_single_row_mode] called right after {!send_query} or a sibling
+      function causes the returned rows to be split into individual results. *)
 
   method get_result : result option
   (** [get_result] @return [Some result] of an asynchronous query if

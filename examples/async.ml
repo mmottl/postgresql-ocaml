@@ -53,7 +53,17 @@ let main () =
   for i = 0 to r#ntuples - 1 do
     Printf.printf "%s %s %s\n"
                   (r#getvalue i 0) (r#getvalue i 1) (r#getvalue i 2)
-  done
+  done;
+  c#send_query_prepared "test_sel";
+  for i = 0 to 1 do
+    match fetch_result c with
+    | None -> assert false
+    | Some r ->
+      assert (r#status = Single_tuple);
+      Printf.printf "%s %s %s\n"
+                    (r#getvalue i 0) (r#getvalue i 1) (r#getvalue i 2)
+  done;
+  assert (fetch_result c = None)
 
 let _ =
   try main () with
