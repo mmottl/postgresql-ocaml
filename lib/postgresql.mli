@@ -745,9 +745,9 @@ object
 
   method connect_poll : polling_status
   (** After creating a connection with [~startonly:true], {!connect_poll}
-      must be called a number of times before the connection can be used.  The
-      precise procedure is described in libpq manual, but the following code
-      should capture the idea, assuming monadic concurrency primitives
+      must be called a number of times before the connection can be used.
+      The precise procedure is described in the libpq manual, but the following
+      code should capture the idea, assuming monadic concurrency primitives
       [return] and [>>=] along with polling functions [wait_for_read] and
       [wait_for_write]:
       {[
@@ -768,7 +768,7 @@ object
       finish re-establishing the connection. *)
 
   method reset_poll : polling_status
-  (** Used analogously to {!connect_poll} after calling {!reset_start} *)
+  (** Used analogously to {!connect_poll} after calling {!reset_start}. *)
 
   method set_nonblocking : bool -> unit
   (** [set_nonblocking b] sets state of the connection to nonblocking if
@@ -873,7 +873,8 @@ object
 
   method lo_read_ba :
     large_object -> ?pos : int -> ?len : int ->
-    (char, Bigarray.int8_unsigned_elt, Bigarray.c_layout) Bigarray.Array1.t -> int
+    (char, Bigarray.int8_unsigned_elt, Bigarray.c_layout) Bigarray.Array1.t ->
+    int
   (** As [lo_read], but performs a zero-copy read into the given Bigarray. *)
 
   method lo_seek : ?pos : int -> ?whence : seek_cmd -> large_object -> unit
