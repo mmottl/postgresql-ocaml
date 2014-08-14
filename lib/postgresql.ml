@@ -273,6 +273,8 @@ type result_status =
   | Bad_response
   | Nonfatal_error
   | Fatal_error
+  | Copy_both
+  | Single_tuple
 
 external result_status : result_status -> string = "PQresStatus_stub"
 
@@ -428,6 +430,7 @@ module Stub = struct
   external send_describe_portal : connection -> string -> int
     = "PQsendDescribePortal_stub"
 
+  external set_single_row_mode : connection -> int = "PQsetSingleRowMode_stub"
   external get_result : connection -> result = "PQgetResult_stub"
   external consume_input : connection -> int = "PQconsumeInput_stub" "noalloc"
   external is_busy : connection -> bool = "PQisBusy_stub" "noalloc"
@@ -833,13 +836,15 @@ object (self)
 
   method send_describe_prepared stm_name =
     wrap_conn (fun conn ->
-      if Stub.send_describe_prepared conn stm_name <> 1 then
-        signal_error conn)
+      if Stub.send_describe_prepared conn stm_name <> 1 then signal_error conn)
 
   method send_describe_portal portal_name =
     wrap_conn (fun conn ->
-      if Stub.send_describe_portal conn portal_name <> 1 then
-        signal_error conn)
+      if Stub.send_describe_portal conn portal_name <> 1 then signal_error conn)
+
+  method set_single_row_mode =
+    wrap_conn (fun conn ->
+      if Stub.set_single_row_mode conn <> 1 then signal_error conn)
 
   method get_result =
     let res = wrap_conn Stub.get_result in

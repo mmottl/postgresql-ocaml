@@ -36,6 +36,10 @@
     || ( PG_OCAML_MAJOR_VERSION >= 8 && PG_OCAML_MINOR_VERSION >= 2)
 # define PG_OCAML_8_2
 #endif
+#if PG_OCAML_MAJOR_VERSION > 9 \
+    || ( PG_OCAML_MAJOR_VERSION >= 9 && PG_OCAML_MINOR_VERSION >= 2)
+# define PG_OCAML_9_2
+#endif
 
 #include <string.h>
 #include <ctype.h>
@@ -819,6 +823,17 @@ CAMLprim value
 PQsendDescribePortal_stub(value __unused v_conn, value __unused v_portal_name)
 {
   caml_failwith("Postgresql.send_describe_portal: not supported");
+  return Val_unit;
+}
+#endif
+
+#ifdef PG_OCAML_9_2
+noalloc_conn_info(PQsetSingleRowMode, Val_int)
+#else
+CAMLprim value
+PQsetSingleRowMode_stub(value __unused conn)
+{
+  caml_failwith("Postgresql.set_single_row_mode: not supported");
   return Val_unit;
 }
 #endif
