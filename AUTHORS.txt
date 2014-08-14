@@ -1,10 +1,11 @@
 (* OASIS_START *)
-(* DO NOT EDIT (digest: 32172db7f4f788fae688e747cfda1b0e) *)
+(* DO NOT EDIT (digest: 40e5748ea77e37d050c2e25b332a6b48) *)
 
 Authors of postgresql-ocaml:
 
 * Alain Frisch <alain.frisch@lexifi.com>
 * Markus Mottl <markus.mottl@gmail.com>
+* Petter Urkedal <paurkedal@gmail.com>
 
 Current maintainers of postgresql-ocaml:
 

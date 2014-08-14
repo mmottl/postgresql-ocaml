@@ -1,3 +1,17 @@
+2014-08-14:  Even more new asynchronous methods:
+
+               * optional [startonly] flag for creating an asynchronous connection
+               * connect_poll
+               * reset_start
+               * reset_poll
+
+            And also:
+
+              * set_single_row_mode
+
+            Thanks to Petter Urkedal <paurkedal@gmail.com> for these
+            contributions!
+
 2014-08-10:  New asynchronous methods:
 
                * send_describe_prepared
