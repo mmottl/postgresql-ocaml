@@ -238,7 +238,20 @@ let () =
   Callback.register "Postgresql.null" null;
   init ()
 
-type connection_status = Ok | Bad
+type connection_status =
+  | Ok | Bad
+  | Connection_started
+  | Connection_made
+  | Connection_awaiting_response
+  | Connection_auth_ok
+  | Connection_setenv
+  | Connection_ssl_startup
+
+type polling_status =
+  | Polling_failed
+  | Polling_reading
+  | Polling_writing
+  | Polling_ok
 
 type conninfo_option =
   {
@@ -307,7 +320,7 @@ module Stub = struct
   type result
 
   external conn_isnull : connection -> bool = "PQconn_isnull" "noalloc"
-  external connect : string -> connection = "PQconnectdb_stub"
+  external connect : string -> bool -> connection = "PQconnectdb_stub"
   external finish : connection -> unit = "PQfinish_stub"
   external reset : connection -> unit = "PQreset_stub"
 
@@ -382,6 +395,15 @@ module Stub = struct
 
 
   (* Asynchronous Query Processing *)
+
+  external connect_poll :
+    connection -> polling_status = "PQconnectPoll_stub" "noalloc"
+
+  external reset_start :
+    connection -> bool = "PQresetStart_stub" "noalloc"
+
+  external reset_poll :
+    connection -> polling_status = "PQresetPoll_stub" "noalloc"
 
   external set_nonblocking :
     connection -> bool -> int = "PQsetnonblocking_stub" "noalloc"
@@ -613,7 +635,7 @@ let protectx ~f x ~(finally : 'a -> unit) =
   res
 
 class connection ?host ?hostaddr ?port ?dbname ?user ?password ?options ?tty
-    ?requiressl ?conninfo =
+    ?requiressl ?conninfo ?(startonly = false) =
 
   let conn_info =
     match conninfo with
@@ -642,9 +664,9 @@ class connection ?host ?hostaddr ?port ?dbname ?user ?password ?options ?tty
         Buffer.contents b in
 
   fun () ->
-    let my_conn = Stub.connect conn_info in
+    let my_conn = Stub.connect conn_info startonly in
     let () =
-      if Stub.connection_status my_conn <> Ok then (
+      if Stub.connection_status my_conn = Bad then (
         let s = Stub.error_message my_conn in
         Stub.finish my_conn;
         raise (Error (Connection_failure s)))
@@ -902,6 +924,10 @@ object (self)
 
 
   (* Asynchronous operations and non blocking mode *)
+
+  method connect_poll = wrap_conn Stub.connect_poll
+  method reset_start = wrap_conn Stub.reset_start
+  method reset_poll = wrap_conn Stub.reset_poll
 
   method set_nonblocking b =
     wrap_conn (fun conn ->

@@ -361,7 +361,22 @@ end
 (** {6 Handling database connections} *)
 
 (** Status of a connection *)
-type connection_status = Ok | Bad
+type connection_status =
+  | Ok | Bad
+  (* Non-blocking: *)
+  | Connection_started
+  | Connection_made
+  | Connection_awaiting_response
+  | Connection_auth_ok
+  | Connection_setenv
+  | Connection_ssl_startup
+
+(** Polling status used while establishing a connection asynchronously. *)
+type polling_status =
+  | Polling_failed
+  | Polling_reading
+  | Polling_writing
+  | Polling_ok
 
 (** Record of connection options *)
 type conninfo_option =
@@ -383,6 +398,10 @@ external conndefaults : unit -> conninfo_option array = "PQconndefaults_stub"
 
     When [conninfo] is given, it will be used instead of all other
     optional arguments.
+
+    @param startonly If true, initiate a non-blocking connect procedure, which
+      involves cooperative calls to {!connect_poll} before the connection is
+      usable.
 *)
 class connection :
   ?host : string ->  (* Default: none *)
@@ -395,6 +414,7 @@ class connection :
   ?tty : string ->  (* Default: none *)
   ?requiressl : string ->  (* Default: none *)
   ?conninfo : string ->  (* Default: none *)
+  ?startonly : bool -> (* Default: false *)
   unit ->
   (** @raise Error if there is a connection failure. *)
 object
@@ -722,6 +742,33 @@ object
 
 
   (** Asynchronous operations and non blocking mode *)
+
+  method connect_poll : polling_status
+  (** After creating a connection with [~startonly:true], {!connect_poll}
+      must be called a number of times before the connection can be used.  The
+      precise procedure is described in libpq manual, but the following code
+      should capture the idea, assuming monadic concurrency primitives
+      [return] and [>>=] along with polling functions [wait_for_read] and
+      [wait_for_write]:
+      {[
+        let my_async_connect () =
+          let c = new connection () in
+          let rec establish_connection = function
+            | Polling_failed | Polling_ok -> return c
+            | Polling_reading -> wait_for_read c#socket >>= fun () ->
+                                 establish_connection c#connect_poll
+            | Polling_writing -> wait_for_write c#socket >>= fun () ->
+                                 establish_connection c#connect_poll in
+          establish_connection Polling_writing
+      ]}
+      See also [examples/async.ml]. *)
+
+  method reset_start : bool
+  (** An asynchronous variant of {!reset}.  Use {!reset_poll} to
+      finish re-establishing the connection. *)
+
+  method reset_poll : polling_status
+  (** Used analogously to {!connect_poll} after calling {!reset_start} *)
 
   method set_nonblocking : bool -> unit
   (** [set_nonblocking b] sets state of the connection to nonblocking if

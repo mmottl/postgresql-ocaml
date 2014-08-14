@@ -209,8 +209,6 @@ static inline void np_decr_refcount(np_callback *c)
 /* Database Connection Functions */
 
 /* Missing:
-     PQconnectStart, PQconnectPoll, PQresetStart, PQresetPoll:
-       for non-blocking connection
      PQgetssl: the SSL structure used in the connection
 */
 
@@ -244,21 +242,26 @@ static inline void free_conn(value v_conn)
   }
 }
 
-CAMLprim value PQconnectdb_stub(value v_conn_info)
+CAMLprim value PQconnectdb_stub(value v_conn_info, value v_startonly)
 {
   PGconn *conn;
   value v_conn;
-
-  size_t len = caml_string_length(v_conn_info) + 1;
   PGcancel *cancel;
-  char *conn_info = caml_stat_alloc(len);
-  memcpy(conn_info, String_val(v_conn_info), len);
 
-  caml_enter_blocking_section();
-    conn = PQconnectdb(conn_info);
+  if (Bool_val(v_startonly)) {
+    conn = PQconnectStart(String_val(v_conn_info));
     cancel = PQgetCancel(conn);
-    free(conn_info);
-  caml_leave_blocking_section();
+  }
+  else {
+    size_t len = caml_string_length(v_conn_info) + 1;
+    char *conn_info = caml_stat_alloc(len);
+    memcpy(conn_info, String_val(v_conn_info), len);
+    caml_enter_blocking_section();
+      conn = PQconnectdb(conn_info);
+      cancel = PQgetCancel(conn);
+      free(conn_info);
+    caml_leave_blocking_section();
+  }
 
   /* One may raise this 30 to 500 for instance if the program takes
      responsibility of closing connections */
@@ -349,6 +352,9 @@ static inline value make_string(const char *s)
     return ret(fun(get_conn(v_conn))); \
   }
 
+conn_info(PQconnectPoll, Val_int)
+conn_info(PQresetStart, Val_int)
+conn_info(PQresetPoll, Val_int)
 conn_info(PQdb, make_string)
 conn_info(PQuser, make_string)
 conn_info(PQpass, make_string)

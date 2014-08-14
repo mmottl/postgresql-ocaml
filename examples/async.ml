@@ -1,4 +1,7 @@
+open Printf
 open Postgresql
+
+let failwith_f fmt = ksprintf failwith fmt
 
 let _ =
   if Array.length Sys.argv <> 2 then (
@@ -22,13 +25,29 @@ let fetch_single_result c =
   | None -> assert false
   | Some r -> assert (fetch_result c = None); r
 
-let main () =
-  let c = new connection ~conninfo:Sys.argv.(1) () in
-  c#set_nonblocking true;
+(* See http://www.postgresql.org/docs/devel/static/libpq-connect.html *)
+let rec finish_conn socket_fd connect_poll = function
+  | Polling_failed ->
+    printf "f\n%!"
+  | Polling_reading ->
+    printf "r,%!";
+    ignore (Unix.select [socket_fd] [] [] (-1.0));
+    finish_conn socket_fd connect_poll (connect_poll ())
+  | Polling_writing ->
+    printf "w,%!";
+    ignore (Unix.select [] [socket_fd] [] (-1.0));
+    finish_conn socket_fd connect_poll (connect_poll ())
+  | Polling_ok ->
+    printf "c\n%!"
+
+let test (c : connection) =
+  (* Create a table using a non-prepared statement. *)
   c#send_query "\
     CREATE TEMPORARY TABLE postgresql_ocaml_async \
       (id SERIAL PRIMARY KEY, a INTEGER NOT NULL, b TEXT NOT NULL)";
   assert ((fetch_single_result c)#status = Command_ok);
+
+  (* Populate using a prepared statement. *)
   c#send_prepare "test_ins"
                  "INSERT INTO postgresql_ocaml_async (a, b) VALUES ($1, $2)";
   assert ((fetch_single_result c)#status = Command_ok);
@@ -36,8 +55,12 @@ let main () =
   assert ((fetch_single_result c)#status = Command_ok);
   c#send_query_prepared ~params:[|"3"; "three"|] "test_ins";
   assert ((fetch_single_result c)#status = Command_ok);
+
+  (* Prepare a select statement. *)
   c#send_prepare "test_sel" "SELECT * FROM postgresql_ocaml_async";
   assert ((fetch_single_result c)#status = Command_ok);
+
+  (* Describe it. *)
   c#send_describe_prepared "test_sel";
   let r = fetch_single_result c in
   assert (r#status = Command_ok);
@@ -45,6 +68,8 @@ let main () =
   assert (r#fname 0 = "id");
   assert (r#fname 1 = "a");
   assert (r#fname 2 = "b");
+
+  (* Run it. *)
   c#send_query_prepared "test_sel";
   let r = fetch_single_result c in
   assert (r#status = Tuples_ok);
@@ -54,6 +79,22 @@ let main () =
     Printf.printf "%s %s %s\n"
                   (r#getvalue i 0) (r#getvalue i 1) (r#getvalue i 2)
   done
+
+let main () =
+  (* Async connect and test. *)
+  let c = new connection ~conninfo:Sys.argv.(1) ~startonly:true () in
+  finish_conn (Obj.magic c#socket) (fun () -> c#connect_poll) Polling_writing;
+  if c#status = Bad then failwith_f "Connection failed: %s" c#error_message;
+  assert (c#status = Ok);
+  c#set_nonblocking true;
+  test c;
+
+  (* Async reset and test again. *)
+  if not c#reset_start then failwith_f "reset_start failed: %s" c#error_message;
+  finish_conn (Obj.magic c#socket) (fun () -> c#reset_poll) Polling_writing;
+  if c#status = Bad then failwith_f "Reset connection bad: %s" c#error_message;
+  assert (c#status = Ok);
+  test c
 
 let _ =
   try main () with
