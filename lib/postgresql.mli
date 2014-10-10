@@ -24,6 +24,8 @@
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 *)
 
+open Postgresql_compat
+
 (** Client-interface to the PostgreSQL database. *)
 
 (** Please learn about more details in the database documentation! *)
@@ -669,30 +671,30 @@ object
 
   (** Low level *)
 
-  method getline : ?pos : int -> ?len : int -> string -> getline_result
+  method getline : ?pos : int -> ?len : int -> Bytes.t -> getline_result
   (** [getline ?pos ?len buf] reads a newline-terminated line of at most
       [len] characters into [buf] starting at position [pos].
 
       @return getline_result
 
       @param pos default = 0
-      @param len default = String.length buf - pos
+      @param len default = Bytes.length buf - pos
 
       @raise Invalid_argument if the buffer parameters are invalid.
       @raise Error if there is a connection error.
   *)
 
   method getline_async :
-    ?pos : int -> ?len : int -> string -> getline_async_result
+    ?pos : int -> ?len : int -> Bytes.t -> getline_async_result
   (** [getline_async ?pos ?len buf] reads a newline-terminated line of
       at most [len] characters into [buf] starting at position [pos]
-      (asynchronously). No need to call [endcopy] after receiving
+      (asynchronously).  No need to call [endcopy] after receiving
       [EndOfData].
 
       @return getline_async_result
 
       @param pos default = 0
-      @param len default = String.length buf - pos
+      @param len default = Bytes.length buf - pos
 
       @raise Invalid_argument if the buffer parameters are invalid.
       @raise Error if there is a connection error.
@@ -865,12 +867,12 @@ object
     large_object -> unit
   (** As [lo_write], but performs a zero-copy write from the given Bigarray. *)
 
-  method lo_read : large_object -> ?pos : int -> ?len : int -> string -> int
+  method lo_read : large_object -> ?pos : int -> ?len : int -> Bytes.t -> int
   (** [lo_read lo ?pos ?len buf] reads [len] bytes from large object [lo]
       to buffer [buf] starting at position [pos].
 
       @param pos default = 0
-      @param len default = String.length buf - pos
+      @param len default = Bytes.length buf - pos
 
       @raise Invalid_argument if the buffer parameters are invalid.
       @raise Error if [len] bytes could not be read.

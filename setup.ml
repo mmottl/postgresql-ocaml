@@ -7075,4 +7075,24 @@ let setup () = BaseSetup.setup setup_t;;
 
 # 7077 "setup.ml"
 (* OASIS_STOP *)
+
+let () =
+  let ocaml_major, ocaml_minor =
+    Scanf.sscanf Sys.ocaml_version "%i.%i" (fun v1 v2 -> v1, v2) in
+  let cp_file src dst =
+    let ic = open_in src in
+    let oc = open_out dst in
+    try while true do output_string oc (input_line ic ^ "\n") done
+    with End_of_file ->
+      close_out oc;
+      close_in ic
+  in
+  let src =
+    if ocaml_major > 4 || (ocaml_major = 4 && ocaml_minor >= 2) then
+      "lib/postgresql_compat402.ml"
+    else
+      "lib/postgresql_compat312.ml"
+  in
+  cp_file src "lib/postgresql_compat.ml"
+
 let () = setup ();;

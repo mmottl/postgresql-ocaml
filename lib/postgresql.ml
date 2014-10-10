@@ -24,6 +24,7 @@
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 *)
 
+open Postgresql_compat
 open Printf
 
 type oid = int
@@ -447,10 +448,10 @@ module Stub = struct
   (* Functions Associated with the COPY Command *)
 
   external getline :
-    connection -> string -> int -> int -> int = "PQgetline_stub"
+    connection -> Bytes.t -> int -> int -> int = "PQgetline_stub"
 
   external getline_async :
-    connection -> string -> int -> int -> int = "PQgetlineAsync_stub" "noalloc"
+    connection -> Bytes.t -> int -> int -> int = "PQgetlineAsync_stub" "noalloc"
 
   external putline : connection -> string -> int = "PQputline_stub"
 
@@ -485,7 +486,7 @@ module Stub = struct
   external lo_unlink : connection -> oid -> oid = "lo_unlink_stub"
 
   external lo_read :
-    connection -> large_object -> string -> int -> int -> int = "lo_read_stub"
+    connection -> large_object -> Bytes.t -> int -> int -> int = "lo_read_stub"
 
   external lo_read_ba :
     connection -> large_object ->
@@ -856,7 +857,7 @@ object (self)
   (* Low level *)
 
   method getline ?(pos = 0) ?len buf =
-    let buf_len = String.length buf in
+    let buf_len = Bytes.length buf in
     let len = match len with Some len -> len | None -> buf_len - pos in
     if len < 0 || pos < 0 || pos + len > buf_len then
       invalid_arg "Postgresql.connection#getline";
@@ -868,7 +869,7 @@ object (self)
       | _ -> assert false)
 
   method getline_async ?(pos = 0) ?len buf =
-    let buf_len = String.length buf in
+    let buf_len = Bytes.length buf in
     let len = match len with Some len -> len | None -> buf_len - pos in
     if len < 0 || pos < 0 || pos + len > buf_len then
       invalid_arg "Postgresql.connection#getline_async";
@@ -877,7 +878,7 @@ object (self)
       | -1 -> if Stub.endcopy conn <> 0 then signal_error conn else EndOfData
       | 0 -> NoData
       | n when n > 0 ->
-         if buf.[pos + n - 1] = '\n' then DataRead n else PartDataRead n
+         if Bytes.get buf (pos + n - 1) = '\n' then DataRead n else PartDataRead n
       | _ -> assert false)
 
   method putline buf =
@@ -900,17 +901,17 @@ object (self)
   method copy_out f =
     let buf = Buffer.create 1024 in
     let len = 512 in
-    let s = String.create len in
+    let bts = Bytes.create len in
     wrap_conn (fun conn ->
       let rec loop () =
-        let r = Stub.getline conn s 0 len in
+        let r = Stub.getline conn bts 0 len in
         if r = 1 then begin  (* Buffer full *)
-          Buffer.add_substring buf s 0 len;
+          buffer_add_subbytes buf bts 0 len;
           loop ()
         end
         else if r = 0 then  (* Line read *)
-          let zero = String.index s '\000' in
-          Buffer.add_substring buf s 0 zero;
+          let zero = Bytes.index bts '\000' in
+          buffer_add_subbytes buf bts 0 zero;
           match Buffer.contents buf with
           | "\\." -> ()
           | line -> Buffer.clear buf; f line; loop ()
@@ -1000,9 +1001,9 @@ object (self)
       if w < len then signal_error conn)
 
   method lo_read lo ?(pos = 0) ?len buf =
-    let buf_len = String.length buf in
+    let buf_len = Bytes.length buf in
     let len = match len with Some len -> len | None -> buf_len - pos in
-    if len < 0 || pos < 0 || pos + len > String.length buf then
+    if len < 0 || pos < 0 || pos + len > buf_len then
       invalid_arg "Postgresql.connection#lo_read";
     wrap_conn (fun conn ->
       let read = Stub.lo_read conn lo buf pos len in
