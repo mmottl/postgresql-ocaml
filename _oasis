@@ -1,6 +1,6 @@
 OASISFormat:      0.4
 Name:             postgresql-ocaml
-Version:          2.1.0
+Version:          2.1.1
 Synopsis:         postgresql-ocaml - bindings to the PostgreSQL library
 Description:      postgresql-ocaml offers library functions for accessing PostgreSQL databases
 Authors:          Alain Frisch <alain.frisch@lexifi.com>,
@@ -14,7 +14,7 @@ Maintainers:      Markus Mottl <markus.mottl@gmail.com>,
 LicenseFile:      COPYING.txt
 License:          LGPL-2.1+ with OCaml linking exception
 OCamlVersion:     >= 3.12
-FindlibVersion:   >= 1.3.1
+FindlibVersion:   >= 1.5
 Homepage:         http://mmottl.github.io/postgresql-ocaml
 #Categories:
 #FilesAB:
@@ -37,7 +37,7 @@ Library postgresql
   if flag(strict) && ccomp_type(cc)
     CCOpt+:       -Wall -pedantic -Wextra -Wunused -Wno-long-long
   CCLib:          -lpq
-  BuildDepends:   threads, bigarray
+  BuildDepends:   threads, bigarray, bytes
 
 
 # Examples

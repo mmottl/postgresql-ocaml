@@ -1,3 +1,6 @@
+2014-10-23:  Fixed string handling for new OCaml version 4.02 (String/Bytes
+             modules).  Requires new findlib version (>= 1.5).
+
 2014-08-14:  Even more new asynchronous methods:
 
                * optional [startonly] flag for creating an asynchronous connection

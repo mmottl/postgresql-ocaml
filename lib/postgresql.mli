@@ -24,8 +24,6 @@
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 *)
 
-open Postgresql_compat
-
 (** Client-interface to the PostgreSQL database. *)
 
 (** Please learn about more details in the database documentation! *)

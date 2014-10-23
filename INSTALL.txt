@@ -1,5 +1,5 @@
 (* OASIS_START *)
-(* DO NOT EDIT (digest: c9cde8d1d7a6bc1ed6236ec912d83768) *)
+(* DO NOT EDIT (digest: e89ae2ea2704a024c7441389a203faa8) *)
 
 This is the INSTALL file for the postgresql-ocaml distribution.
 
@@ -12,7 +12,8 @@ Dependencies
 In order to compile this package, you will need:
 
 * ocaml (>= 3.12) for all, doc API
-* findlib (>= 1.3.1)
+* findlib (>= 1.5)
+* bytes for library postgresql
 * lablgtk2 for executable prompt_gtk
 
 Installing
