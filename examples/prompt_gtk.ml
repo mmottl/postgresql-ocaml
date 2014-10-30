@@ -32,7 +32,8 @@ let make_window title =
   let vbox = GPack.vbox ~packing:window#add () in
 
   let button =
-    GButton.button ~label:"Close" ~packing:(vbox#pack ~from:`END) () in
+    GButton.button ~label:"Close" ~packing:(fun widget ->
+      vbox#pack ~from:`END widget) () in
 
   let _ = button#connect#clicked ~callback:window#destroy in
 
@@ -83,8 +84,9 @@ let main () =
     match conn#get_result with
     | Some res ->
         (match res#status with
-        | Tuples_ok -> show_tuples res
+        | Tuples_ok | Single_tuple -> show_tuples res
         | Copy_out -> show_copy_out conn
+        | Copy_both -> show_copy_out conn
         | Copy_in ->
             let name = file_dialog "Choose file to send" in
             if name = "" then (conn # putline "\\.\n"; conn#endcopy)
