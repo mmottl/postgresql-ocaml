@@ -1,6 +1,6 @@
 OASISFormat:      0.4
 Name:             postgresql-ocaml
-Version:          2.1.1
+Version:          2.1.2
 Synopsis:         postgresql-ocaml - bindings to the PostgreSQL library
 Description:      postgresql-ocaml offers library functions for accessing PostgreSQL databases
 Authors:          Alain Frisch <alain.frisch@lexifi.com>,
@@ -29,15 +29,16 @@ Flag strict
   Default:        true
 
 Library postgresql
-  Path:           lib
-  FindlibName:    postgresql
-  Modules:        Postgresql
-  CSources:       postgresql_stubs.c
-  CCOpt:          -g -O2 -fPIC -DPIC
+  Path:            lib
+  FindlibName:     postgresql
+  Modules:         Postgresql
+  InternalModules: Postgresql_compat
+  CSources:        postgresql_stubs.c
+  CCOpt:           -g -O2 -fPIC -DPIC
   if flag(strict) && ccomp_type(cc)
-    CCOpt+:       -Wall -pedantic -Wextra -Wunused -Wno-long-long
-  CCLib:          -lpq
-  BuildDepends:   threads, bigarray, bytes
+    CCOpt+:        -Wall -pedantic -Wextra -Wunused -Wno-long-long
+  CCLib:           -lpq
+  BuildDepends:    threads, bigarray, bytes
 
 
 # Examples
