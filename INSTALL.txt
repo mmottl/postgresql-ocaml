@@ -1,7 +1,7 @@
 (* OASIS_START *)
-(* DO NOT EDIT (digest: e89ae2ea2704a024c7441389a203faa8) *)
+(* DO NOT EDIT (digest: c6dafb6ced657b29aa9d432c9e0b8f78) *)
 
-This is the INSTALL file for the postgresql-ocaml distribution.
+This is the INSTALL file for the postgresql distribution.
 
 This package uses OASIS to generate its build system. See section OASIS for
 full information.
