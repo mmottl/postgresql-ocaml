@@ -380,6 +380,11 @@ type polling_status =
   | Polling_writing
   | Polling_ok
 
+(** Result of a call to flush on nonblocking connections. *)
+type flush_status =
+  | Successful
+  | Data_left_to_send
+
 (** Record of connection options *)
 type conninfo_option =
   {
@@ -526,6 +531,7 @@ object
       @raise Error if there is a connection error.
   *)
 
+  method server_version : int * int * int (* major, minor, revision *)
 
   (** Commands and Queries *)
 
@@ -801,7 +807,7 @@ object
       @raise Error if there is a connection error.
   *)
 
-  method flush : unit
+  method flush : flush_status
   (** [flush] attempts to flush any data queued to the backend.
 
       @raise Error if there is a connection error.

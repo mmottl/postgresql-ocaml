@@ -369,7 +369,7 @@ conn_info(PQoptions, make_string)
 noalloc_conn_info(PQstatus, Val_int)
 conn_info(PQerrorMessage, make_string)
 noalloc_conn_info(PQbackendPID, Val_int)
-
+noalloc_conn_info(PQserverVersion, Val_int)
 
 /* Command Execution Functions */
 

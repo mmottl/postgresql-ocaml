@@ -254,6 +254,10 @@ type polling_status =
   | Polling_writing
   | Polling_ok
 
+type flush_status =
+  | Successful
+  | Data_left_to_send
+
 type conninfo_option =
   {
     cio_keyword : string;
@@ -340,7 +344,7 @@ module Stub = struct
 
   external error_message : connection -> string = "PQerrorMessage_stub"
   external backend_pid : connection -> int = "PQbackendPID_stub" "noalloc"
-
+  external server_version : connection -> int = "PQserverVersion_stub" "noalloc"
 
   (* Command Execution Functions *)
 
@@ -773,6 +777,20 @@ object (self)
   method status = wrap_conn Stub.connection_status
   method error_message = wrap_conn Stub.error_message
   method backend_pid = wrap_conn Stub.backend_pid
+  method server_version = wrap_conn (fun conn ->
+    let v = Stub.server_version conn in
+    if v = 0 then begin
+      let message = if Stub.connection_status conn = Bad
+        then "server_version failed because the connection was bad"
+        else "server_version failed for an unknown reason"
+      in
+      raise (Error (Connection_failure message))
+    end;
+    let revision = v mod 100 in
+    let minor    = (v / 100) mod 100 in
+    let major    = v / (100 * 100) in
+    major, minor, revision
+  )
 
 
   (* Commands and Queries *)
@@ -882,7 +900,10 @@ object (self)
       | _ -> assert false)
 
   method putline buf =
-    wrap_conn (fun conn -> if Stub.putline conn buf <> 0 then signal_error conn)
+    wrap_conn (fun conn ->
+      if (Stub.putline conn buf <> 0) && not (Stub.is_nonblocking conn) then
+        signal_error conn
+    )
 
   method putnbytes ?(pos = 0) ?len buf =
     let buf_len = String.length buf in
@@ -890,10 +911,15 @@ object (self)
     if len < 0 || pos < 0 || pos + len > buf_len then
       invalid_arg "Postgresql.connection#putnbytes";
     wrap_conn (fun conn ->
-      if Stub.putnbytes conn buf pos len <> 0 then signal_error conn)
+      if (Stub.putnbytes conn buf pos len <> 0) && not (Stub.is_nonblocking conn) then
+        signal_error conn
+    )
 
   method endcopy =
-    wrap_conn (fun conn -> if Stub.endcopy conn <> 0 then signal_error conn)
+    wrap_conn (fun conn ->
+      if (Stub.endcopy conn <> 0) && not (Stub.is_nonblocking conn) then
+        signal_error conn
+    )
 
 
   (* High level *)
@@ -948,7 +974,12 @@ object (self)
   method is_busy = wrap_conn Stub.is_busy
 
   method flush =
-    wrap_conn (fun conn -> if Stub.flush conn <> 0 then signal_error conn)
+    wrap_conn (fun conn ->
+      match Stub.flush conn with
+      | 0 -> Successful
+      | 1 -> Data_left_to_send
+      | _ -> signal_error conn
+    )
 
   method socket =
     wrap_conn (fun conn ->
