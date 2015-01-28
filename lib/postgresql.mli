@@ -531,7 +531,12 @@ object
       @raise Error if there is a connection error.
   *)
 
-  method server_version : int * int * int (* major, minor, revision *)
+  method server_version : int * int * int
+  (* [#server_version] @return (major, minor, revision).
+
+      @raise Error if there is a connection error.
+  *)
+
 
   (** Commands and Queries *)
 
