@@ -1,13 +1,13 @@
 OASISFormat:      0.4
 Name:             postgresql
-Version:          2.1.2
+Version:          3.0.0
 Synopsis:         postgresql-ocaml - bindings to the PostgreSQL library
 Description:      postgresql-ocaml offers library functions for accessing PostgreSQL databases
 Authors:          Alain Frisch <alain.frisch@lexifi.com>,
                   Markus Mottl <markus.mottl@gmail.com>,
                   Petter Urkedal <paurkedal@gmail.com>
 Copyrights:       (C) 2001-2012 Alain Frisch <alain.frisch@lexifi.com>,
-                  (C) 2004-2014 Markus Mottl <markus.mottl@gmail.com>,
+                  (C) 2004-2015 Markus Mottl <markus.mottl@gmail.com>,
                   (C) 2014-2014 Petter Urkedal <paurkedal@gmail.com>
 Maintainers:      Markus Mottl <markus.mottl@gmail.com>,
                   Alain Frisch <alain.frisch@lexifi.com>

@@ -1,3 +1,8 @@
+2015-01-28:  New major release: improved handling of asynchronous operations.
+             This required an API-change to the "flush" method.
+
+             Thanks to Max Wolter from Jane Street Capital for the patch!
+
 2014-10-29:  Fixed an installation problem due to a missing internal module.
 
 2014-10-23:  Fixed string handling for new OCaml version 4.02 (String/Bytes
@@ -10,28 +15,28 @@
                * reset_start
                * reset_poll
 
-            And also:
+             And also:
 
-              * set_single_row_mode
+               * set_single_row_mode
 
-            Thanks to Petter Urkedal <paurkedal@gmail.com> for these
-            contributions!
+             Thanks to Petter Urkedal <paurkedal@gmail.com> for these
+             contributions!
 
 2014-08-10:  New asynchronous methods:
 
                * send_describe_prepared
                * send_describe_portal
 
-            Thanks to Petter Urkedal <paurkedal@gmail.com> for these
-            contributions!
+             Thanks to Petter Urkedal <paurkedal@gmail.com> for these
+             contributions!
 
 2014-03-10:  New asynchronous methods:
 
                * send_prepare
                * send_query_prepared
 
-            Thanks to Petter Urkedal <paurkedal@gmail.com> for these
-            contributions!
+             Thanks to Petter Urkedal <paurkedal@gmail.com> for these
+             contributions!
 
 2013-07-08:  Fixed a version discovery problem with beta versions of
              PostgreSQL.
