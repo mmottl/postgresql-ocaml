@@ -1,3 +1,7 @@
+2015-03-26:  Added support for JSON and JSONB field types.
+
+             Thanks to Tomohiro Matsuyama for the patch!
+
 2015-01-28:  New major release: improved handling of asynchronous operations.
              This required an API-change to the "flush" method.
 
