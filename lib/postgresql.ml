@@ -56,6 +56,7 @@ type ftype =
   | XID
   | CID
   | OIDVECTOR
+  | JSON
   | POINT
   | LSEG
   | PATH
@@ -101,6 +102,7 @@ type ftype =
   | INTERNAL
   | OPAQUE
   | ANYELEMENT
+  | JSONB
 
 external ftype_of_oid : oid -> ftype = "ftype_of_oid_stub"
 external oid_of_ftype : ftype -> oid = "oid_of_ftype_stub"
@@ -121,6 +123,7 @@ let string_of_ftype = function
   | XID -> "XID"
   | CID -> "CID"
   | OIDVECTOR -> "OIDVECTOR"
+  | JSON -> "JSON"
   | POINT -> "POINT"
   | LSEG -> "LSEG"
   | PATH -> "PATH"
@@ -166,6 +169,7 @@ let string_of_ftype = function
   | INTERNAL -> "INTERNAL"
   | OPAQUE -> "OPAQUE"
   | ANYELEMENT -> "ANYELEMENT"
+  | JSONB -> "JSONB"
 
 let ftype_of_string = function
   | "BOOL" -> BOOL
@@ -183,6 +187,7 @@ let ftype_of_string = function
   | "XID" -> XID
   | "CID" -> CID
   | "OIDVECTOR" -> OIDVECTOR
+  | "JSON" -> JSON
   | "POINT" -> POINT
   | "LSEG" -> LSEG
   | "PATH" -> PATH
@@ -228,6 +233,7 @@ let ftype_of_string = function
   | "INTERNAL" -> INTERNAL
   | "OPAQUE" -> OPAQUE
   | "ANYELEMENT" -> ANYELEMENT
+  | "JSONB" -> JSON
   | str -> failwith ("ftype_of_string: unknown ftype: " ^ str)
 
 external init : unit -> unit = "PQocaml_init"

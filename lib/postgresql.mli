@@ -60,6 +60,7 @@ type ftype =
   | XID
   | CID
   | OIDVECTOR
+  | JSON
   | POINT
   | LSEG
   | PATH
@@ -105,6 +106,7 @@ type ftype =
   | INTERNAL
   | OPAQUE
   | ANYELEMENT
+  | JSONB
 
 
 (** Status of command/query results *)
