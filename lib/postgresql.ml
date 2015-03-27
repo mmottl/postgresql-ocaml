@@ -567,9 +567,17 @@ object
     check_field field;
     ftype_of_oid (Stub.ftype res field)
 
+  method ftype_oid field =
+    check_field field;
+    Stub.ftype res field
+
   method paramtype field =
     check_param field;
     ftype_of_oid (Stub.paramtype res field)
+
+  method paramtype_oid field =
+    check_param field;
+    Stub.paramtype res field
 
   method fmod field = check_field field; Stub.fmod res field
   method fsize field = check_field field; Stub.fsize res field
