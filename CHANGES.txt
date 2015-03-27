@@ -1,3 +1,7 @@
+2015-03-27:  Added methods ftype_oid and paramtype_oid and fixed a minor bug.
+
+             Thanks to Tomohiro Matsuyama for the patches!
+
 2015-03-26:  Added support for JSON and JSONB field types.
 
              Thanks to Tomohiro Matsuyama for the patch!
