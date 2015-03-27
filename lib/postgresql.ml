@@ -233,7 +233,7 @@ let ftype_of_string = function
   | "INTERNAL" -> INTERNAL
   | "OPAQUE" -> OPAQUE
   | "ANYELEMENT" -> ANYELEMENT
-  | "JSONB" -> JSON
+  | "JSONB" -> JSONB
   | str -> failwith ("ftype_of_string: unknown ftype: " ^ str)
 
 external init : unit -> unit = "PQocaml_init"
