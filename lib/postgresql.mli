@@ -261,6 +261,12 @@ class type result = object
       @raise Error if field out of range.
   *)
 
+  method ftype_oid : int -> oid
+  (** [#ftype n] @return the oid of the [n]th field.
+
+      @raise Error if field out of range.
+  *)
+
   method paramtype : int -> ftype
   (** [#paramtype n] @return the datatype of the indicated statement
       parameter.  Parameter numbers start at 0.  This function is
@@ -268,6 +274,15 @@ class type result = object
       For other types of queries it will return zero.
 
       @raise Oid if there was no corresponding ftype for the internal [oid].
+      @raise Error if field out of range.
+  *)
+
+  method paramtype_oid : int -> oid
+  (** [#paramtype n] @return the oid of the indicated statement
+      parameter.  Parameter numbers start at 0.  This function is
+      only useful when inspecting the result of [#describe_prepared].
+      For other types of queries it will return zero.
+
       @raise Error if field out of range.
   *)
 
