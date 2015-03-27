@@ -325,6 +325,11 @@ let string_of_error = function
 
 exception Error of error
 
+let () =
+  Printexc.register_printer
+    (function
+      | Error e -> Some (Printf.sprintf "Postgresql.Error(%S)" (string_of_error e))
+      | _ -> None)
 
 module Stub = struct
   (* Database Connection Functions *)
