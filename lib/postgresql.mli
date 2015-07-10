@@ -213,7 +213,7 @@ val null : string
     Indices of tuples and fields start at 0!
 *)
 class type result = object
-  (** Main routines *)
+  (* Main routines *)
 
   method status : result_status
   (** [#status] @return status of a command/query result. *)
@@ -426,6 +426,8 @@ external conndefaults : unit -> conninfo_option array = "PQconndefaults_stub"
     @param startonly If true, initiate a non-blocking connect procedure, which
       involves cooperative calls to {!connect_poll} before the connection is
       usable.
+
+    @raise Error if there is a connection failure.
 *)
 class connection :
   ?host : string ->  (* Default: none *)
@@ -440,9 +442,8 @@ class connection :
   ?conninfo : string ->  (* Default: none *)
   ?startonly : bool -> (* Default: false *)
   unit ->
-  (** @raise Error if there is a connection failure. *)
 object
-  (** Main routines *)
+  (* Main routines *)
 
   method finish : unit
   (** [#finish] closes the connection.
