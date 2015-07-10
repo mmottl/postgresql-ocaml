@@ -315,7 +315,7 @@ CAMLprim value PQconndefaults_stub(value __unused v_unit)
     for (j = 0; j < 7; j++) Field(v_el, j) = v_None;
     Store_field(v_res, i, v_el);
     v_field = caml_copy_string(p->keyword);
-    Field(v_el, 0) = v_field;
+    Store_field(v_el, 0, v_field);
     if (p->envvar) {
       v_field = make_some(caml_copy_string(p->envvar));
       caml_modify(&Field(v_el, 1), v_field);
