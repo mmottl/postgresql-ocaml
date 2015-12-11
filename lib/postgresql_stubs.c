@@ -43,6 +43,7 @@
 
 #include <string.h>
 #include <ctype.h>
+#include <stdbool.h>
 
 #include <caml/mlvalues.h>
 #include <caml/alloc.h>
@@ -141,9 +142,6 @@ CAMLprim value PQocaml_init(value __unused v_unit)
   v_null_param = caml_named_value("Postgresql.null");
   return Val_unit;
 }
-
-static inline value unescape_bytea_9x(const char *s);
-static inline value unescape_bytea(const char *s);
 
 
 /* Conversion functions */
@@ -689,6 +687,83 @@ CAMLprim value PQgetvalue_stub(value v_res, value v_tup_num, value v_field_num)
   CAMLreturn(v_str);
 }
 
+
+/* Unescaping - auxiliary routines */
+
+static inline bool is_bytea_hex_protocol(const char * str)
+{
+  return (str[0] == '\\' && str[1] == 'x');
+}
+
+static inline int is_hex_digit(char c)
+{
+  return (
+    (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'));
+}
+
+static inline void raise_invalid_hex_encoding()
+{
+  caml_failwith("Postgresql: invalid hex encoding");
+}
+
+static size_t bytea_hex_pairs(const char *str)
+{
+  size_t n_hex_pairs = 0;
+
+  /* Length calculation and encoding verification */
+  while (*str != '\0') {
+    if (isspace(*str)) str++;
+    else if (is_hex_digit(*str)) {
+      str++;
+      if (is_hex_digit(*str)) { str++; n_hex_pairs++; }
+      else raise_invalid_hex_encoding();
+    }
+    else raise_invalid_hex_encoding();
+  }
+
+  return n_hex_pairs;
+}
+
+static value unescape_bytea(const char *str)
+{
+  /* Old protocol */
+  size_t res_len;
+  char *buf = (char *) PQunescapeBytea((unsigned char*) str, &res_len);
+  if (buf == NULL) caml_failwith("Postgresql: illegal bytea string");
+  else {
+    value v_res = caml_alloc_string(res_len);
+    memcpy(String_val(v_res), buf, res_len);
+    PQfreemem(buf);
+    return v_res;
+  }
+}
+
+static inline int unhexdigit(char c)
+{
+  if (c >= '0' && c <= '9') return (c - '0');
+  else if (c >= 'a' && c <= 'f') return (c - 'a' + 10);
+  else if (c >= 'A' && c <= 'F') return (c - 'A' + 10);
+  else
+    /* This should never happen at this point */
+    caml_failwith("Postgresql: internal error in unhexdigit");
+}
+
+static void decode_bytea_hex(const char *src, char *dst, size_t dst_len)
+{
+  char *end = dst + dst_len;
+  while (dst < end) {
+    if (isspace(*src)) src++;
+    else {
+      *dst = (char) ((unhexdigit(*src) << 4) | unhexdigit(src[1]));
+      src += 2;
+      dst++;
+    }
+  }
+}
+
+
+/* */
+
 CAMLprim value PQgetescval_stub(value v_res, value v_tup_num, value v_field_num)
 {
   CAMLparam1(v_res);
@@ -698,9 +773,15 @@ CAMLprim value PQgetescval_stub(value v_res, value v_tup_num, value v_field_num)
   size_t tup_num = Long_val(v_tup_num);
   char *str = PQgetvalue(res, tup_num, field_num);
   if (PQfformat(res, field_num) == 0) {
-    if (str != NULL && str[0] == '\\' && str[1] == 'x')
-      v_str = unescape_bytea_9x(str + 2);
-    else v_str = unescape_bytea(str);
+    if (str == NULL || strlen(str) < 2 || !is_bytea_hex_protocol(str))
+      CAMLreturn(unescape_bytea(str));
+    else {
+      size_t n_hex_pairs;
+      str += 2;
+      n_hex_pairs = bytea_hex_pairs(str);
+      v_str = caml_alloc_string(n_hex_pairs);
+      decode_bytea_hex(str, String_val(v_str), n_hex_pairs);
+    }
   } else {
     /* Assume binary format! */
     size_t len = PQgetlength(res, tup_num, field_num);
@@ -901,85 +982,21 @@ CAMLprim value PQescapeByteaConn_stub(
   return v_res;
 }
 
-static inline value unescape_bytea(const char *s)
-{
-  size_t len;
-  value v_res;
-  char *buf = (char *) PQunescapeBytea((unsigned char*) s, &len);
-  if (buf == NULL) {
-    caml_failwith("Postgresql.unescape_bytea: illegal bytea string");
-    return Val_unit;
-  }
-  v_res = caml_alloc_string(len);
-  memcpy(String_val(v_res), buf, len);
-  PQfreemem(buf);
-  return v_res;
-}
+/* Unescaping */
 
 CAMLprim value PQunescapeBytea_stub(value v_from)
 {
-  return unescape_bytea(String_val(v_from));
-}
-
-static inline value raise_invalid_hex_encoding()
-{
-  caml_failwith("Postgresql.unescape_bytea_9x: invalid hex encoding");
-  return Val_unit;
-}
-
-static inline int unhexdigit(char c)
-{
-  if (c >= '0' && c <= '9') return (c - '0');
-  else if (c >= 'a' && c <= 'f') return (c - 'a' + 10);
-  else if (c >= 'A' && c <= 'F') return (c - 'A' + 10);
-  else return raise_invalid_hex_encoding();
-}
-
-static inline int is_hex_digit(char c)
-{
-  return (
-    (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'));
-}
-
-static inline value unescape_bytea_9x(const char *str)
-{
-  value v_res;
-  char *res;
-  size_t n_hex_pairs = 0;
-  const char *end = str;
-
-  /* Length calculation and encoding verification */
-  while (*end != '\0') {
-    if (isspace(*end)) end++;
-    else if (is_hex_digit(*end)) {
-      end++;
-      if (is_hex_digit(*end)) { end++; n_hex_pairs++; }
-      else return raise_invalid_hex_encoding();
-    }
-    else return raise_invalid_hex_encoding();
-  }
-
-  /* Assumption: string has not changed since length calculation above! */
-  v_res = caml_alloc_string(n_hex_pairs);
-  res = String_val(v_res);
-  while (str < end) {
-    if (isspace(*str)) str++;
-    else {
-      *res = (char) ((unhexdigit(*str) << 4) | unhexdigit(str[1]));
-      str += 2;
-      res++;
-    }
-  }
-  return v_res;
-}
-
-CAMLprim value PQunescapeBytea9x_stub(value v_from)
-{
-  const char *s = String_val(v_from);
-  if (s != NULL && s[0] == '\\' && s[1] == 'x') return unescape_bytea_9x(s + 2);
+  const char *from = String_val(v_from);
+  size_t from_len = caml_string_length(v_from);
+  if (from_len < 2 || !is_bytea_hex_protocol(from)) return unescape_bytea(from);
   else {
-    caml_failwith("Postgresql.unescape_bytea_9x: hex prefix not found");
-    return Val_unit;
+    /* New protocol */
+    size_t res_len = bytea_hex_pairs(from + 2);
+    CAMLparam1(v_from);
+    value v_res = caml_alloc_string(res_len);
+    /* GC may have happened, have to use String_val on v_from again */
+    decode_bytea_hex(String_val(v_from) + 2, String_val(v_res), res_len);
+    CAMLreturn(v_res);
   }
 }
 

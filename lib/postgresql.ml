@@ -518,17 +518,8 @@ end
 
 (* Escaping *)
 
-external unescape_bytea_stub : string -> string = "PQunescapeBytea_stub"
-external unescape_bytea_9x_stub : string -> string = "PQunescapeBytea9x_stub"
+external unescape_bytea : string -> string = "PQunescapeBytea_stub"
 
-let unescape_bytea str =
-  let str_len = String.length str in
-  if str_len < 2 || str.[0] <> '\\' || str.[1] <> 'x' then
-    unescape_bytea_stub str
-  else
-    (* This is the new Postgresql 9.0 hex format for encoding bytea.  Older
-       clients do not recognize this format, but servers send it by default. *)
-    unescape_bytea_9x_stub str
 
 (* Query results *)
 
