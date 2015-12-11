@@ -36,7 +36,7 @@ Library postgresql
   CSources:        postgresql_stubs.c
   CCOpt:           -g -O2 -fPIC -DPIC
   if flag(strict) && ccomp_type(cc)
-    CCOpt+:        -Wall -pedantic -Wextra -Wunused -Wno-long-long
+    CCOpt+:        -Wall -pedantic -Wextra -Wunused -Wno-long-long -Wno-keyword-macro
   CCLib:           -lpq
   BuildDepends:    threads, bigarray, bytes
 
