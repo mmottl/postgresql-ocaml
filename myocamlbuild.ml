@@ -1,5 +1,5 @@
 (* OASIS_START *)
-(* DO NOT EDIT (digest: 2f6db32590a6b778a4f6a9b9c2878dd1) *)
+(* DO NOT EDIT (digest: 06eef5aa6ae6163b3da405de99e8b560) *)
 module OASISGettext = struct
 (* # 22 "src/oasis/OASISGettext.ml" *)
 
@@ -647,7 +647,9 @@ let package_default =
                       A "-ccopt";
                       A "-Wunused";
                       A "-ccopt";
-                      A "-Wno-long-long"
+                      A "-Wno-long-long";
+                      A "-ccopt";
+                      A "-Wno-keyword-macro"
                    ])
             ]);
           (["oasis_library_postgresql_cclib"; "link"],
@@ -663,7 +665,7 @@ let conf = {MyOCamlbuildFindlib.no_automatic_syntax = false}
 
 let dispatch_default = MyOCamlbuildBase.dispatch_default conf package_default;;
 
-# 667 "myocamlbuild.ml"
+# 669 "myocamlbuild.ml"
 (* OASIS_STOP *)
 
 let () =

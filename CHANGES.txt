@@ -1,3 +1,8 @@
+2015-12-18:  Fixed a GC-bug when unescaping with "unescape_bytea".
+
+             Thanks to Sebastien Mondet for the bug report and for testing
+             the patch!
+
 2015-07-10:  Fixed a GC-bug in PQconndefaults_stub.
 
              Thanks to Roven Gabriel for the patch!
