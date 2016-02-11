@@ -1,6 +1,6 @@
 # OASIS_START
-# DO NOT EDIT (digest: c37088413962ccee07fd0ec2f542e81f)
-version = "3.2.2"
+# DO NOT EDIT (digest: 492693823a984f41672f2c11c3c9e79e)
+version = "4.0.0"
 description = "postgresql-ocaml - bindings to the PostgreSQL library"
 requires = "threads bigarray bytes"
 archive(byte) = "postgresql.cma"

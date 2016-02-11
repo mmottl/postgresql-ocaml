@@ -1,3 +1,7 @@
+2016-02-11:  Improved the notification API (conn#notifies).
+
+             Thanks to Jonathan Curran for the initial patch!
+
 2015-12-18:  Fixed a GC-bug when unescaping with "unescape_bytea".
 
              Thanks to Sebastien Mondet for the bug report and for testing
