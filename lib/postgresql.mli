@@ -469,9 +469,10 @@ object
   (** Asynchronous Notification *)
 
   method notifies : (string * int * string) option
-  (** [#notifies] @return [Some (name, pid)] if available ([None]
+  (** [#notifies] @return [Some (name, pid, extra)] if available ([None]
       otherwise), where [name] is the name the of relation containing
-      data, [pid] the process id of the backend.
+      data, [pid] the process id of the backend, and [extra] is any payload
+      data associated with the notification (empty it not provided).
 
       @raise Error if there is a connection error.
   *)
