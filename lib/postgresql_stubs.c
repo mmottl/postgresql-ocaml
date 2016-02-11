@@ -1005,20 +1005,24 @@ CAMLprim value PQunescapeBytea_stub(value v_from)
 CAMLprim value PQnotifies_stub(value v_conn)
 {
   CAMLparam1(v_conn);
-  CAMLlocal1(v_str);
-  CAMLlocal1(v_extra);
-  PGnotify *noti = PQnotifies(get_conn(v_conn));
+  CAMLlocal2(v_str, v_extra);
+  PGnotify *notif = PQnotifies(get_conn(v_conn));
 
-  if (noti) {
-    value v_pair;
-    v_str = make_string(noti->relname);
-    v_pair = caml_alloc_small(3, 0);
-    v_extra = make_string(noti->extra);
-    Field(v_pair, 0) = v_str;
-    Field(v_pair, 1) = Val_int(noti->be_pid);
-    Field(v_pair, 2) = v_extra;
-    PQfreemem(noti);
-    CAMLreturn(make_some(v_pair));
+  if (notif) {
+    value v_notif;
+    v_str = make_string(notif->relname);
+    v_extra =
+#if PG_OCAML_MAJOR_VERSION >= 9
+      make_string(notif->extra);
+#else
+    v_empty_string;
+#endif
+    v_notif = caml_alloc_small(3, 0);
+    Field(v_notif, 0) = v_str;
+    Field(v_notif, 1) = Val_int(notif->be_pid);
+    Field(v_notif, 2) = v_extra;
+    PQfreemem(notif);
+    CAMLreturn(make_some(v_notif));
   }
   else CAMLreturn(v_None);
 }

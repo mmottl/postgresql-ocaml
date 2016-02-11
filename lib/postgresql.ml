@@ -325,6 +325,9 @@ let string_of_error = function
 
 exception Error of error
 
+module Notification = struct
+  type t = { name : string; pid : int; extra : string }
+end  (* Notification *)
 
 module Stub = struct
   (* Database Connection Functions *)
@@ -452,7 +455,7 @@ module Stub = struct
 
   (* Asynchronous Notification *)
 
-  external notifies : connection -> (string * int * string) option = "PQnotifies_stub"
+  external notifies : connection -> Notification.t option = "PQnotifies_stub"
 
 
   (* Functions Associated with the COPY Command *)

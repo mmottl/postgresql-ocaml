@@ -414,6 +414,15 @@ type conninfo_option =
     cio_dispsize : int;  (** Field size in characters for dialog *)
   }
 
+(** Type of asynchronous notifications *)
+module Notification : sig
+  type t = {
+    name : string;  (** name the of relation containing data *)
+    pid : int;  (** the process id of the backend *)
+    extra : string;  (** payload data (empty if not provided) *)
+  }
+end  (* Notification *)
+
 external conndefaults : unit -> conninfo_option array = "PQconndefaults_stub"
 (** [conndefaults ()] @return array of all records of type [conninfo_option] *)
 
@@ -468,11 +477,8 @@ object
 
   (** Asynchronous Notification *)
 
-  method notifies : (string * int * string) option
-  (** [#notifies] @return [Some (name, pid, extra)] if available ([None]
-      otherwise), where [name] is the name the of relation containing
-      data, [pid] the process id of the backend, and [extra] is any payload
-      data associated with the notification (empty it not provided).
+  method notifies : Notification.t option
+  (** [#notifies] @return [Some notification] if available ([None] otherwise).
 
       @raise Error if there is a connection error.
   *)

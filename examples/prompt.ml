@@ -49,8 +49,8 @@ let rec dump_res conn =
 
 let rec dump_notification conn =
   match conn#notifies with
-  | Some (msg, pid, extra) ->
-      printf "Notication from backend %i: [%s] [%s]\n" pid msg extra;
+  | Some { Notification.name; pid; extra } ->
+      printf "Notication from backend %i: [%s] [%s]\n" pid name extra;
       flush stdout;
       dump_notification conn
   | None -> ()
