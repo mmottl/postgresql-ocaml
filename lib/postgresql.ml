@@ -452,7 +452,7 @@ module Stub = struct
 
   (* Asynchronous Notification *)
 
-  external notifies : connection -> (string * int) option = "PQnotifies_stub"
+  external notifies : connection -> (string * int * string) option = "PQnotifies_stub"
 
 
   (* Functions Associated with the COPY Command *)

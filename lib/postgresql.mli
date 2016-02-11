@@ -468,7 +468,7 @@ object
 
   (** Asynchronous Notification *)
 
-  method notifies : (string * int) option
+  method notifies : (string * int * string) option
   (** [#notifies] @return [Some (name, pid)] if available ([None]
       otherwise), where [name] is the name the of relation containing
       data, [pid] the process id of the backend.

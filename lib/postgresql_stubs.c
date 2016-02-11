@@ -1006,14 +1006,17 @@ CAMLprim value PQnotifies_stub(value v_conn)
 {
   CAMLparam1(v_conn);
   CAMLlocal1(v_str);
+  CAMLlocal1(v_extra);
   PGnotify *noti = PQnotifies(get_conn(v_conn));
 
   if (noti) {
     value v_pair;
     v_str = make_string(noti->relname);
-    v_pair = caml_alloc_small(2, 0);
+    v_pair = caml_alloc_small(3, 0);
+    v_extra = make_string(noti->extra);
     Field(v_pair, 0) = v_str;
     Field(v_pair, 1) = Val_int(noti->be_pid);
+    Field(v_pair, 2) = v_extra;
     PQfreemem(noti);
     CAMLreturn(make_some(v_pair));
   }
