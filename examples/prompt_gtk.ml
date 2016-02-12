@@ -147,8 +147,8 @@ let main () =
 
   let rec dump_notification () =
     match conn#notifies with
-    | Some (msg, pid, extra) ->
-        let _ = clist#append [string_of_int pid; msg; extra] in
+    | Some { Notification.name; pid; extra } ->
+        let _ = clist#append [string_of_int pid; name; extra] in
         window#show ();
         dump_notification ()
     | None -> () in
