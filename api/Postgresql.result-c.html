@@ -26,7 +26,7 @@ Class type of query results.
     Indices of tuples and fields start at 0!<br>
 </div>
 <hr width="100%">
-<h2 id="2_Mainroutines">Main routines</h2>
+
 <pre><span id="METHODstatus"><span class="keyword">method</span> status</span> : <code class="type"><a href="Postgresql.html#TYPEresult_status">result_status</a></code></pre><div class="info ">
 <code class="code">#status</code><br>
 <b>Returns</b> status of a command/query result.<br>
@@ -81,12 +81,27 @@ Class type of query results.
 <b>Returns</b> the type of the <code class="code">n</code>th field.<br>
 </div>
 
+<pre><span id="METHODftype_oid"><span class="keyword">method</span> ftype_oid</span> : <code class="type">int -> <a href="Postgresql.html#TYPEoid">oid</a></code></pre><div class="info ">
+<code class="code">#ftype n</code><br>
+<b>Raises</b> <code>Error</code> if field out of range.<br>
+<b>Returns</b> the oid of the <code class="code">n</code>th field.<br>
+</div>
+
 <pre><span id="METHODparamtype"><span class="keyword">method</span> paramtype</span> : <code class="type">int -> <a href="Postgresql.html#TYPEftype">ftype</a></code></pre><div class="info ">
 <code class="code">#paramtype n</code><br>
 <b>Raises</b><ul><li><code>Oid</code> if there was no corresponding ftype for the internal <code class="code">oid</code>.</li>
 <li><code>Error</code> if field out of range.</li>
 </ul>
 <b>Returns</b> the datatype of the indicated statement
+      parameter.  Parameter numbers start at 0.  This function is
+      only useful when inspecting the result of <code class="code">#describe_prepared</code>.
+      For other types of queries it will return zero.<br>
+</div>
+
+<pre><span id="METHODparamtype_oid"><span class="keyword">method</span> paramtype_oid</span> : <code class="type">int -> <a href="Postgresql.html#TYPEoid">oid</a></code></pre><div class="info ">
+<code class="code">#paramtype n</code><br>
+<b>Raises</b> <code>Error</code> if field out of range.<br>
+<b>Returns</b> the oid of the indicated statement
       parameter.  Parameter numbers start at 0.  This function is
       only useful when inspecting the result of <code class="code">#describe_prepared</code>.
       For other types of queries it will return zero.<br>

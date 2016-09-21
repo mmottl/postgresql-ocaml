@@ -12,92 +12,100 @@
 <link title="Postgresql" rel="Chapter" href="Postgresql.html"><title>Postgresql.connection</title>
 </head>
 <body>
-<code class="code">?host:string&nbsp;<span class="keywordsign">-&gt;</span><br>
-?hostaddr:string&nbsp;<span class="keywordsign">-&gt;</span><br>
-?port:string&nbsp;<span class="keywordsign">-&gt;</span><br>
-?dbname:string&nbsp;<span class="keywordsign">-&gt;</span><br>
-?user:string&nbsp;<span class="keywordsign">-&gt;</span><br>
-?password:string&nbsp;<span class="keywordsign">-&gt;</span><br>
-?options:string&nbsp;<span class="keywordsign">-&gt;</span><br>
-?tty:string&nbsp;<span class="keywordsign">-&gt;</span><br>
-?requiressl:string&nbsp;<span class="keywordsign">-&gt;</span><br>
-?conninfo:string&nbsp;<span class="keywordsign">-&gt;</span><br>
-unit&nbsp;<span class="keywordsign">-&gt;</span><br>
-<span class="keyword">object</span><br>
-&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;backend_pid&nbsp;:&nbsp;int<br>
-&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;consume_input&nbsp;:&nbsp;unit<br>
-&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;copy_in_channel&nbsp;:&nbsp;<span class="constructor">Pervasives</span>.in_channel&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit<br>
-&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;copy_out&nbsp;:&nbsp;(string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit)&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit<br>
-&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;copy_out_channel&nbsp;:&nbsp;<span class="constructor">Pervasives</span>.out_channel&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit<br>
-&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;db&nbsp;:&nbsp;string<br>
-&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;describe_prepared&nbsp;:&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Postgresql</span>.result<br>
-&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;empty_result&nbsp;:&nbsp;<span class="constructor">Postgresql</span>.result_status&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Postgresql</span>.result<br>
-&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;endcopy&nbsp;:&nbsp;unit<br>
-&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;error_message&nbsp;:&nbsp;string<br>
-&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;escape_bytea&nbsp;:&nbsp;?pos:int&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;?len:int&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string<br>
-&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;escape_string&nbsp;:&nbsp;?pos:int&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;?len:int&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string<br>
-&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;exec&nbsp;:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;?expect:<span class="constructor">Postgresql</span>.result_status&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;?params:string&nbsp;array&nbsp;<span class="keywordsign">-&gt;</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;?binary_params:bool&nbsp;array&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Postgresql</span>.result<br>
-&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;exec_prepared&nbsp;:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;?expect:<span class="constructor">Postgresql</span>.result_status&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;?params:string&nbsp;array&nbsp;<span class="keywordsign">-&gt;</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;?binary_params:bool&nbsp;array&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Postgresql</span>.result<br>
-&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;finish&nbsp;:&nbsp;unit<br>
-&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;flush&nbsp;:&nbsp;unit<br>
-&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;get_result&nbsp;:&nbsp;<span class="constructor">Postgresql</span>.result&nbsp;option<br>
-&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;getline&nbsp;:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;?pos:int&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;?len:int&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Postgresql</span>.getline_result<br>
-&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;getline_async&nbsp;:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;?pos:int&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;?len:int&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Postgresql</span>.getline_async_result<br>
-&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;host&nbsp;:&nbsp;string<br>
-&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;is_busy&nbsp;:&nbsp;bool<br>
-&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;is_nonblocking&nbsp;:&nbsp;bool<br>
-&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;lo_close&nbsp;:&nbsp;<span class="constructor">Postgresql</span>.large_object&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit<br>
-&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;lo_creat&nbsp;:&nbsp;<span class="constructor">Postgresql</span>.oid<br>
-&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;lo_export&nbsp;:&nbsp;<span class="constructor">Postgresql</span>.oid&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit<br>
-&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;lo_import&nbsp;:&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Postgresql</span>.oid<br>
-&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;lo_open&nbsp;:&nbsp;<span class="constructor">Postgresql</span>.oid&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Postgresql</span>.large_object<br>
-&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;lo_read&nbsp;:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Postgresql</span>.large_object&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;?pos:int&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;?len:int&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;int<br>
-&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;lo_read_ba&nbsp;:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Postgresql</span>.large_object&nbsp;<span class="keywordsign">-&gt;</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;?pos:int&nbsp;<span class="keywordsign">-&gt;</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;?len:int&nbsp;<span class="keywordsign">-&gt;</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;(char,&nbsp;<span class="constructor">Bigarray</span>.int8_unsigned_elt,&nbsp;<span class="constructor">Bigarray</span>.c_layout)&nbsp;<span class="constructor">Bigarray</span>.<span class="constructor">Array1</span>.t&nbsp;<span class="keywordsign">-&gt;</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;int<br>
-&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;lo_seek&nbsp;:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;?pos:int&nbsp;<span class="keywordsign">-&gt;</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;?whence:<span class="constructor">Postgresql</span>.seek_cmd&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Postgresql</span>.large_object&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit<br>
-&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;lo_tell&nbsp;:&nbsp;<span class="constructor">Postgresql</span>.large_object&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;int<br>
-&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;lo_unlink&nbsp;:&nbsp;<span class="constructor">Postgresql</span>.oid&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit<br>
-&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;lo_write&nbsp;:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;?pos:int&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;?len:int&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Postgresql</span>.large_object&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit<br>
-&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;lo_write_ba&nbsp;:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;?pos:int&nbsp;<span class="keywordsign">-&gt;</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;?len:int&nbsp;<span class="keywordsign">-&gt;</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;(char,&nbsp;<span class="constructor">Bigarray</span>.int8_unsigned_elt,&nbsp;<span class="constructor">Bigarray</span>.c_layout)&nbsp;<span class="constructor">Bigarray</span>.<span class="constructor">Array1</span>.t&nbsp;<span class="keywordsign">-&gt;</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Postgresql</span>.large_object&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit<br>
-&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;notifies&nbsp;:&nbsp;(string&nbsp;*&nbsp;int)&nbsp;option<br>
-&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;options&nbsp;:&nbsp;string<br>
-&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;pass&nbsp;:&nbsp;string<br>
-&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;port&nbsp;:&nbsp;string<br>
-&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;prepare&nbsp;:&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Postgresql</span>.result<br>
-&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;putline&nbsp;:&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit<br>
-&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;putnbytes&nbsp;:&nbsp;?pos:int&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;?len:int&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit<br>
-&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;request_cancel&nbsp;:&nbsp;unit<br>
-&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;reset&nbsp;:&nbsp;unit<br>
-&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;send_prepare&nbsp;:&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit<br>
-&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;send_query&nbsp;:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;?params:string&nbsp;array&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;?binary_params:bool&nbsp;array&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit<br>
-&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;send_query_prepared&nbsp;:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;?params:string&nbsp;array&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;?binary_params:bool&nbsp;array&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit<br>
-&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;set_nonblocking&nbsp;:&nbsp;bool&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit<br>
-&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;set_notice_processor&nbsp;:&nbsp;(string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit)&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit<br>
-&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;socket&nbsp;:&nbsp;int<br>
-&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;status&nbsp;:&nbsp;<span class="constructor">Postgresql</span>.connection_status<br>
-&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;try_reset&nbsp;:&nbsp;unit<br>
-&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;tty&nbsp;:&nbsp;string<br>
-&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;user&nbsp;:&nbsp;string<br>
+<code class="code">?host:string&nbsp;<span class="keywordsign">-&gt;</span>
+?hostaddr:string&nbsp;<span class="keywordsign">-&gt;</span>
+?port:string&nbsp;<span class="keywordsign">-&gt;</span>
+?dbname:string&nbsp;<span class="keywordsign">-&gt;</span>
+?user:string&nbsp;<span class="keywordsign">-&gt;</span>
+?password:string&nbsp;<span class="keywordsign">-&gt;</span>
+?options:string&nbsp;<span class="keywordsign">-&gt;</span>
+?tty:string&nbsp;<span class="keywordsign">-&gt;</span>
+?requiressl:string&nbsp;<span class="keywordsign">-&gt;</span>
+?conninfo:string&nbsp;<span class="keywordsign">-&gt;</span>
+?startonly:bool&nbsp;<span class="keywordsign">-&gt;</span>
+unit&nbsp;<span class="keywordsign">-&gt;</span>
+<span class="keyword">object</span>
+&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;backend_pid&nbsp;:&nbsp;int
+&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;connect_poll&nbsp;:&nbsp;<span class="constructor">Postgresql</span>.polling_status
+&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;consume_input&nbsp;:&nbsp;unit
+&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;copy_in_channel&nbsp;:&nbsp;<span class="constructor">Pervasives</span>.in_channel&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit
+&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;copy_out&nbsp;:&nbsp;(string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit)&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit
+&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;copy_out_channel&nbsp;:&nbsp;<span class="constructor">Pervasives</span>.out_channel&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit
+&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;db&nbsp;:&nbsp;string
+&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;describe_prepared&nbsp;:&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Postgresql</span>.result
+&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;empty_result&nbsp;:&nbsp;<span class="constructor">Postgresql</span>.result_status&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Postgresql</span>.result
+&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;endcopy&nbsp;:&nbsp;unit
+&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;error_message&nbsp;:&nbsp;string
+&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;escape_bytea&nbsp;:&nbsp;?pos:int&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;?len:int&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string
+&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;escape_string&nbsp;:&nbsp;?pos:int&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;?len:int&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string
+&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;exec&nbsp;:
+&nbsp;&nbsp;&nbsp;&nbsp;?expect:<span class="constructor">Postgresql</span>.result_status&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>
+&nbsp;&nbsp;&nbsp;&nbsp;?params:string&nbsp;array&nbsp;<span class="keywordsign">-&gt;</span>
+&nbsp;&nbsp;&nbsp;&nbsp;?binary_params:bool&nbsp;array&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Postgresql</span>.result
+&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;exec_prepared&nbsp;:
+&nbsp;&nbsp;&nbsp;&nbsp;?expect:<span class="constructor">Postgresql</span>.result_status&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>
+&nbsp;&nbsp;&nbsp;&nbsp;?params:string&nbsp;array&nbsp;<span class="keywordsign">-&gt;</span>
+&nbsp;&nbsp;&nbsp;&nbsp;?binary_params:bool&nbsp;array&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Postgresql</span>.result
+&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;finish&nbsp;:&nbsp;unit
+&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;flush&nbsp;:&nbsp;<span class="constructor">Postgresql</span>.flush_status
+&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;get_result&nbsp;:&nbsp;<span class="constructor">Postgresql</span>.result&nbsp;option
+&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;getline&nbsp;:
+&nbsp;&nbsp;&nbsp;&nbsp;?pos:int&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;?len:int&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Bytes</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Postgresql</span>.getline_result
+&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;getline_async&nbsp;:
+&nbsp;&nbsp;&nbsp;&nbsp;?pos:int&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;?len:int&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Bytes</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Postgresql</span>.getline_async_result
+&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;host&nbsp;:&nbsp;string
+&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;is_busy&nbsp;:&nbsp;bool
+&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;is_nonblocking&nbsp;:&nbsp;bool
+&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;lo_close&nbsp;:&nbsp;<span class="constructor">Postgresql</span>.large_object&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit
+&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;lo_creat&nbsp;:&nbsp;<span class="constructor">Postgresql</span>.oid
+&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;lo_export&nbsp;:&nbsp;<span class="constructor">Postgresql</span>.oid&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit
+&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;lo_import&nbsp;:&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Postgresql</span>.oid
+&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;lo_open&nbsp;:&nbsp;<span class="constructor">Postgresql</span>.oid&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Postgresql</span>.large_object
+&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;lo_read&nbsp;:
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Postgresql</span>.large_object&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;?pos:int&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;?len:int&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Bytes</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;int
+&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;lo_read_ba&nbsp;:
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Postgresql</span>.large_object&nbsp;<span class="keywordsign">-&gt;</span>
+&nbsp;&nbsp;&nbsp;&nbsp;?pos:int&nbsp;<span class="keywordsign">-&gt;</span>
+&nbsp;&nbsp;&nbsp;&nbsp;?len:int&nbsp;<span class="keywordsign">-&gt;</span>
+&nbsp;&nbsp;&nbsp;&nbsp;(char,&nbsp;<span class="constructor">Bigarray</span>.int8_unsigned_elt,&nbsp;<span class="constructor">Bigarray</span>.c_layout)&nbsp;<span class="constructor">Bigarray</span>.<span class="constructor">Array1</span>.t&nbsp;<span class="keywordsign">-&gt;</span>
+&nbsp;&nbsp;&nbsp;&nbsp;int
+&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;lo_seek&nbsp;:
+&nbsp;&nbsp;&nbsp;&nbsp;?pos:int&nbsp;<span class="keywordsign">-&gt;</span>
+&nbsp;&nbsp;&nbsp;&nbsp;?whence:<span class="constructor">Postgresql</span>.seek_cmd&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Postgresql</span>.large_object&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit
+&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;lo_tell&nbsp;:&nbsp;<span class="constructor">Postgresql</span>.large_object&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;int
+&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;lo_unlink&nbsp;:&nbsp;<span class="constructor">Postgresql</span>.oid&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit
+&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;lo_write&nbsp;:
+&nbsp;&nbsp;&nbsp;&nbsp;?pos:int&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;?len:int&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Postgresql</span>.large_object&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit
+&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;lo_write_ba&nbsp;:
+&nbsp;&nbsp;&nbsp;&nbsp;?pos:int&nbsp;<span class="keywordsign">-&gt;</span>
+&nbsp;&nbsp;&nbsp;&nbsp;?len:int&nbsp;<span class="keywordsign">-&gt;</span>
+&nbsp;&nbsp;&nbsp;&nbsp;(char,&nbsp;<span class="constructor">Bigarray</span>.int8_unsigned_elt,&nbsp;<span class="constructor">Bigarray</span>.c_layout)&nbsp;<span class="constructor">Bigarray</span>.<span class="constructor">Array1</span>.t&nbsp;<span class="keywordsign">-&gt;</span>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Postgresql</span>.large_object&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit
+&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;notifies&nbsp;:&nbsp;<span class="constructor">Postgresql</span>.<span class="constructor">Notification</span>.t&nbsp;option
+&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;options&nbsp;:&nbsp;string
+&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;pass&nbsp;:&nbsp;string
+&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;port&nbsp;:&nbsp;string
+&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;prepare&nbsp;:&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Postgresql</span>.result
+&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;putline&nbsp;:&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit
+&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;putnbytes&nbsp;:&nbsp;?pos:int&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;?len:int&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit
+&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;request_cancel&nbsp;:&nbsp;unit
+&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;reset&nbsp;:&nbsp;unit
+&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;reset_poll&nbsp;:&nbsp;<span class="constructor">Postgresql</span>.polling_status
+&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;reset_start&nbsp;:&nbsp;bool
+&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;send_describe_portal&nbsp;:&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit
+&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;send_describe_prepared&nbsp;:&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit
+&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;send_prepare&nbsp;:&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit
+&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;send_query&nbsp;:
+&nbsp;&nbsp;&nbsp;&nbsp;?params:string&nbsp;array&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;?binary_params:bool&nbsp;array&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit
+&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;send_query_prepared&nbsp;:
+&nbsp;&nbsp;&nbsp;&nbsp;?params:string&nbsp;array&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;?binary_params:bool&nbsp;array&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit
+&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;server_version&nbsp;:&nbsp;int&nbsp;*&nbsp;int&nbsp;*&nbsp;int
+&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;set_nonblocking&nbsp;:&nbsp;bool&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit
+&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;set_notice_processor&nbsp;:&nbsp;(string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit)&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit
+&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;set_single_row_mode&nbsp;:&nbsp;unit
+&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;socket&nbsp;:&nbsp;int
+&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;status&nbsp;:&nbsp;<span class="constructor">Postgresql</span>.connection_status
+&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;try_reset&nbsp;:&nbsp;unit
+&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;tty&nbsp;:&nbsp;string
+&nbsp;&nbsp;<span class="keyword">method</span>&nbsp;user&nbsp;:&nbsp;string
 <span class="keyword">end</span></code></body></html>

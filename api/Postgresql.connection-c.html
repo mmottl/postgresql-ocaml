@@ -19,15 +19,19 @@
 &nbsp;</div>
 <h1>Class <a href="type_Postgresql.connection.html">Postgresql.connection</a></h1>
 
-<pre><span name="TYPEconnection"><span class="keyword">class</span> connection</span> : <code class="type">?host:string -> ?hostaddr:string -> ?port:string -> ?dbname:string -> ?user:string -> ?password:string -> ?options:string -> ?tty:string -> ?requiressl:string -> ?conninfo:string -> unit -> </code><code class="code">object</code> <a href="Postgresql.connection-c.html">..</a> <code class="code">end</code></pre><div class="info class top">
+<pre><span name="TYPEconnection"><span class="keyword">class</span> connection</span> : <code class="type">?host:string -> ?hostaddr:string -> ?port:string -> ?dbname:string -> ?user:string -> ?password:string -> ?options:string -> ?tty:string -> ?requiressl:string -> ?conninfo:string -> ?startonly:bool -> unit -> </code><code class="code">object</code> <a href="Postgresql.connection-c.html">..</a> <code class="code">end</code></pre><div class="info class top">
 Class of connections.
 <p>
 
     When <code class="code">conninfo</code> is given, it will be used instead of all other
     optional arguments.<br>
+<b>Raises</b> <code>Error</code> if there is a connection failure.<br>
 </div>
+<div class="param_info"><code class="code">startonly</code> : If true, initiate a non-blocking connect procedure, which
+      involves cooperative calls to <a href="Postgresql.connection-c.html#METHODconnect_poll"><code class="code">Postgresql.connection.connect_poll</code></a> before the connection is
+      usable.</div>
 <hr width="100%">
-<h2 id="2_Mainroutines">Main routines</h2>
+
 <pre><span id="METHODfinish"><span class="keyword">method</span> finish</span> : <code class="type">unit</code></pre><div class="info ">
 <code class="code">#finish</code> closes the connection.<br>
 <b>Raises</b> <code>Error</code> if there is a connection error.<br>
@@ -45,12 +49,10 @@ Class of connections.
 <b>Raises</b> <code>Error</code> if there is a connection error.<br>
 </div>
 <h2 id="2_AsynchronousNotification">Asynchronous Notification</h2>
-<pre><span id="METHODnotifies"><span class="keyword">method</span> notifies</span> : <code class="type">(string * int) option</code></pre><div class="info ">
+<pre><span id="METHODnotifies"><span class="keyword">method</span> notifies</span> : <code class="type"><a href="Postgresql.Notification.html#TYPEt">Notification.t</a> option</code></pre><div class="info ">
 <code class="code">#notifies</code><br>
 <b>Raises</b> <code>Error</code> if there is a connection error.<br>
-<b>Returns</b> <code class="code">Some (name, pid)</code> if available (<code class="code">None</code>
-      otherwise), where <code class="code">name</code> is the name the of relation containing
-      data, <code class="code">pid</code> the process id of the backend.<br>
+<b>Returns</b> <code class="code">Some notification</code> if available (<code class="code">None</code> otherwise).<br>
 </div>
 <h2 id="2_ControlFunctions">Control Functions</h2>
 <pre><span id="METHODset_notice_processor"><span class="keyword">method</span> set_notice_processor</span> : <code class="type">(string -> unit) -> unit</code></pre><div class="info ">
@@ -118,7 +120,8 @@ Class of connections.
 <b>Raises</b> <code>Error</code> if there is a connection error.<br>
 <b>Returns</b> process id of the backend server of the connection.<br>
 </div>
-<h2 id="2_CommandsandQueries">Commands and Queries</h2>
+
+<pre><span id="METHODserver_version"><span class="keyword">method</span> server_version</span> : <code class="type">int * int * int</code></pre><h2 id="2_CommandsandQueries">Commands and Queries</h2>
 <pre><span id="METHODempty_result"><span class="keyword">method</span> empty_result</span> : <code class="type"><a href="Postgresql.html#TYPEresult_status">result_status</a> -> <a href="Postgresql.result-c.html">result</a></code></pre><div class="info ">
 <code class="code">empty_result stat</code><br>
 <b>Raises</b> <code>Error</code> if there is a connection error.<br>
@@ -218,6 +221,25 @@ Class of connections.
 <div class="param_info"><code class="code">params</code> : default = <code class="code">||</code></div>
 <div class="param_info"><code class="code">binary_params</code> : default = <code class="code">||</code></div>
 
+<pre><span id="METHODsend_describe_prepared"><span class="keyword">method</span> send_describe_prepared</span> : <code class="type">string -> unit</code></pre><div class="info ">
+<code class="code">#send_describe_prepared stm_name</code> sends a request for a description of
+      a prepared query without waiting for the result.  The result must be
+      fetched with <a href="Postgresql.connection-c.html#METHODget_result"><code class="code">Postgresql.connection.get_result</code></a> when it becomes available.  Otherwise it
+      does the same as <a href="Postgresql.connection-c.html#METHODdescribe_prepared"><code class="code">Postgresql.connection.describe_prepared</code></a>.<br>
+<b>Raises</b> <code>Error</code> if there is a connection error.<br>
+</div>
+
+<pre><span id="METHODsend_describe_portal"><span class="keyword">method</span> send_describe_portal</span> : <code class="type">string -> unit</code></pre><div class="info ">
+<code class="code">#send_describe_portal portal_name</code> sends a request for a description of
+      the named portal.  The result must be fetched with <a href="Postgresql.connection-c.html#METHODget_result"><code class="code">Postgresql.connection.get_result</code></a>.<br>
+<b>Raises</b> <code>Error</code> if there is a connection error.<br>
+</div>
+
+<pre><span id="METHODset_single_row_mode"><span class="keyword">method</span> set_single_row_mode</span> : <code class="type">unit</code></pre><div class="info ">
+<code class="code">#set_single_row_mode</code> called right after <a href="Postgresql.connection-c.html#METHODsend_query"><code class="code">Postgresql.connection.send_query</code></a> or a sibling
+      function causes the returned rows to be split into individual results.<br>
+</div>
+
 <pre><span id="METHODget_result"><span class="keyword">method</span> get_result</span> : <code class="type"><a href="Postgresql.result-c.html">result</a> option</code></pre><div class="info ">
 <code class="code">get_result</code><br>
 <b>Raises</b> <code>Error</code> if there is a connection error.<br>
@@ -225,7 +247,7 @@ Class of connections.
       available or <code class="code">None</code>.<br>
 </div>
 <h2 id="2_Copyoperations">Copy operations</h2><h2 id="2_Lowlevel">Low level</h2>
-<pre><span id="METHODgetline"><span class="keyword">method</span> getline</span> : <code class="type">?pos:int -> ?len:int -> string -> <a href="Postgresql.html#TYPEgetline_result">getline_result</a></code></pre><div class="info ">
+<pre><span id="METHODgetline"><span class="keyword">method</span> getline</span> : <code class="type">?pos:int -> ?len:int -> Bytes.t -> <a href="Postgresql.html#TYPEgetline_result">getline_result</a></code></pre><div class="info ">
 <code class="code">getline ?pos ?len buf</code> reads a newline-terminated line of at most
       <code class="code">len</code> characters into <code class="code">buf</code> starting at position <code class="code">pos</code>.<br>
 <b>Raises</b><ul><li><code>Invalid_argument</code> if the buffer parameters are invalid.</li>
@@ -234,12 +256,12 @@ Class of connections.
 <b>Returns</b> getline_result<br>
 </div>
 <div class="param_info"><code class="code">pos</code> : default = 0</div>
-<div class="param_info"><code class="code">len</code> : default = String.length buf - pos</div>
+<div class="param_info"><code class="code">len</code> : default = Bytes.length buf - pos</div>
 
-<pre><span id="METHODgetline_async"><span class="keyword">method</span> getline_async</span> : <code class="type">?pos:int -> ?len:int -> string -> <a href="Postgresql.html#TYPEgetline_async_result">getline_async_result</a></code></pre><div class="info ">
+<pre><span id="METHODgetline_async"><span class="keyword">method</span> getline_async</span> : <code class="type">?pos:int -> ?len:int -> Bytes.t -> <a href="Postgresql.html#TYPEgetline_async_result">getline_async_result</a></code></pre><div class="info ">
 <code class="code">getline_async ?pos ?len buf</code> reads a newline-terminated line of
       at most <code class="code">len</code> characters into <code class="code">buf</code> starting at position <code class="code">pos</code>
-      (asynchronously). No need to call <code class="code">endcopy</code> after receiving
+      (asynchronously).  No need to call <code class="code">endcopy</code> after receiving
       <code class="code">EndOfData</code>.<br>
 <b>Raises</b><ul><li><code>Invalid_argument</code> if the buffer parameters are invalid.</li>
 <li><code>Error</code> if there is a connection error.</li>
@@ -247,7 +269,7 @@ Class of connections.
 <b>Returns</b> getline_async_result<br>
 </div>
 <div class="param_info"><code class="code">pos</code> : default = 0</div>
-<div class="param_info"><code class="code">len</code> : default = String.length buf - pos</div>
+<div class="param_info"><code class="code">len</code> : default = Bytes.length buf - pos</div>
 
 <pre><span id="METHODputline"><span class="keyword">method</span> putline</span> : <code class="type">string -> unit</code></pre><div class="info ">
 <code class="code">putline str</code> sends <code class="code">str</code> to backend server. Don't use this method
@@ -288,6 +310,35 @@ Class of connections.
 <b>Raises</b> <code>Error</code> if there is a connection error.<br>
 </div>
 <h2 id="2_Asynchronousoperationsandnonblockingmode">Asynchronous operations and non blocking mode</h2>
+<pre><span id="METHODconnect_poll"><span class="keyword">method</span> connect_poll</span> : <code class="type"><a href="Postgresql.html#TYPEpolling_status">polling_status</a></code></pre><div class="info ">
+After creating a connection with <code class="code">~startonly:true</code>, <a href="Postgresql.connection-c.html#METHODconnect_poll"><code class="code">Postgresql.connection.connect_poll</code></a>
+      must be called a number of times before the connection can be used.
+      The precise procedure is described in the libpq manual, but the following
+      code should capture the idea, assuming monadic concurrency primitives
+      <code class="code">return</code> and <code class="code">&gt;&gt;=</code> along with polling functions <code class="code">wait_for_read</code> and
+      <code class="code">wait_for_write</code>:
+      <pre class="codepre"><code class="code">        let my_async_connect () =
+          let c = new connection () in
+          let rec establish_connection = function
+            | Polling_failed | Polling_ok -&gt; return c
+            | Polling_reading -&gt; wait_for_read c#socket &gt;&gt;= fun () -&gt;
+                                 establish_connection c#connect_poll
+            | Polling_writing -&gt; wait_for_write c#socket &gt;&gt;= fun () -&gt;
+                                 establish_connection c#connect_poll in
+          establish_connection Polling_writing
+      </code></pre>
+      See also <code class="code">examples/async.ml</code>.<br>
+</div>
+
+<pre><span id="METHODreset_start"><span class="keyword">method</span> reset_start</span> : <code class="type">bool</code></pre><div class="info ">
+An asynchronous variant of <a href="Postgresql.connection-c.html#METHODreset"><code class="code">Postgresql.connection.reset</code></a>.  Use <a href="Postgresql.connection-c.html#METHODreset_poll"><code class="code">Postgresql.connection.reset_poll</code></a> to
+      finish re-establishing the connection.<br>
+</div>
+
+<pre><span id="METHODreset_poll"><span class="keyword">method</span> reset_poll</span> : <code class="type"><a href="Postgresql.html#TYPEpolling_status">polling_status</a></code></pre><div class="info ">
+Used analogously to <a href="Postgresql.connection-c.html#METHODconnect_poll"><code class="code">Postgresql.connection.connect_poll</code></a> after calling <a href="Postgresql.connection-c.html#METHODreset_start"><code class="code">Postgresql.connection.reset_start</code></a>.<br>
+</div>
+
 <pre><span id="METHODset_nonblocking"><span class="keyword">method</span> set_nonblocking</span> : <code class="type">bool -> unit</code></pre><div class="info ">
 <code class="code">set_nonblocking b</code> sets state of the connection to nonblocking if
       <code class="code">b</code> is true and to blocking otherwise.<br>
@@ -311,7 +362,7 @@ Class of connections.
 <b>Returns</b> busy status of a query.<br>
 </div>
 
-<pre><span id="METHODflush"><span class="keyword">method</span> flush</span> : <code class="type">unit</code></pre><div class="info ">
+<pre><span id="METHODflush"><span class="keyword">method</span> flush</span> : <code class="type"><a href="Postgresql.html#TYPEflush_status">flush_status</a></code></pre><div class="info ">
 <code class="code">flush</code> attempts to flush any data queued to the backend.<br>
 <b>Raises</b> <code>Error</code> if there is a connection error.<br>
 </div>
@@ -366,7 +417,7 @@ Class of connections.
 As <code class="code">lo_write</code>, but performs a zero-copy write from the given Bigarray.<br>
 </div>
 
-<pre><span id="METHODlo_read"><span class="keyword">method</span> lo_read</span> : <code class="type"><a href="Postgresql.html#TYPElarge_object">large_object</a> -> ?pos:int -> ?len:int -> string -> int</code></pre><div class="info ">
+<pre><span id="METHODlo_read"><span class="keyword">method</span> lo_read</span> : <code class="type"><a href="Postgresql.html#TYPElarge_object">large_object</a> -> ?pos:int -> ?len:int -> Bytes.t -> int</code></pre><div class="info ">
 <code class="code">lo_read lo ?pos ?len buf</code> reads <code class="code">len</code> bytes from large object <code class="code">lo</code>
       to buffer <code class="code">buf</code> starting at position <code class="code">pos</code>.<br>
 <b>Raises</b><ul><li><code>Invalid_argument</code> if the buffer parameters are invalid.</li>
@@ -375,7 +426,7 @@ As <code class="code">lo_write</code>, but performs a zero-copy write from the g
 </ul>
 </div>
 <div class="param_info"><code class="code">pos</code> : default = 0</div>
-<div class="param_info"><code class="code">len</code> : default = String.length buf - pos</div>
+<div class="param_info"><code class="code">len</code> : default = Bytes.length buf - pos</div>
 
 <pre><span id="METHODlo_read_ba"><span class="keyword">method</span> lo_read_ba</span> : <code class="type"><a href="Postgresql.html#TYPElarge_object">large_object</a> -><br>       ?pos:int -><br>       ?len:int -><br>       (char, Bigarray.int8_unsigned_elt, Bigarray.c_layout) Bigarray.Array1.t -><br>       int</code></pre><div class="info ">
 As <code class="code">lo_read</code>, but performs a zero-copy read into the given Bigarray.<br>
