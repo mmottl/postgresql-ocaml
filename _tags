@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: c022991367bd814a8b8960fbd47f4298)
+# DO NOT EDIT (digest: 2a16a6fbe0f67e3362a5ce6eff637ad2)
 # Ignore VCS directories, you can use the same kind of rule outside
 # OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
@@ -15,21 +15,21 @@ true: annot, bin_annot
 "_darcs": -traverse
 "_darcs": not_hygienic
 # Library postgresql
-"lib/postgresql.cmxs": use_postgresql
-<lib/*.ml{,i,y}>: oasis_library_postgresql_ccopt
-"lib/postgresql_stubs.c": oasis_library_postgresql_ccopt
-<lib/postgresql.{cma,cmxa}>: oasis_library_postgresql_cclib
-"lib/libpostgresql_stubs.lib": oasis_library_postgresql_cclib
-"lib/dllpostgresql_stubs.dll": oasis_library_postgresql_cclib
-"lib/libpostgresql_stubs.a": oasis_library_postgresql_cclib
-"lib/dllpostgresql_stubs.so": oasis_library_postgresql_cclib
-<lib/postgresql.{cma,cmxa}>: use_libpostgresql_stubs
-<lib/*.ml{,i,y}>: pkg_bigarray
-<lib/*.ml{,i,y}>: pkg_bytes
-<lib/*.ml{,i,y}>: pkg_threads
-"lib/postgresql_stubs.c": pkg_bigarray
-"lib/postgresql_stubs.c": pkg_bytes
-"lib/postgresql_stubs.c": pkg_threads
+"src/postgresql.cmxs": use_postgresql
+<src/*.ml{,i,y}>: oasis_library_postgresql_ccopt
+"src/postgresql_stubs.c": oasis_library_postgresql_ccopt
+<src/postgresql.{cma,cmxa}>: oasis_library_postgresql_cclib
+"src/libpostgresql_stubs.lib": oasis_library_postgresql_cclib
+"src/dllpostgresql_stubs.dll": oasis_library_postgresql_cclib
+"src/libpostgresql_stubs.a": oasis_library_postgresql_cclib
+"src/dllpostgresql_stubs.so": oasis_library_postgresql_cclib
+<src/postgresql.{cma,cmxa}>: use_libpostgresql_stubs
+<src/*.ml{,i,y}>: pkg_bigarray
+<src/*.ml{,i,y}>: pkg_bytes
+<src/*.ml{,i,y}>: pkg_threads
+"src/postgresql_stubs.c": pkg_bigarray
+"src/postgresql_stubs.c": pkg_bytes
+"src/postgresql_stubs.c": pkg_threads
 # Executable async
 <examples/async.{native,byte}>: pkg_bigarray
 <examples/async.{native,byte}>: pkg_bytes

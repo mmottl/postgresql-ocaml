@@ -29,7 +29,7 @@ Flag strict
   Default:        true
 
 Library postgresql
-  Path:            lib
+  Path:            src
   FindlibName:     postgresql
   Modules:         Postgresql
   InternalModules: Postgresql_compat
