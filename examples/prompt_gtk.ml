@@ -7,7 +7,7 @@
 
 open Printf
 open GMain
-open Postgresql
+open! Postgresql
 
 let () =
   if (Array.length Sys.argv <> 2) then (
