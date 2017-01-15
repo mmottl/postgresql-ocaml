@@ -1,6 +1,6 @@
 (* Dump a table to stdout (using a cursor for demonstration) *)
 
-open Postgresql
+open! Postgresql
 
 let _ =
   if Array.length Sys.argv <> 3 then (

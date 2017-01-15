@@ -1,5 +1,5 @@
 open Printf
-open Postgresql
+open! Postgresql
 
 let failwith_f fmt = ksprintf failwith fmt
 

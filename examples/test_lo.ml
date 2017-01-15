@@ -1,6 +1,6 @@
 (* A simple demonstration of Large Objects manipulation *)
 
-open Postgresql
+open! Postgresql
 
 let _ =
   if Array.length Sys.argv <> 2 then (

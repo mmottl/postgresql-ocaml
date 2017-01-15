@@ -1,6 +1,6 @@
 (* Inverse operation of "dump" (using the sql command "copy ... from stdin") *)
 
-open Postgresql
+open! Postgresql
 
 let _ =
   if Array.length Sys.argv <> 3 then (

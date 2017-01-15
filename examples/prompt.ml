@@ -1,7 +1,7 @@
 (* A simple replacement for psql *)
 
 open Printf
-open Postgresql
+open! Postgresql
 
 let _ =
   if Array.length Sys.argv <> 2 then (
