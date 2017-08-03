@@ -1,0 +1,26 @@
+(jbuild_version 1)
+
+(library (
+  (name postgresql)
+  (public_name postgresql)
+  (flags (
+    :standard
+    -w -9
+    -safe-string -strict-sequence
+    -principal -short-paths
+  ))
+  (c_names (postgresql_stubs))
+  (c_flags (
+    (:include c_flags.sexp) -g -O2 -fPIC -DPIC
+    ; NOTE: for debugging before releases
+    ; -Wall -pedantic -Wextra -Wunused -Wno-long-long -Wno-keyword-macro
+  ))
+  (c_library_flags (:include c_library_flags.sexp))
+  (libraries (threads))
+))
+
+(rule (
+  (targets (c_flags.sexp c_library_flags.sexp))
+  (deps (config/discover.exe))
+  (action (run ${<} -ocamlc ${OCAMLC}))
+))

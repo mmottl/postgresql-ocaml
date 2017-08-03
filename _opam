@@ -1,4 +1,0 @@
-depexts: [
-  [["debian"] ["libpq-dev"]]
-  [["ubuntu"] ["libpq-dev"]]
-]

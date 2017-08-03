@@ -1,0 +1,12 @@
+(jbuild_version 1)
+
+(executables (
+  (names (async cursor dump populate prompt test_lo))
+  (flags (
+    :standard
+    -w -9
+    -safe-string -strict-sequence
+    -principal -short-paths
+  ))
+  (libraries (bigarray postgresql))
+))

@@ -24,7 +24,6 @@
    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 *)
 
-open Postgresql_compat
 open Printf
 
 type oid = int
@@ -335,7 +334,7 @@ module Stub = struct
   type connection
   type result
 
-  external conn_isnull : connection -> bool = "PQconn_isnull" "noalloc"
+  external conn_isnull : connection -> bool = "PQconn_isnull" [@@noalloc]
   external connect : string -> bool -> connection = "PQconnectdb_stub"
   external finish : connection -> unit = "PQfinish_stub"
   external reset : connection -> unit = "PQreset_stub"
@@ -349,15 +348,17 @@ module Stub = struct
   external options : connection -> string = "PQoptions_stub"
 
   external connection_status :
-    connection -> connection_status = "PQstatus_stub" "noalloc"
+    connection -> connection_status = "PQstatus_stub" [@@noalloc]
 
   external error_message : connection -> string = "PQerrorMessage_stub"
-  external backend_pid : connection -> int = "PQbackendPID_stub" "noalloc"
-  external server_version : connection -> int = "PQserverVersion_stub" "noalloc"
+  external backend_pid : connection -> int = "PQbackendPID_stub" [@@noalloc]
+
+  external server_version :
+    connection -> int = "PQserverVersion_stub" [@@noalloc]
 
   (* Command Execution Functions *)
 
-  external result_isnull : result -> bool = "PQres_isnull" "noalloc"
+  external result_isnull : result -> bool = "PQres_isnull" [@@noalloc]
 
   external exec_params :
     connection -> string -> string array -> bool array -> result
@@ -373,26 +374,26 @@ module Stub = struct
     connection -> string -> result = "PQdescribePrepared_stub"
 
   external result_status :
-    result -> result_status = "PQresultStatus_stub" "noalloc"
+    result -> result_status = "PQresultStatus_stub" [@@noalloc]
 
   external result_error : result -> string = "PQresultErrorMessage_stub"
 
   external make_empty_res :
     connection -> result_status -> result = "PQmakeEmptyPGresult_stub"
 
-  external ntuples : result -> int = "PQntuples_stub" "noalloc"
+  external ntuples : result -> int = "PQntuples_stub" [@@noalloc]
   external nparams : result -> int = "PQnparams_stub"
 
-  external nfields : result -> int = "PQnfields_stub" "noalloc"
+  external nfields : result -> int = "PQnfields_stub" [@@noalloc]
   external fname : result -> int -> string = "PQfname_stub"
-  external fnumber : result -> string -> int ="PQfnumber_stub" "noalloc"
-  external fformat : result -> int -> FFormat.t = "PQfformat_stub" "noalloc"
-  external ftype : result -> int -> oid = "PQftype_stub" "noalloc"
+  external fnumber : result -> string -> int ="PQfnumber_stub" [@@noalloc]
+  external fformat : result -> int -> FFormat.t = "PQfformat_stub" [@@noalloc]
+  external ftype : result -> int -> oid = "PQftype_stub" [@@noalloc]
   external paramtype : result -> int -> oid = "PQparamtype_stub"
 
-  external fmod : result -> int -> int = "PQfmod_stub" "noalloc"
-  external fsize : result -> int -> int = "PQfsize_stub" "noalloc"
-  external binary_tuples : result -> bool = "PQbinaryTuples_stub" "noalloc"
+  external fmod : result -> int -> int = "PQfmod_stub" [@@noalloc]
+  external fsize : result -> int -> int = "PQfsize_stub" [@@noalloc]
+  external binary_tuples : result -> bool = "PQbinaryTuples_stub" [@@noalloc]
 
   external getvalue : result -> int -> int -> string = "PQgetvalue_stub"
 
@@ -400,39 +401,39 @@ module Stub = struct
     result -> int -> int -> string = "PQgetescval_stub"
 
   external getisnull :
-    result -> int -> int -> bool = "PQgetisnull_stub" "noalloc"
+    result -> int -> int -> bool = "PQgetisnull_stub" [@@noalloc]
 
   external getlength :
-    result -> int -> int -> int = "PQgetlength_stub" "noalloc"
+    result -> int -> int -> int = "PQgetlength_stub" [@@noalloc]
 
   external cmd_status : result -> string = "PQcmdStatus_stub"
   external cmd_tuples : result -> string = "PQcmdTuples_stub"
-  external oid_value : result -> oid = "PQoidValue_stub" "noalloc"
+  external oid_value : result -> oid = "PQoidValue_stub" [@@noalloc]
 
 
   (* Asynchronous Query Processing *)
 
   external connect_poll :
-    connection -> polling_status = "PQconnectPoll_stub" "noalloc"
+    connection -> polling_status = "PQconnectPoll_stub" [@@noalloc]
 
   external reset_start :
-    connection -> bool = "PQresetStart_stub" "noalloc"
+    connection -> bool = "PQresetStart_stub" [@@noalloc]
 
   external reset_poll :
-    connection -> polling_status = "PQresetPoll_stub" "noalloc"
+    connection -> polling_status = "PQresetPoll_stub" [@@noalloc]
 
   external set_nonblocking :
-    connection -> bool -> int = "PQsetnonblocking_stub" "noalloc"
+    connection -> bool -> int = "PQsetnonblocking_stub" [@@noalloc]
 
   external is_nonblocking :
-    connection -> bool = "PQisnonblocking_stub" "noalloc"
+    connection -> bool = "PQisnonblocking_stub" [@@noalloc]
 
   external send_query_params :
     connection -> string -> string array -> bool array -> int
     = "PQsendQueryParams_stub"
 
   external send_prepare :
-    connection -> string -> string -> int = "PQsendPrepare_stub" "noalloc"
+    connection -> string -> string -> int = "PQsendPrepare_stub" [@@noalloc]
 
   external send_query_prepared :
     connection -> string -> string array -> bool array -> int
@@ -446,10 +447,10 @@ module Stub = struct
 
   external set_single_row_mode : connection -> int = "PQsetSingleRowMode_stub"
   external get_result : connection -> result = "PQgetResult_stub"
-  external consume_input : connection -> int = "PQconsumeInput_stub" "noalloc"
-  external is_busy : connection -> bool = "PQisBusy_stub" "noalloc"
-  external flush : connection -> int = "PQflush_stub" "noalloc"
-  external socket : connection -> int = "PQsocket_stub" "noalloc"
+  external consume_input : connection -> int = "PQconsumeInput_stub" [@@noalloc]
+  external is_busy : connection -> bool = "PQisBusy_stub" [@@noalloc]
+  external flush : connection -> int = "PQflush_stub" [@@noalloc]
+  external socket : connection -> int = "PQsocket_stub" [@@noalloc]
   external request_cancel : connection -> string option = "PQCancel_stub"
 
 
@@ -464,7 +465,8 @@ module Stub = struct
     connection -> Bytes.t -> int -> int -> int = "PQgetline_stub"
 
   external getline_async :
-    connection -> Bytes.t -> int -> int -> int = "PQgetlineAsync_stub" "noalloc"
+    connection -> Bytes.t -> int -> int -> int
+    = "PQgetlineAsync_stub" [@@noalloc]
 
   external putline : connection -> string -> int = "PQputline_stub"
 
@@ -942,12 +944,12 @@ object (self)
       let rec loop () =
         let r = Stub.getline conn bts 0 len in
         if r = 1 then begin  (* Buffer full *)
-          buffer_add_subbytes buf bts 0 len;
+          Buffer.add_subbytes buf bts 0 len;
           loop ()
         end
         else if r = 0 then  (* Line read *)
           let zero = Bytes.index bts '\000' in
-          buffer_add_subbytes buf bts 0 zero;
+          Buffer.add_subbytes buf bts 0 zero;
           match Buffer.contents buf with
           | "\\." -> ()
           | line -> Buffer.clear buf; f line; loop ()
