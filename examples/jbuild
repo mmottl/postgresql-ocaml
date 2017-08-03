@@ -8,5 +8,5 @@
     -safe-string -strict-sequence
     -principal -short-paths
   ))
-  (libraries (bigarray postgresql))
+  (libraries (postgresql))
 ))
