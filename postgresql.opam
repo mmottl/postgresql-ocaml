@@ -26,7 +26,16 @@ depends: [
 
 depexts: [
   [["debian"] ["libpq-dev"]]
+  [["freebsd"] ["database/postgresql96-client"]]
+  [["openbsd"] ["database/postgresql96-client"]]
   [["ubuntu"] ["libpq-dev"]]
+  [["centos"] ["postgresql-devel"]]
+  [["rhel"] ["postgresql-devel"]]
+  [["fedora"] ["postgresql-devel"]]
+  [["alpine"] ["postgresql-dev"]]
+  [["opensuse"] ["postgresql"]]
+  [["osx" "homebrew"] ["postgresql"]]
+  [["osx" "macports"] ["postgresql96"]]
 ]
 
 available: [ ocaml-version >= "4.04" ]
