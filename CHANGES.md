@@ -6,6 +6,7 @@
   * Used untagged integer representations in external calls for improved
     efficiency.
 
+
 ### 4.1.0 (2017-08-02)
 
   * Switched to jbuilder and topkg
