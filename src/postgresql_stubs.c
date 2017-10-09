@@ -159,20 +159,23 @@ static int oid_tbl[] = {
   LANGUAGE_HANDLEROID, INTERNALOID, OPAQUEOID, ANYELEMENTOID, JSONBOID
 };
 
-CAMLprim value ftype_of_oid_stub(value v_oid)
+CAMLprim value ftype_of_oid_stub(intnat oid)
 {
-  int oid = Int_val(v_oid);
   int *p = oid_tbl;
   int *last = oid_tbl + sizeof(oid_tbl)/sizeof(oid_tbl[0]);
   while (p != last && *p != oid) p++;
-  if (p == last) caml_raise_with_arg(*v_exc_Oid, v_oid);
+  if (p == last) caml_raise_with_arg(*v_exc_Oid, Val_int(oid));
   return Val_int(p - oid_tbl);
 }
 
-CAMLprim value oid_of_ftype_stub(value v_ftype)
-{
-  return Val_int(oid_tbl[Int_val(v_ftype)]);
-}
+CAMLprim value ftype_of_oid_stub_bc(value v_oid)
+{ return ftype_of_oid_stub(Int_val(v_oid)); }
+
+CAMLprim intnat oid_of_ftype_stub(value v_ftype)
+{ return oid_tbl[Int_val(v_ftype)]; }
+
+CAMLprim value oid_of_ftype_stub_bc(value v_ftype)
+{ return Val_int(oid_of_ftype_stub(v_ftype)); }
 
 
 /* Management of notice_processor callbacks */
@@ -344,8 +347,19 @@ static inline value make_string(const char *s)
     return ret(fun(get_conn(v_conn))); \
   }
 
+#define noalloc_conn_info_intnat(fun) \
+  CAMLprim intnat fun##_stub(value v_conn) \
+  { \
+    return fun(get_conn(v_conn)); \
+  } \
+  \
+  CAMLprim value fun##_stub_bc(value v_conn) \
+  { \
+    return Val_int(fun##_stub(v_conn)); \
+  }
+
 conn_info(PQconnectPoll, Val_int)
-conn_info(PQresetStart, Val_int)
+conn_info(PQresetStart, Val_bool)
 conn_info(PQresetPoll, Val_int)
 conn_info(PQdb, make_string)
 conn_info(PQuser, make_string)
@@ -356,8 +370,8 @@ conn_info(PQtty, make_string)
 conn_info(PQoptions, make_string)
 noalloc_conn_info(PQstatus, Val_int)
 conn_info(PQerrorMessage, make_string)
-noalloc_conn_info(PQbackendPID, Val_int)
-noalloc_conn_info(PQserverVersion, Val_int)
+noalloc_conn_info_intnat(PQbackendPID)
+noalloc_conn_info_intnat(PQserverVersion)
 
 /* Command Execution Functions */
 
@@ -380,17 +394,49 @@ noalloc_conn_info(PQserverVersion, Val_int)
     return ret(fun(get_res(v_res))); \
   }
 
+#define noalloc_res_info_intnat(fun) \
+  CAMLprim intnat fun##_stub(value v_res) \
+  { \
+    return fun(get_res(v_res)); \
+  } \
+  \
+  CAMLprim value fun##_stub_bc(value v_res) \
+  { \
+    return Val_int(fun##_stub(v_res)); \
+  }
+
 #define fieldnum_info(fun, ret) \
-  CAMLprim value fun##_stub(value v_res, value v_field_num) \
+  CAMLprim value fun##_stub(value v_res, intnat field_num) \
   { \
     CAMLparam1(v_res); \
-    CAMLreturn(ret(fun(get_res(v_res), Long_val(v_field_num)))); \
+    CAMLreturn(ret(fun(get_res(v_res), field_num))); \
+  } \
+  \
+  CAMLprim value fun##_stub_bc(value v_res, value v_field_num) \
+  { \
+    return fun##_stub(v_res, Int_val(v_field_num)); \
   }
 
 #define noalloc_fieldnum_info(fun, ret) \
-  CAMLprim value fun##_stub(value v_res, value v_field_num) \
+  CAMLprim value fun##_stub(value v_res, intnat field_num) \
   { \
-    return ret(fun(get_res(v_res), Long_val(v_field_num))); \
+    return ret(fun(get_res(v_res), field_num)); \
+  } \
+  \
+  CAMLprim value fun##_stub_bc(value v_res, value v_field_num) \
+  { \
+    return fun##_stub(v_res, Int_val(v_field_num)); \
+  }
+
+#define noalloc_fieldnum_info_intnat(fun) \
+  CAMLprim intnat fun##_stub(value v_res, intnat field_num) \
+  { \
+    return fun(get_res(v_res), field_num); \
+  } \
+  \
+  CAMLprim value fun##_stub_bc(value v_res, value v_field_num) \
+  { \
+    return Val_int(fun##_stub(v_res, Int_val(v_field_num))); \
   }
 
 #define field_info(fun, ret) \
@@ -402,11 +448,30 @@ noalloc_conn_info(PQserverVersion, Val_int)
   }
 
 #define noalloc_field_info(fun, ret) \
-  CAMLprim value fun##_stub(value v_res, value v_tup_num, value v_field_num) \
+  CAMLprim value fun##_stub(value v_res, intnat tup_num, intnat field_num) \
+  { \
+    return ret(fun(get_res(v_res), tup_num, field_num)); \
+  } \
+  \
+  CAMLprim value \
+  fun##_stub_bc(value v_res, value v_tup_num, value v_field_num) \
+  { \
+    return fun##_stub(v_res, Int_val(v_tup_num), Int_val(v_field_num)); \
+  }
+
+#define noalloc_field_info_intnat(fun) \
+  CAMLprim intnat fun##_stub(value v_res, intnat tup_num, intnat field_num) \
+  { \
+    return fun(get_res(v_res), tup_num, field_num); \
+  } \
+  \
+  CAMLprim value \
+  fun##_stub_bc(value v_res, value v_tup_num, value v_field_num) \
   { \
     return \
-      ret(fun(get_res(v_res), Long_val(v_tup_num), Long_val(v_field_num))); \
+      Val_int(fun##_stub(v_res, Int_val(v_tup_num), Int_val(v_field_num))); \
   }
+
 
 static inline void free_result(value v_res)
 {
@@ -565,7 +630,6 @@ CAMLprim value PQprepare_stub(
   value __unused v_conn, value __unused v_stm_name, value __unused v_query)
 {
   caml_failwith("Postgresql.prepare: not supported");
-  return Val_unit;
 #endif
 }
 
@@ -597,7 +661,6 @@ CAMLprim value PQexecPrepared_stub(
   value __unused v_binary_params)
 {
   caml_failwith("Postgresql.exec_prepared: not supported");
-  return Val_unit;
 #endif
 }
 
@@ -621,7 +684,6 @@ CAMLprim value
 PQdescribePrepared_stub(value __unused v_conn, value __unused v_query)
 {
   caml_failwith("Postgresql.describe_prepared: not supported");
-  return Val_unit;
 #endif
 }
 
@@ -633,49 +695,60 @@ CAMLprim value PQresStatus_stub(value v_status)
 }
 
 res_info(PQresultErrorMessage, make_string)
-noalloc_res_info(PQntuples, Val_long)
-noalloc_res_info(PQnfields, Val_long)
+noalloc_res_info_intnat(PQntuples)
+noalloc_res_info_intnat(PQnfields)
 noalloc_res_info(PQbinaryTuples, Val_bool)
 fieldnum_info(PQfname, make_string)
 
 #ifdef PG_OCAML_8_2
-noalloc_res_info(PQnparams, Val_long)
+noalloc_res_info_intnat(PQnparams)
 #else
-CAMLprim value PQnparams_stub(value __unused v_res)
+CAMLprim intnat PQnparams_stub(value __unused v_res)
 {
   caml_failwith("Postgresql.nparams: not supported");
-  return Val_unit;
+}
+
+CAMLprim value PQnparams_stub_bc(value __unused v_res)
+{
+  return Val_int(PQnparams_stub(v_res));
 }
 #endif
 
-CAMLprim value PQfnumber_stub(value v_res, value v_field_name)
+CAMLprim intnat PQfnumber_stub(value v_res, value v_field_name)
 {
-  return Val_long(PQfnumber(get_res(v_res), String_val(v_field_name)));
+  return PQfnumber(get_res(v_res), String_val(v_field_name));
+}
+
+CAMLprim value PQfnumber_stub_bc(value v_res, value v_field_name)
+{
+  return Val_int(PQfnumber_stub(v_res, v_field_name));
 }
 
 noalloc_fieldnum_info(PQfformat, Val_int)
-noalloc_fieldnum_info(PQftype, Val_int)
-noalloc_fieldnum_info(PQfsize, Val_long)
-noalloc_fieldnum_info(PQfmod, Val_int)
+noalloc_fieldnum_info_intnat(PQftype)
+noalloc_fieldnum_info_intnat(PQfmod)
+noalloc_fieldnum_info_intnat(PQfsize)
 
 #ifdef PG_OCAML_8_2
-noalloc_fieldnum_info(PQparamtype, Val_long)
+noalloc_fieldnum_info_intnat(PQparamtype)
 #else
-CAMLprim value
-PQparamtype_stub(value __unused v_res, value __unused v_field_num)
+CAMLprim intnat
+PQparamtype_stub(value __unused v_res, intnat __unused field_num)
 {
   caml_failwith("Postgresql.paramtype: not supported");
-  return Val_unit;
+}
+
+CAMLprim value PQparamtype_stub_bc(value v_res, value v_field_num)
+{
+  return Val_int(PQparamtype_stub(v_res, Int_val(v_field_num)));
 }
 #endif
 
-CAMLprim value PQgetvalue_stub(value v_res, value v_tup_num, value v_field_num)
+CAMLprim value PQgetvalue_stub(value v_res, intnat tup_num, intnat field_num)
 {
   CAMLparam1(v_res);
   value v_str;
   PGresult *res = get_res(v_res);
-  size_t field_num = Long_val(v_field_num);
-  size_t tup_num = Long_val(v_tup_num);
   char *str = PQgetvalue(res, tup_num, field_num);
   if (PQfformat(res, field_num) == 0) v_str = make_string(str);
   else {
@@ -687,6 +760,11 @@ CAMLprim value PQgetvalue_stub(value v_res, value v_tup_num, value v_field_num)
   CAMLreturn(v_str);
 }
 
+CAMLprim value PQgetvalue_stub_bc(
+    value v_res, value v_tup_num, value v_field_num)
+{
+  return PQgetvalue_stub(v_res, Int_val(v_tup_num), Int_val(v_field_num));
+}
 
 /* Unescaping - auxiliary routines */
 
@@ -764,13 +842,11 @@ static void decode_bytea_hex(const char *src, char *dst, size_t dst_len)
 
 /* */
 
-CAMLprim value PQgetescval_stub(value v_res, value v_tup_num, value v_field_num)
+CAMLprim value PQgetescval_stub(value v_res, intnat tup_num, intnat field_num)
 {
   CAMLparam1(v_res);
   value v_str;
   PGresult *res = get_res(v_res);
-  size_t field_num = Long_val(v_field_num);
-  size_t tup_num = Long_val(v_tup_num);
   char *str = PQgetvalue(res, tup_num, field_num);
   if (PQfformat(res, field_num) == 0) {
     if (str == NULL || strlen(str) < 2 || !is_bytea_hex_protocol(str))
@@ -791,12 +867,18 @@ CAMLprim value PQgetescval_stub(value v_res, value v_tup_num, value v_field_num)
   CAMLreturn(v_str);
 }
 
-noalloc_field_info(PQgetlength, Val_long)
+CAMLprim value PQgetescval_stub_bc(
+    value v_res, value v_tup_num, value v_field_num)
+{
+  return PQgetescval_stub(v_res, Int_val(v_tup_num), Int_val(v_field_num));
+}
+
 noalloc_field_info(PQgetisnull, Val_bool)
+noalloc_field_info_intnat(PQgetlength)
 
 res_info(PQcmdStatus, make_string)
 res_info(PQcmdTuples, make_string)
-noalloc_res_info(PQoidValue, Val_int)
+noalloc_res_info_intnat(PQoidValue)
 
 CAMLprim value PQmakeEmptyPGresult_stub(value v_conn, value v_status)
 {
@@ -810,21 +892,27 @@ CAMLprim value PQmakeEmptyPGresult_stub(value v_conn, value v_status)
 
 /* Asynchronous Query Processing */
 
-CAMLprim value PQsetnonblocking_stub(value v_conn, value v_arg)
+CAMLprim intnat PQsetnonblocking_stub(value v_conn, value v_arg)
 {
-  return Val_int(PQsetnonblocking(get_conn(v_conn), Bool_val(v_arg)));
+  return PQsetnonblocking(get_conn(v_conn), Bool_val(v_arg));
+}
+
+CAMLprim value PQsetnonblocking_stub_bc(value v_conn, value v_arg)
+{
+  return Val_int(PQsetnonblocking_stub(v_conn, v_arg));
 }
 
 noalloc_conn_info(PQisnonblocking, Val_bool)
 
-CAMLprim value PQsendQueryParams_stub(
+CAMLprim intnat PQsendQueryParams_stub(
   value v_conn, value v_query, value v_params, value v_binary_params)
 {
   PGconn *conn = get_conn(v_conn);
   const char *query = String_val(v_query);
   size_t nparams = Wosize_val(v_params);
   const char * const *params = copy_params_shallow(v_params, nparams);
-  int *lengths, *formats, res;
+  int *lengths, *formats;
+  intnat res;
   copy_binary_params(v_params, v_binary_params, nparams, &formats, &lengths);
   res =
     (nparams == 0)
@@ -833,79 +921,110 @@ CAMLprim value PQsendQueryParams_stub(
           conn, query, nparams, NULL, params, lengths, formats, 0);
   free_binary_params(formats, lengths);
   free_params_shallow(params, nparams);
-  return Val_int(res);
+  return res;
 }
 
-CAMLprim value PQsendPrepare_stub(value v_conn, value v_stm_name, value v_query)
+CAMLprim value PQsendQueryParams_stub_bc(
+  value v_conn, value v_query, value v_params, value v_binary_params)
+{
+  return
+    Val_int(PQsendQueryParams_stub(v_conn, v_query, v_params, v_binary_params));
+}
+
+CAMLprim intnat PQsendPrepare_stub(
+    value v_conn, value v_stm_name, value v_query)
 {
   PGconn *conn = get_conn(v_conn);
   const char *stm_name = String_val(v_stm_name);
   const char *query = String_val(v_query);
-  int res;
-  res = PQsendPrepare(conn, stm_name, query, 0, NULL);
-  return Val_int(res);
+  return PQsendPrepare(conn, stm_name, query, 0, NULL);
 }
 
-CAMLprim value PQsendQueryPrepared_stub(
+CAMLprim value PQsendPrepare_stub_bc(
+    value v_conn, value v_stm_name, value v_query)
+{
+  return Val_int(PQsendPrepare_stub(v_conn, v_stm_name, v_query));
+}
+
+CAMLprim intnat PQsendQueryPrepared_stub(
   value v_conn, value v_stm_name, value v_params, value v_binary_params)
 {
   PGconn *conn = get_conn(v_conn);
   const char *stm_name = String_val(v_stm_name);
   size_t nparams = Wosize_val(v_params);
   const char * const *params = copy_params_shallow(v_params, nparams);
-  int *lengths, *formats, res;
+  int *lengths, *formats;
+  intnat res;
   copy_binary_params(v_params, v_binary_params, nparams, &formats, &lengths);
   res =
     PQsendQueryPrepared(conn, stm_name, nparams, params, lengths, formats, 0);
   free_binary_params(formats, lengths);
   free_params_shallow(params, nparams);
-  return Val_int(res);
+  return res;
+}
+
+CAMLprim value PQsendQueryPrepared_stub_bc(
+    value v_conn, value v_stm_name, value v_params, value v_binary_params)
+{
+  return
+    Val_int(
+        PQsendQueryPrepared_stub(
+          v_conn, v_stm_name, v_params, v_binary_params));
 }
 
 #ifdef PG_OCAML_8_2
-CAMLprim value PQsendDescribePrepared_stub(value v_conn, value v_stm_name)
+CAMLprim intnat PQsendDescribePrepared_stub(value v_conn, value v_stm_name)
 {
   PGconn *conn = get_conn(v_conn);
   const char *stm_name = String_val(v_stm_name);
   int res;
   res = PQsendDescribePrepared(conn, stm_name);
-  return Val_int(res);
+  return res;
 }
 #else
-CAMLprim value
+CAMLprim intnat
 PQsendDescribePrepared_stub(value __unused v_conn, value __unused v_stm_name)
 {
   caml_failwith("Postgresql.send_describe_prepared: not supported");
-  return Val_unit;
 }
 #endif
 
+CAMLprim value PQsendDescribePrepared_stub_bc(value v_conn, value v_stm_name)
+{
+  return Val_int(PQsendDescribePrepared_stub(v_conn, v_stm_name));
+}
+
 #ifdef PG_OCAML_8_2
-CAMLprim value PQsendDescribePortal_stub(value v_conn, value v_portal_name)
+CAMLprim intnat PQsendDescribePortal_stub(value v_conn, value v_portal_name)
 {
   PGconn *conn = get_conn(v_conn);
   const char *portal_name = String_val(v_portal_name);
-  int res;
-  res = PQsendDescribePortal(conn, portal_name);
-  return Val_int(res);
+  return PQsendDescribePortal(conn, portal_name);
 }
 #else
-CAMLprim value
+CAMLprim intnat
 PQsendDescribePortal_stub(value __unused v_conn, value __unused v_portal_name)
 {
   caml_failwith("Postgresql.send_describe_portal: not supported");
-  return Val_unit;
 }
 #endif
 
+CAMLprim value PQsendDescribePortal_stub_bc(value v_conn, value v_portal_name)
+{
+  return Val_int(PQsendDescribePortal_stub(v_conn, v_portal_name));
+}
+
 #ifdef PG_OCAML_9_2
-noalloc_conn_info(PQsetSingleRowMode, Val_int)
+noalloc_conn_info_intnat(PQsetSingleRowMode)
 #else
-CAMLprim value
-PQsetSingleRowMode_stub(value __unused conn)
+CAMLprim intnat PQsetSingleRowMode_stub(value __unused conn)
 {
   caml_failwith("Postgresql.set_single_row_mode: not supported");
-  return Val_unit;
+}
+
+CAMLprim value PQsetSingleRowMode_stub_bc(value conn)
+{
+  return Val_int(PQsetSingleRowMode_stub(conn));
 }
 #endif
 
@@ -921,10 +1040,10 @@ CAMLprim value PQgetResult_stub(value v_conn)
   CAMLreturn(alloc_result(res, np_cb));
 }
 
-noalloc_conn_info(PQconsumeInput, Val_int)
+noalloc_conn_info_intnat(PQconsumeInput)
 noalloc_conn_info(PQisBusy, Val_bool)
-noalloc_conn_info(PQflush, Val_int)
-noalloc_conn_info(PQsocket, Val_int)
+noalloc_conn_info_intnat(PQflush)
+noalloc_conn_info_intnat(PQsocket)
 
 CAMLprim value PQCancel_stub(value v_conn)
 {
@@ -944,21 +1063,17 @@ CAMLprim value PQCancel_stub(value v_conn)
 }
 
 CAMLprim value PQescapeStringConn_stub(
-  value v_conn, value v_from, value v_pos_from, value v_len)
+  value v_conn, value v_from, intnat pos_from, intnat len)
 {
-  size_t len = Long_val(v_len);
   size_t to_len = len + len + 1;
   char *buf = caml_stat_alloc(to_len);
   int error;
   size_t n_written =
     PQescapeStringConn(
-      get_conn(v_conn),
-      buf, String_val(v_from) + Long_val(v_pos_from),
-      len, &error);
+      get_conn(v_conn), buf, String_val(v_from) + pos_from, len, &error);
   if (error) {
     caml_stat_free(buf);
     caml_failwith("Postgresql.escape_string_conn: failed to escape string");
-    return Val_unit;
   } else {
     value v_res = caml_alloc_string(n_written);
     memcpy(String_val(v_res), buf, n_written);
@@ -967,19 +1082,33 @@ CAMLprim value PQescapeStringConn_stub(
   }
 }
 
-CAMLprim value PQescapeByteaConn_stub(
+CAMLprim value PQescapeStringConn_stub_bc(
   value v_conn, value v_from, value v_pos_from, value v_len)
 {
-  size_t len;
+  return
+    PQescapeStringConn_stub(
+        v_conn, v_from, Int_val(v_pos_from), Int_val(v_len));
+}
+
+CAMLprim value PQescapeByteaConn_stub(
+  value v_conn, value v_from, intnat pos_from, intnat len)
+{
+  size_t res_len;
   char *buf =
     (char *) PQescapeByteaConn(
       get_conn(v_conn),
-      (unsigned char *) String_val(v_from) + Long_val(v_pos_from),
-      Long_val(v_len), &len);
-  value v_res = caml_alloc_string(--len);
-  memcpy(String_val(v_res), buf, len);
+      (unsigned char *) String_val(v_from) + pos_from, len, &res_len);
+  value v_res = caml_alloc_string(--res_len);
+  memcpy(String_val(v_res), buf, res_len);
   PQfreemem(buf);
   return v_res;
+}
+
+CAMLprim value PQescapeByteaConn_stub_bc(
+  value v_conn, value v_from, value v_pos_from, value v_len)
+{
+  return
+    PQescapeByteaConn_stub(v_conn, v_from, Int_val(v_pos_from), Int_val(v_len));
 }
 
 /* Unescaping */
@@ -1029,72 +1158,97 @@ CAMLprim value PQnotifies_stub(value v_conn)
 
 /* Functions Associated with the COPY Command */
 
-CAMLprim value PQgetline_stub(
-  value v_conn, value v_buf, value v_pos, value v_len)
+CAMLprim intnat PQgetline_stub(
+  value v_conn, value v_buf, intnat pos, intnat len)
 {
   CAMLparam2(v_conn, v_buf);
   PGconn *conn = get_conn(v_conn);
-  value v_res;
-  size_t len = Long_val(v_len);
+  intnat res;
   char *buf = caml_stat_alloc(len);
   caml_enter_blocking_section();
-    v_res = Val_int(PQgetline(conn, buf, len));
+    res = PQgetline(conn, buf, len);
   caml_leave_blocking_section();
-  memcpy(String_val(v_buf) + Long_val(v_pos), buf, len);
+  memcpy(String_val(v_buf) + pos, buf, len);
   caml_stat_free(buf);
-  CAMLreturn(v_res);
+  CAMLreturn(res);
 }
 
-CAMLprim value PQgetlineAsync_stub(
+CAMLprim value PQgetline_stub_bc(
   value v_conn, value v_buf, value v_pos, value v_len)
 {
-  return Val_int(PQgetlineAsync(get_conn(v_conn),
-                                String_val(v_buf) + Long_val(v_pos),
-                                Long_val(v_len)));
+  return Val_int(PQgetline_stub(v_conn, v_buf, Int_val(v_pos), Int_val(v_len)));
 }
 
-CAMLprim value PQputline_stub(value v_conn, value v_buf)
+CAMLprim intnat PQgetlineAsync_stub(
+  value v_conn, value v_buf, intnat pos, intnat len)
+{
+  return PQgetlineAsync(get_conn(v_conn), String_val(v_buf) + pos, len);
+}
+
+CAMLprim value PQgetlineAsync_stub_bc(
+  value v_conn, value v_buf, value v_pos, value v_len)
+{
+  return
+    Val_int(PQgetlineAsync_stub(v_conn, v_buf, Int_val(v_pos), Int_val(v_len)));
+}
+
+CAMLprim intnat PQputline_stub(value v_conn, value v_buf)
 {
   CAMLparam1(v_conn);
   PGconn *conn = get_conn(v_conn);
-  value v_res;
+  intnat res;
   size_t len = caml_string_length(v_buf) + 1;
   char *buf = caml_stat_alloc(len);
   memcpy(buf, String_val(v_buf), len);
   caml_enter_blocking_section();
-    v_res = Val_int(PQputline(conn, buf));
+    res = PQputline(conn, buf);
     caml_stat_free(buf);
   caml_leave_blocking_section();
-  CAMLreturn(v_res);
+  CAMLreturn(res);
 }
 
-CAMLprim value PQputnbytes_stub(
+CAMLprim value PQputline_stub_bc(value v_conn, value v_buf)
+{
+  return Val_int(PQputline_stub(v_conn, v_buf));
+}
+
+CAMLprim intnat PQputnbytes_stub(
+  value v_conn, value v_buf, intnat pos, intnat len)
+{
+  CAMLparam1(v_conn);
+  PGconn *conn = get_conn(v_conn);
+  intnat res;
+  char *buf = caml_stat_alloc(len);
+  memcpy(buf, String_val(v_buf) + pos, len);
+  caml_enter_blocking_section();
+    res = PQputnbytes(conn, buf, len);
+    caml_stat_free(buf);
+  caml_leave_blocking_section();
+  CAMLreturn(res);
+}
+
+CAMLprim value PQputnbytes_stub_bc(
   value v_conn, value v_buf, value v_pos, value v_len)
 {
-  CAMLparam1(v_conn);
-  PGconn *conn = get_conn(v_conn);
-  value v_res;
-  size_t len = Long_val(v_len);
-  char *buf = caml_stat_alloc(len);
-  memcpy(buf, String_val(v_buf) + Long_val(v_pos), len);
-  caml_enter_blocking_section();
-    v_res = Val_int(PQputnbytes(conn, buf, len));
-    caml_stat_free(buf);
-  caml_leave_blocking_section();
-  CAMLreturn(v_res);
+  return
+    Val_int(PQputnbytes_stub(v_conn, v_buf, Int_val(v_pos), Int_val(v_len)));
 }
 
-CAMLprim value PQendcopy_stub(value v_conn)
+CAMLprim intnat PQendcopy_stub(value v_conn)
 {
   CAMLparam1(v_conn);
   PGconn *conn = get_conn(v_conn);
-  value v_res;
+  intnat res;
   caml_enter_blocking_section();
-    v_res = Val_int(PQendcopy(conn));
+    res = PQendcopy(conn);
   caml_leave_blocking_section();
-  CAMLreturn(v_res);
+  CAMLreturn(res);
 }
 
+CAMLprim value PQendcopy_stub_bc(value v_conn)
+{
+  return Val_int(PQendcopy_stub(v_conn));
+}
 
 /* libpq Control Functions */
 
@@ -1121,95 +1275,224 @@ CAMLprim value PQsetNoticeProcessor_stub(value v_conn, value v_cb)
 
 /* Large objects */
 
-CAMLprim value lo_open_stub(value v_conn, value v_oid)
+CAMLprim intnat lo_creat_stub(value v_conn)
 {
   CAMLparam1(v_conn);
   PGconn *conn = get_conn(v_conn);
-  value v_res;
+  intnat res;
   caml_enter_blocking_section();
-    v_res = Val_int(lo_open(conn, Int_val(v_oid), INV_READ | INV_WRITE));
+    res = lo_creat(conn, INV_READ | INV_WRITE);
   caml_leave_blocking_section();
-  CAMLreturn(v_res);
+  CAMLreturn(res);
 }
 
-CAMLprim value lo_close_stub(value v_conn, value v_fd)
+CAMLprim value lo_creat_stub_bc(value v_conn)
+{
+  return Val_int(lo_creat_stub(v_conn));
+}
+
+CAMLprim intnat lo_import_stub(value v_conn, value v_fname)
 {
   CAMLparam1(v_conn);
   PGconn *conn = get_conn(v_conn);
-  value v_res;
+  intnat res;
+  size_t len = caml_string_length(v_fname) + 1;
+  char *fname = caml_stat_alloc(len);
+  memcpy(fname, String_val(v_fname), len);
   caml_enter_blocking_section();
-    v_res = Val_int(lo_close(conn, Int_val(v_fd)));
+    res = lo_import(conn, fname);
+    caml_stat_free(fname);
   caml_leave_blocking_section();
-  CAMLreturn(v_res);
+  CAMLreturn(res);
 }
 
-CAMLprim value lo_read_stub(value v_conn, value v_fd,
-                            value v_buf, value v_pos, value v_len)
+CAMLprim value lo_import_stub_bc(value v_conn, value v_fname)
+{
+  return Val_int(lo_import_stub(v_conn, v_fname));
+}
+
+CAMLprim intnat lo_export_stub(value v_conn, intnat oid, value v_fname)
+{
+  CAMLparam1(v_conn);
+  PGconn *conn = get_conn(v_conn);
+  intnat res;
+  size_t len = caml_string_length(v_fname) + 1;
+  char *fname = caml_stat_alloc(len);
+  memcpy(fname, String_val(v_fname), len);
+  caml_enter_blocking_section();
+    res = lo_export(conn, oid, fname);
+    caml_stat_free(fname);
+  caml_leave_blocking_section();
+  CAMLreturn(res);
+}
+
+CAMLprim value lo_export_stub_bc(value v_conn, value v_oid, value v_fname)
+{
+  return Val_int(lo_export_stub(v_conn, Int_val(v_oid), v_fname));
+}
+
+CAMLprim intnat lo_open_stub(value v_conn, intnat oid)
+{
+  CAMLparam1(v_conn);
+  PGconn *conn = get_conn(v_conn);
+  intnat res;
+  caml_enter_blocking_section();
+    res = lo_open(conn, oid, INV_READ | INV_WRITE);
+  caml_leave_blocking_section();
+  CAMLreturn(res);
+}
+
+CAMLprim value lo_open_stub_bc(value v_conn, value v_oid)
+{
+  return Val_int(lo_open_stub(v_conn, Int_val(v_oid)));
+}
+
+CAMLprim intnat lo_close_stub(value v_conn, intnat fd)
+{
+  CAMLparam1(v_conn);
+  PGconn *conn = get_conn(v_conn);
+  intnat res;
+  caml_enter_blocking_section();
+    res = lo_close(conn, fd);
+  caml_leave_blocking_section();
+  CAMLreturn(res);
+}
+
+CAMLprim value lo_close_stub_bc(value v_conn, value v_fd)
+{
+  return Val_int(lo_close_stub(v_conn, Int_val(v_fd)));
+}
+
+CAMLprim intnat lo_tell_stub(value v_conn, intnat fd)
+{
+  CAMLparam1(v_conn);
+  PGconn *conn = get_conn(v_conn);
+  intnat res;
+  caml_enter_blocking_section();
+    res = lo_tell(conn, fd);
+  caml_leave_blocking_section();
+  CAMLreturn(res);
+}
+
+CAMLprim value lo_tell_stub_bc(value v_conn, value v_fd)
+{
+  return Val_int(lo_tell_stub(v_conn, Int_val(v_fd)));
+}
+
+CAMLprim intnat lo_unlink_stub(value v_conn, intnat oid)
+{
+  CAMLparam1(v_conn);
+  PGconn *conn = get_conn(v_conn);
+  intnat res;
+  caml_enter_blocking_section();
+    res = lo_unlink(conn, oid);
+  caml_leave_blocking_section();
+  CAMLreturn(res);
+}
+
+CAMLprim value lo_unlink_stub_bc(value v_conn, value v_oid)
+{
+  return Val_int(lo_unlink_stub(v_conn, Int_val(v_oid)));
+}
+
+CAMLprim intnat lo_read_stub(
+    value v_conn, intnat fd, value v_buf, intnat pos, intnat len)
 {
   CAMLparam2(v_conn, v_buf);
   PGconn *conn = get_conn(v_conn);
-  value v_res;
-  size_t len = Long_val(v_len);
+  intnat res;
   char *buf = caml_stat_alloc(len);
   caml_enter_blocking_section();
-    v_res = Val_long(lo_read(conn, Int_val(v_fd), buf, len));
+    res = lo_read(conn, fd, buf, len);
   caml_leave_blocking_section();
-  memcpy(String_val(v_buf) + Long_val(v_pos), buf, len);
+  memcpy(String_val(v_buf) + pos, buf, len);
   caml_stat_free(buf);
-  CAMLreturn(v_res);
+  CAMLreturn(res);
 }
 
-CAMLprim value lo_read_ba_stub(value v_conn, value v_fd,
-                               value v_buf, value v_pos, value v_len)
+CAMLprim value lo_read_stub_bc(
+    value v_conn, value v_fd, value v_buf, value v_pos, value v_len)
+{
+  return
+    Val_int(
+        lo_read_stub(
+          v_conn, Int_val(v_fd), v_buf, Int_val(v_pos), Int_val(v_len)));
+}
+
+CAMLprim intnat lo_read_ba_stub(
+    value v_conn, intnat fd, value v_buf, intnat pos, intnat len)
 {
   CAMLparam2(v_conn, v_buf);
   PGconn *conn = get_conn(v_conn);
-  value v_res;
-  size_t len = Long_val(v_len);
-  char *buf = ((char *) Caml_ba_data_val(v_buf)) + Long_val(v_pos);
+  intnat res;
+  char *buf = ((char *) Caml_ba_data_val(v_buf)) + pos;
   caml_enter_blocking_section();
-    v_res = Val_long(lo_read(conn, Int_val(v_fd), buf, len));
+    res = lo_read(conn, fd, buf, len);
   caml_leave_blocking_section();
-  CAMLreturn(v_res);
+  CAMLreturn(res);
 }
 
-CAMLprim value lo_write_stub(value v_conn, value v_fd,
-                             value v_buf, value v_pos, value v_len)
+CAMLprim value lo_read_ba_stub_bc(
+    value v_conn, value v_fd, value v_buf, value v_pos, value v_len)
+{
+  return
+    Val_int(
+        lo_read_ba_stub(
+          v_conn, Int_val(v_fd), v_buf, Int_val(v_pos), Int_val(v_len)));
+}
+
+CAMLprim intnat lo_write_stub(
+    value v_conn, intnat fd, value v_buf, intnat pos, intnat len)
 {
   CAMLparam1(v_conn);
   PGconn *conn = get_conn(v_conn);
-  value v_res;
-  size_t len = Long_val(v_len);
+  intnat res;
   char *buf = caml_stat_alloc(len);
-  memcpy(buf, String_val(v_buf) + Long_val(v_pos), len);
+  memcpy(buf, String_val(v_buf) + pos, len);
   caml_enter_blocking_section();
-    v_res = Val_long(lo_write(conn, Int_val(v_fd), buf, len));
+    res = lo_write(conn, fd, buf, len);
     caml_stat_free(buf);
   caml_leave_blocking_section();
-  CAMLreturn(v_res);
+  CAMLreturn(res);
 }
 
-CAMLprim value lo_write_ba_stub(value v_conn, value v_fd,
-                                value v_buf, value v_pos, value v_len)
+CAMLprim value lo_write_stub_bc(
+    value v_conn, value v_fd, value v_buf, value v_pos, value v_len)
+{
+  return
+    Val_int(
+        lo_write_stub(
+          v_conn, Int_val(v_fd), v_buf, Int_val(v_pos), Int_val(v_len)));
+}
+
+CAMLprim intnat lo_write_ba_stub(
+    value v_conn, intnat fd, value v_buf, intnat pos, intnat len)
 {
   CAMLparam2(v_conn, v_buf);
   PGconn *conn = get_conn(v_conn);
-  value v_res;
-  size_t len = Long_val(v_len);
-  char *buf = ((char *) Caml_ba_data_val(v_buf)) + Long_val(v_pos);
+  intnat res;
+  char *buf = ((char *) Caml_ba_data_val(v_buf)) + pos;
   caml_enter_blocking_section();
-    v_res = Val_long(lo_write(conn, Int_val(v_fd), buf, len));
+    res = lo_write(conn, fd, buf, len);
   caml_leave_blocking_section();
-  CAMLreturn(v_res);
+  CAMLreturn(res);
 }
 
-CAMLprim value lo_lseek_stub(
-  value v_conn, value v_fd, value v_pos, value v_whence)
+CAMLprim value lo_write_ba_stub_bc(
+    value v_conn, value v_fd, value v_buf, value v_pos, value v_len)
 {
+  return
+    Val_int(
+        lo_write_ba_stub(
+          v_conn, Int_val(v_fd), v_buf, Int_val(v_pos), Int_val(v_len)));
+}
 
+CAMLprim intnat lo_lseek_stub(
+    value v_conn, intnat fd, intnat pos, value v_whence)
+{
   CAMLparam1(v_conn);
   PGconn *conn = get_conn(v_conn);
-  value v_res;
+  intnat res;
   int whence;
   caml_enter_blocking_section();
     switch (Int_val(v_whence)) {
@@ -1217,70 +1500,14 @@ CAMLprim value lo_lseek_stub(
       case 1 : whence = SEEK_CUR; break;
       default : whence = SEEK_END; break;
     }
-    v_res = Val_int(lo_lseek(conn, Int_val(v_fd), Long_val(v_pos), whence));
+    res = lo_lseek(conn, fd, pos, whence);
   caml_leave_blocking_section();
-  CAMLreturn(v_res);
+  CAMLreturn(res);
 }
 
-CAMLprim value lo_creat_stub(value v_conn)
+CAMLprim value lo_lseek_stub_bc(
+    value v_conn, value v_fd, value v_pos, value v_whence)
 {
-  CAMLparam1(v_conn);
-  PGconn *conn = get_conn(v_conn);
-  value v_res;
-  caml_enter_blocking_section();
-    v_res = Val_int(lo_creat(conn, INV_READ | INV_WRITE));
-  caml_leave_blocking_section();
-  CAMLreturn(v_res);
-}
-
-CAMLprim value lo_tell_stub(value v_conn, value v_fd)
-{
-  CAMLparam1(v_conn);
-  PGconn *conn = get_conn(v_conn);
-  value v_res;
-  caml_enter_blocking_section();
-    v_res = Val_int(lo_tell(conn, Int_val(v_fd)));
-  caml_leave_blocking_section();
-  CAMLreturn(v_res);
-}
-
-CAMLprim value lo_unlink_stub(value v_conn, value v_oid)
-{
-  CAMLparam1(v_conn);
-  PGconn *conn = get_conn(v_conn);
-  value v_res;
-  caml_enter_blocking_section();
-    v_res = Val_int(lo_unlink(conn, Int_val(v_oid)));
-  caml_leave_blocking_section();
-  CAMLreturn(v_res);
-}
-
-CAMLprim value lo_import_stub(value v_conn, value v_fname)
-{
-  CAMLparam1(v_conn);
-  PGconn *conn = get_conn(v_conn);
-  value v_res;
-  size_t len = caml_string_length(v_fname) + 1;
-  char *fname = caml_stat_alloc(len);
-  memcpy(fname, String_val(v_fname), len);
-  caml_enter_blocking_section();
-    v_res = Val_int(lo_import(conn, fname));
-    caml_stat_free(fname);
-  caml_leave_blocking_section();
-  CAMLreturn(v_res);
-}
-
-CAMLprim value lo_export_stub(value v_conn, value v_oid, value v_fname)
-{
-  CAMLparam1(v_conn);
-  PGconn *conn = get_conn(v_conn);
-  value v_res;
-  size_t len = caml_string_length(v_fname) + 1;
-  char *fname = caml_stat_alloc(len);
-  memcpy(fname, String_val(v_fname), len);
-  caml_enter_blocking_section();
-    v_res = Val_int(lo_export(conn, Int_val(v_oid), fname));
-    caml_stat_free(fname);
-  caml_leave_blocking_section();
-  CAMLreturn(v_res);
+  return
+    Val_int(lo_lseek_stub(v_conn, Int_val(v_fd), Int_val(v_pos), v_whence));
 }

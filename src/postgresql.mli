@@ -173,16 +173,16 @@ exception Oid of oid
 
 (** {6 Utility functions}*)
 
-external unescape_bytea : string -> string = "PQunescapeBytea_stub"
+val unescape_bytea : string -> string
 (** [unescape_bytea str] unescapes binary string [str].  This function
     supports the new hex format for encoding bytea strings (introduced
     in Postgresql 9.0) even if the local libpq library is from an
     older version. *)
 
-external ftype_of_oid : oid -> ftype = "ftype_of_oid_stub"
+val ftype_of_oid : oid -> ftype
 (** [ftype_of_oid oid] converts [oid] to an [ftype]. *)
 
-external oid_of_ftype : ftype -> oid = "oid_of_ftype_stub"
+val oid_of_ftype : ftype -> oid
 (** [oid_of_ftype ftype] converts [ftype] to an [oid]. *)
 
 val string_of_ftype : ftype -> string
@@ -194,7 +194,7 @@ val ftype_of_string : string -> ftype
 
 (** {6 Handling results of commands and queries} *)
 
-external result_status : result_status -> string = "PQresStatus_stub"
+val result_status : result_status -> string
 (** [result_status stat] convert status [stat] to a human-readable message *)
 
 val invalid_oid : oid
@@ -423,7 +423,7 @@ module Notification : sig
   }
 end  (* Notification *)
 
-external conndefaults : unit -> conninfo_option array = "PQconndefaults_stub"
+val conndefaults : unit -> conninfo_option array
 (** [conndefaults ()] @return array of all records of type [conninfo_option] *)
 
 

@@ -103,8 +103,12 @@ type ftype =
   | ANYELEMENT
   | JSONB
 
-external ftype_of_oid : oid -> ftype = "ftype_of_oid_stub"
-external oid_of_ftype : ftype -> oid = "oid_of_ftype_stub"
+external ftype_of_oid :
+  (int (* oid *) [@untagged]) -> ftype
+  = "ftype_of_oid_stub_bc" "ftype_of_oid_stub"
+
+external oid_of_ftype : ftype -> (int (* oid *) [@untagged])
+  = "oid_of_ftype_stub_bc" "oid_of_ftype_stub" [@@noalloc]
 
 let string_of_ftype = function
   | BOOL -> "BOOL"
@@ -351,10 +355,12 @@ module Stub = struct
     connection -> connection_status = "PQstatus_stub" [@@noalloc]
 
   external error_message : connection -> string = "PQerrorMessage_stub"
-  external backend_pid : connection -> int = "PQbackendPID_stub" [@@noalloc]
 
-  external server_version :
-    connection -> int = "PQserverVersion_stub" [@@noalloc]
+  external backend_pid : connection -> (int [@untagged])
+    = "PQbackendPID_stub_bc" "PQbackendPID_stub" [@@noalloc]
+
+  external server_version : connection -> (int [@untagged])
+    = "PQserverVersion_stub_bc" "PQserverVersion_stub" [@@noalloc]
 
   (* Command Execution Functions *)
 
@@ -381,34 +387,59 @@ module Stub = struct
   external make_empty_res :
     connection -> result_status -> result = "PQmakeEmptyPGresult_stub"
 
-  external ntuples : result -> int = "PQntuples_stub" [@@noalloc]
-  external nparams : result -> int = "PQnparams_stub"
+  external ntuples : result -> (int [@untagged])
+    = "PQntuples_stub_bc" "PQntuples_stub" [@@noalloc]
 
-  external nfields : result -> int = "PQnfields_stub" [@@noalloc]
-  external fname : result -> int -> string = "PQfname_stub"
-  external fnumber : result -> string -> int ="PQfnumber_stub" [@@noalloc]
-  external fformat : result -> int -> FFormat.t = "PQfformat_stub" [@@noalloc]
-  external ftype : result -> int -> oid = "PQftype_stub" [@@noalloc]
-  external paramtype : result -> int -> oid = "PQparamtype_stub"
+  external nparams : result -> (int [@untagged])
+    = "PQnparams_stub_bc" "PQnparams_stub"
 
-  external fmod : result -> int -> int = "PQfmod_stub" [@@noalloc]
-  external fsize : result -> int -> int = "PQfsize_stub" [@@noalloc]
+  external nfields : result -> (int [@untagged])
+    = "PQnfields_stub_bc" "PQnfields_stub" [@@noalloc]
+
+  external fname : result -> (int [@untagged]) -> string
+    = "PQfname_stub_bc" "PQfname_stub"
+
+  external fnumber : result -> string -> (int [@untagged])
+    = "PQfnumber_stub_bc" "PQfnumber_stub" [@@noalloc]
+
+  external fformat : result -> (int [@untagged]) -> FFormat.t
+    = "PQfformat_stub_bc" "PQfformat_stub" [@@noalloc]
+
+  external ftype :
+    result -> (int [@untagged]) -> (int (* oid *) [@untagged])
+    = "PQftype_stub_bc" "PQftype_stub" [@@noalloc]
+
+  external paramtype :
+    result -> (int [@untagged]) -> (int (* oid *) [@untagged])
+    = "PQparamtype_stub_bc" "PQparamtype_stub"
+
+  external fmod : result -> (int [@untagged]) -> (int [@untagged])
+    = "PQfmod_stub_bc" "PQfmod_stub" [@@noalloc]
+
+  external fsize : result -> (int [@untagged]) -> (int [@untagged])
+    = "PQfsize_stub_bc" "PQfsize_stub" [@@noalloc]
+
   external binary_tuples : result -> bool = "PQbinaryTuples_stub" [@@noalloc]
 
-  external getvalue : result -> int -> int -> string = "PQgetvalue_stub"
+  external getvalue : result -> (int [@untagged]) -> (int [@untagged]) -> string
+    = "PQgetvalue_stub_bc" "PQgetvalue_stub"
 
   external get_escaped_value :
-    result -> int -> int -> string = "PQgetescval_stub"
+    result -> (int [@untagged]) -> (int [@untagged]) -> string
+    = "PQgetescval_stub_bc" "PQgetescval_stub"
 
-  external getisnull :
-    result -> int -> int -> bool = "PQgetisnull_stub" [@@noalloc]
+  external getisnull : result -> (int [@untagged]) -> (int [@untagged]) -> bool
+    = "PQgetisnull_stub_bc" "PQgetisnull_stub" [@@noalloc]
 
   external getlength :
-    result -> int -> int -> int = "PQgetlength_stub" [@@noalloc]
+    result -> (int [@untagged]) -> (int [@untagged]) -> (int [@untagged])
+    = "PQgetlength_stub_bc" "PQgetlength_stub" [@@noalloc]
 
   external cmd_status : result -> string = "PQcmdStatus_stub"
   external cmd_tuples : result -> string = "PQcmdTuples_stub"
-  external oid_value : result -> oid = "PQoidValue_stub" [@@noalloc]
+
+  external oid_value : result -> (int (* oid *) [@untagged])
+    = "PQoidValue_stub_bc" "PQoidValue_stub" [@@noalloc]
 
 
   (* Asynchronous Query Processing *)
@@ -416,41 +447,51 @@ module Stub = struct
   external connect_poll :
     connection -> polling_status = "PQconnectPoll_stub" [@@noalloc]
 
-  external reset_start :
-    connection -> bool = "PQresetStart_stub" [@@noalloc]
+  external reset_start : connection -> bool = "PQresetStart_stub" [@@noalloc]
 
   external reset_poll :
     connection -> polling_status = "PQresetPoll_stub" [@@noalloc]
 
-  external set_nonblocking :
-    connection -> bool -> int = "PQsetnonblocking_stub" [@@noalloc]
+  external set_nonblocking : connection -> bool -> (int [@untagged])
+    = "PQsetnonblocking_stub_bc" "PQsetnonblocking_stub" [@@noalloc]
 
   external is_nonblocking :
     connection -> bool = "PQisnonblocking_stub" [@@noalloc]
 
   external send_query_params :
-    connection -> string -> string array -> bool array -> int
-    = "PQsendQueryParams_stub"
+    connection -> string -> string array -> bool array -> (int [@untagged])
+    = "PQsendQueryParams_stub_bc" "PQsendQueryParams_stub"
 
   external send_prepare :
-    connection -> string -> string -> int = "PQsendPrepare_stub" [@@noalloc]
+    connection -> string -> string -> (int [@untagged])
+    = "PQsendPrepare_stub_bc" "PQsendPrepare_stub" [@@noalloc]
 
   external send_query_prepared :
-    connection -> string -> string array -> bool array -> int
-    = "PQsendQueryPrepared_stub"
+    connection -> string -> string array -> bool array -> (int [@untagged])
+    = "PQsendQueryPrepared_stub_bc" "PQsendQueryPrepared_stub"
 
-  external send_describe_prepared : connection -> string -> int
-    = "PQsendDescribePrepared_stub"
+  external send_describe_prepared : connection -> string -> (int [@untagged])
+    = "PQsendDescribePrepared_stub_bc" "PQsendDescribePrepared_stub"
 
-  external send_describe_portal : connection -> string -> int
-    = "PQsendDescribePortal_stub"
+  external send_describe_portal : connection -> string -> (int [@untagged])
+    = "PQsendDescribePortal_stub_bc" "PQsendDescribePortal_stub"
 
-  external set_single_row_mode : connection -> int = "PQsetSingleRowMode_stub"
+  external set_single_row_mode : connection -> (int [@untagged])
+    = "PQsetSingleRowMode_stub_bc" "PQsetSingleRowMode_stub"
+
   external get_result : connection -> result = "PQgetResult_stub"
-  external consume_input : connection -> int = "PQconsumeInput_stub" [@@noalloc]
+
+  external consume_input : connection -> (int [@untagged])
+    = "PQconsumeInput_stub_bc" "PQconsumeInput_stub" [@@noalloc]
+
   external is_busy : connection -> bool = "PQisBusy_stub" [@@noalloc]
-  external flush : connection -> int = "PQflush_stub" [@@noalloc]
-  external socket : connection -> int = "PQsocket_stub" [@@noalloc]
+
+  external flush : connection -> (int [@untagged])
+    = "PQflush_stub_bc" "PQflush_stub" [@@noalloc]
+
+  external socket : connection -> (int [@untagged])
+    = "PQsocket_stub_bc" "PQsocket_stub" [@@noalloc]
+
   external request_cancel : connection -> string option = "PQCancel_stub"
 
 
@@ -462,26 +503,35 @@ module Stub = struct
   (* Functions Associated with the COPY Command *)
 
   external getline :
-    connection -> Bytes.t -> int -> int -> int = "PQgetline_stub"
+    connection -> Bytes.t ->
+    (int [@untagged]) -> (int [@untagged]) -> (int [@untagged])
+    = "PQgetline_stub_bc" "PQgetline_stub"
 
   external getline_async :
-    connection -> Bytes.t -> int -> int -> int
-    = "PQgetlineAsync_stub" [@@noalloc]
+    connection -> Bytes.t ->
+    (int [@untagged]) -> (int [@untagged]) -> (int [@untagged])
+    = "PQgetlineAsync_stub_bc" "PQgetlineAsync_stub" [@@noalloc]
 
-  external putline : connection -> string -> int = "PQputline_stub"
+  external putline : connection -> string -> (int [@untagged])
+    = "PQputline_stub_bc" "PQputline_stub"
 
   external putnbytes :
-    connection -> string -> int -> int -> int = "PQputnbytes_stub"
+    connection -> string ->
+    (int [@untagged]) -> (int [@untagged]) -> (int [@untagged])
+    = "PQputnbytes_stub_bc" "PQputnbytes_stub"
 
-  external endcopy : connection -> int = "PQendcopy_stub"
+  external endcopy : connection -> (int [@untagged])
+    = "PQendcopy_stub_bc" "PQendcopy_stub"
 
   external escape_string_conn :
-    connection -> string -> pos : int -> len : int -> string
-    = "PQescapeStringConn_stub"
+    connection -> string ->
+    pos : (int [@untagged]) -> len : (int [@untagged]) -> string
+    = "PQescapeStringConn_stub_bc" "PQescapeStringConn_stub"
 
   external escape_bytea_conn :
-    connection -> string -> pos : int -> len : int -> string
-    = "PQescapeByteaConn_stub"
+    connection -> string ->
+    pos : (int [@untagged]) -> len : (int [@untagged]) -> string
+    = "PQescapeByteaConn_stub_bc" "PQescapeByteaConn_stub"
 
 
   (* Control Functions *)
@@ -492,32 +542,59 @@ module Stub = struct
 
   (* Large objects *)
 
-  external lo_creat : connection -> oid = "lo_creat_stub"
-  external lo_import : connection -> string -> oid = "lo_import_stub"
-  external lo_export : connection -> oid -> string -> int = "lo_export_stub"
-  external lo_open : connection -> oid -> large_object = "lo_open_stub"
-  external lo_close : connection -> large_object -> int = "lo_close_stub"
-  external lo_tell : connection -> large_object -> int = "lo_tell_stub"
-  external lo_unlink : connection -> oid -> oid = "lo_unlink_stub"
+  external lo_creat : connection -> (int (* oid *) [@untagged])
+    = "lo_creat_stub_bc" "lo_creat_stub"
+
+  external lo_import : connection -> string -> (int (* oid *) [@untagged])
+    = "lo_import_stub_bc" "lo_import_stub"
+
+  external lo_export :
+    connection -> (int (* oid *) [@untagged]) -> string -> (int [@untagged])
+    = "lo_export_stub_bc" "lo_export_stub"
+
+  external lo_open :
+    connection -> (int (* oid *) [@untagged]) ->
+    (int (* large_object *) [@untagged])
+    = "lo_open_stub_bc" "lo_open_stub"
+
+  external lo_close :
+    connection -> (int (* large_object *) [@untagged]) -> (int [@untagged])
+    = "lo_close_stub_bc" "lo_close_stub"
+
+  external lo_tell :
+    connection -> (int (* large_object *) [@untagged]) -> (int [@untagged])
+    = "lo_tell_stub_bc" "lo_tell_stub"
+
+  external lo_unlink :
+    connection -> (int (* oid *) [@untagged]) -> (int (* oid *) [@untagged])
+    = "lo_unlink_stub_bc" "lo_unlink_stub"
 
   external lo_read :
-    connection -> large_object -> Bytes.t -> int -> int -> int = "lo_read_stub"
+    connection -> (int (* large_object *) [@untagged]) ->
+    Bytes.t -> (int [@untagged]) -> (int [@untagged]) -> (int [@untagged])
+    = "lo_read_stub_bc" "lo_read_stub"
 
   external lo_read_ba :
-    connection -> large_object ->
+    connection -> (int (* large_object *) [@untagged]) ->
     (char, Bigarray.int8_unsigned_elt, Bigarray.c_layout) Bigarray.Array1.t ->
-    int -> int -> int = "lo_read_ba_stub"
+    (int [@untagged]) -> (int [@untagged]) -> (int [@untagged])
+    = "lo_read_ba_stub_bc" "lo_read_ba_stub"
 
   external lo_write :
-    connection -> large_object -> string -> int -> int -> int = "lo_write_stub"
+    connection -> (int (* large_object *) [@untagged]) ->
+    string -> (int [@untagged]) -> (int [@untagged]) -> (int [@untagged])
+    = "lo_write_stub_bc" "lo_write_stub"
 
   external lo_write_ba :
-    connection -> large_object ->
+    connection -> (int (* large_object *) [@untagged]) ->
     (char, Bigarray.int8_unsigned_elt, Bigarray.c_layout) Bigarray.Array1.t ->
-    int -> int -> int = "lo_write_ba_stub"
+    (int [@untagged]) -> (int [@untagged]) -> (int [@untagged])
+    = "lo_write_ba_stub_bc" "lo_write_ba_stub"
 
   external lo_seek :
-    connection -> large_object -> int -> seek_cmd -> int = "lo_lseek_stub"
+    connection -> (int (* large_object *) [@untagged]) ->
+    (int [@untagged]) -> seek_cmd -> (int [@untagged])
+    = "lo_lseek_stub_bc" "lo_lseek_stub"
 end
 
 
@@ -1091,5 +1168,4 @@ object (self)
   method escape_bytea ?pos ?len str =
     let pos, len = get_str_pos_len ~loc:"escape_bytea" ?pos ?len str in
     wrap_conn (fun conn -> Stub.escape_bytea_conn conn str ~pos ~len)
-
 end
