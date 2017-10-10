@@ -1,4 +1,4 @@
-### ?.?.? (????-??-??)
+### 4.2.0 (2017-10-10)
 
   * Fixed bigarray library dependencies.  No need for the user to explicitly
     link with `bigarray` when using certain functions anymore.
