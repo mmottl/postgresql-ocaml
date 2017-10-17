@@ -103,11 +103,10 @@ type ftype =
   | ANYELEMENT
   | JSONB
 
-external ftype_of_oid :
-  (int (* oid *) [@untagged]) -> ftype
+external ftype_of_oid : (oid [@untagged]) -> ftype
   = "ftype_of_oid_stub_bc" "ftype_of_oid_stub"
 
-external oid_of_ftype : ftype -> (int (* oid *) [@untagged])
+external oid_of_ftype : ftype -> (oid [@untagged])
   = "oid_of_ftype_stub_bc" "oid_of_ftype_stub" [@@noalloc]
 
 let string_of_ftype = function
@@ -405,12 +404,10 @@ module Stub = struct
   external fformat : result -> (int [@untagged]) -> FFormat.t
     = "PQfformat_stub_bc" "PQfformat_stub" [@@noalloc]
 
-  external ftype :
-    result -> (int [@untagged]) -> (int (* oid *) [@untagged])
+  external ftype : result -> (int [@untagged]) -> (oid [@untagged])
     = "PQftype_stub_bc" "PQftype_stub" [@@noalloc]
 
-  external paramtype :
-    result -> (int [@untagged]) -> (int (* oid *) [@untagged])
+  external paramtype : result -> (int [@untagged]) -> (oid [@untagged])
     = "PQparamtype_stub_bc" "PQparamtype_stub"
 
   external fmod : result -> (int [@untagged]) -> (int [@untagged])
@@ -438,7 +435,7 @@ module Stub = struct
   external cmd_status : result -> string = "PQcmdStatus_stub"
   external cmd_tuples : result -> string = "PQcmdTuples_stub"
 
-  external oid_value : result -> (int (* oid *) [@untagged])
+  external oid_value : result -> (oid [@untagged])
     = "PQoidValue_stub_bc" "PQoidValue_stub" [@@noalloc]
 
 
@@ -542,57 +539,55 @@ module Stub = struct
 
   (* Large objects *)
 
-  external lo_creat : connection -> (int (* oid *) [@untagged])
+  external lo_creat : connection -> (oid [@untagged])
     = "lo_creat_stub_bc" "lo_creat_stub"
 
-  external lo_import : connection -> string -> (int (* oid *) [@untagged])
+  external lo_import : connection -> string -> (oid [@untagged])
     = "lo_import_stub_bc" "lo_import_stub"
 
   external lo_export :
-    connection -> (int (* oid *) [@untagged]) -> string -> (int [@untagged])
+    connection -> (oid [@untagged]) -> string -> (int [@untagged])
     = "lo_export_stub_bc" "lo_export_stub"
 
   external lo_open :
-    connection -> (int (* oid *) [@untagged]) ->
-    (int (* large_object *) [@untagged])
+    connection -> (oid [@untagged]) -> (large_object [@untagged])
     = "lo_open_stub_bc" "lo_open_stub"
 
   external lo_close :
-    connection -> (int (* large_object *) [@untagged]) -> (int [@untagged])
+    connection -> (large_object [@untagged]) -> (int [@untagged])
     = "lo_close_stub_bc" "lo_close_stub"
 
   external lo_tell :
-    connection -> (int (* large_object *) [@untagged]) -> (int [@untagged])
+    connection -> (large_object [@untagged]) -> (int [@untagged])
     = "lo_tell_stub_bc" "lo_tell_stub"
 
-  external lo_unlink :
-    connection -> (int (* oid *) [@untagged]) -> (int (* oid *) [@untagged])
+  external lo_unlink : connection -> (oid [@untagged]) -> (oid [@untagged])
     = "lo_unlink_stub_bc" "lo_unlink_stub"
 
   external lo_read :
-    connection -> (int (* large_object *) [@untagged]) ->
+    connection -> (large_object [@untagged]) ->
     Bytes.t -> (int [@untagged]) -> (int [@untagged]) -> (int [@untagged])
     = "lo_read_stub_bc" "lo_read_stub"
 
   external lo_read_ba :
-    connection -> (int (* large_object *) [@untagged]) ->
+    connection -> (large_object [@untagged]) ->
     (char, Bigarray.int8_unsigned_elt, Bigarray.c_layout) Bigarray.Array1.t ->
     (int [@untagged]) -> (int [@untagged]) -> (int [@untagged])
     = "lo_read_ba_stub_bc" "lo_read_ba_stub"
 
   external lo_write :
-    connection -> (int (* large_object *) [@untagged]) ->
+    connection -> (large_object [@untagged]) ->
     string -> (int [@untagged]) -> (int [@untagged]) -> (int [@untagged])
     = "lo_write_stub_bc" "lo_write_stub"
 
   external lo_write_ba :
-    connection -> (int (* large_object *) [@untagged]) ->
+    connection -> (large_object [@untagged]) ->
     (char, Bigarray.int8_unsigned_elt, Bigarray.c_layout) Bigarray.Array1.t ->
     (int [@untagged]) -> (int [@untagged]) -> (int [@untagged])
     = "lo_write_ba_stub_bc" "lo_write_ba_stub"
 
   external lo_seek :
-    connection -> (int (* large_object *) [@untagged]) ->
+    connection -> (large_object [@untagged]) ->
     (int [@untagged]) -> seek_cmd -> (int [@untagged])
     = "lo_lseek_stub_bc" "lo_lseek_stub"
 end
