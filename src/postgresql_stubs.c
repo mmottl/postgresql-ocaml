@@ -270,8 +270,6 @@ CAMLprim value PQconnectdb_stub(value v_conn_info, value v_startonly)
     caml_leave_blocking_section();
   }
 
-  /* One may raise this 30 to 500 for instance if the program takes
-     responsibility of closing connections */
   v_conn = caml_alloc_small(3, Abstract_tag);
 
   set_conn(v_conn, conn);
