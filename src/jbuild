@@ -5,9 +5,7 @@
   (public_name postgresql)
   (flags (
     :standard
-    -w -9
-    -safe-string -strict-sequence
-    -principal -short-paths
+    -w -9 -strict-sequence -principal -short-paths
   ))
   (c_names (postgresql_stubs))
   (c_flags (

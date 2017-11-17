@@ -4,9 +4,7 @@
   (names (async cursor dump populate prompt test_lo))
   (flags (
     :standard
-    -w -9
-    -safe-string -strict-sequence
-    -principal -short-paths
+    -w -9 -strict-sequence -principal -short-paths
   ))
   (libraries (postgresql))
 ))
