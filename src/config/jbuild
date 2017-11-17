@@ -2,5 +2,9 @@
 
 (executables (
   (names (discover))
+  (flags (
+    :standard
+    -w -9 -strict-sequence -principal -short-paths
+  ))
   (libraries (base stdio configurator))
 ))
