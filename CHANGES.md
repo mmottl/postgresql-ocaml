@@ -1,3 +1,8 @@
+### 4.2.1 (2017-11-22)
+
+  * Improved finalization of result values for better performance.
+
+
 ### 4.2.0 (2017-10-10)
 
   * Fixed bigarray library dependencies.  No need for the user to explicitly

@@ -52,6 +52,7 @@
 #include <caml/signals.h>
 #include <caml/fail.h>
 #include <caml/bigarray.h>
+#include <caml/custom.h>
 
 #include <libpq-fe.h>
 #include <libpq/libpq-fs.h>
@@ -373,11 +374,14 @@ noalloc_conn_info_intnat(PQserverVersion)
 
 /* Command Execution Functions */
 
-#define get_res(v) ((PGresult *) Field(v, 1))
-#define set_res(v, res) (Field(v, 1) = (value) res)
+struct pg_ocaml_result { PGresult *res; np_callback *cb; };
 
-#define get_res_cb(v) ((np_callback *) Field(v, 2))
-#define set_res_cb(v, cb) (Field(v, 2) = (value) cb)
+#define PG_ocaml_result_val(v) ((struct pg_ocaml_result *) Data_custom_val(v))
+#define get_res(v) PG_ocaml_result_val(v)->res
+#define set_res(v, result) PG_ocaml_result_val(v)->res = result
+
+#define get_res_cb(v) PG_ocaml_result_val(v)->cb
+#define set_res_cb(v, callback) PG_ocaml_result_val(v)->cb = callback
 
 #define res_info(fun, ret) \
   CAMLprim value fun##_stub(value v_res) \
@@ -488,9 +492,20 @@ CAMLprim value PQres_isnull(value v_res)
   return Val_bool(get_res(v_res) ? 0 : 1);
 }
 
+static struct custom_operations result_ops = {
+  "pg_ocaml_result",
+  free_result,
+  custom_compare_default,
+  custom_hash_default,
+  custom_serialize_default,
+  custom_deserialize_default,
+  custom_compare_ext_default
+};
+
 static inline value alloc_result(PGresult *res, np_callback *cb)
 {
-  value v_res = caml_alloc_final(3, free_result, 1, 500);
+  value v_res =
+    caml_alloc_custom(&result_ops, sizeof(struct pg_ocaml_result), 1, 100000);
   set_res(v_res, res);
   set_res_cb(v_res, cb);
   np_incr_refcount(cb);
