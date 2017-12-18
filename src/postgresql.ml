@@ -383,6 +383,8 @@ module Stub = struct
 
   external result_error : result -> string = "PQresultErrorMessage_stub"
 
+  external result_error_field : result -> char -> string = "PQresultErrorField_stub"
+
   external make_empty_res :
     connection -> result_status -> result = "PQmakeEmptyPGresult_stub"
 
@@ -617,6 +619,7 @@ class result res =
 object
   method status = Stub.result_status res
   method error = Stub.result_error res
+  method error_field = Stub.result_error_field res
   method ntuples = ntuples
   method nparams = Lazy.force nparams
   method nfields = nfields

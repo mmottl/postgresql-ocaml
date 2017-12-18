@@ -713,6 +713,17 @@ noalloc_res_info_intnat(PQnfields)
 noalloc_res_info(PQbinaryTuples, Val_bool)
 fieldnum_info(PQfname, make_string)
 
+CAMLprim value PQresultErrorField_stub(value v_res, value field_code)
+{
+  CAMLparam1(v_res);
+  CAMLreturn(make_string(PQresultErrorField(get_res(v_res),
+                                            /* Bit-shift one to the
+                                             * right to compensate for
+                                             * OCaml's tagged
+                                             * representation */
+                                            field_code >> 1)));
+}
+
 #ifdef PG_OCAML_8_2
 noalloc_res_info_intnat(PQnparams)
 #else

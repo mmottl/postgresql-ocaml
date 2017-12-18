@@ -221,6 +221,8 @@ class type result = object
   method error : string
   (** [#error] @return error string of a result. *)
 
+  method error_field : char -> string
+  (** [#error_field] @return error field of a result. *)
 
   (** Retrieving SELECT Result Information *)
 
