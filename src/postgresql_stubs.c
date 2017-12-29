@@ -120,6 +120,27 @@
 #define ANYELEMENTOID           2283
 #define JSONBOID                3802
 
+/* Error field lookups */
+
+#define PG_DIAG_SEVERITY        'S'
+#define PG_DIAG_SEVERITY_NONLOCALIZED 'V'
+#define PG_DIAG_SQLSTATE        'C'
+#define PG_DIAG_MESSAGE_PRIMARY 'M'
+#define PG_DIAG_MESSAGE_DETAIL  'D'
+#define PG_DIAG_MESSAGE_HINT    'H'
+#define PG_DIAG_STATEMENT_POSITION 'P'
+#define PG_DIAG_INTERNAL_POSITION 'p'
+#define PG_DIAG_INTERNAL_QUERY  'q'
+#define PG_DIAG_CONTEXT         'W'
+#define PG_DIAG_SCHEMA_NAME     's'
+#define PG_DIAG_TABLE_NAME      't'
+#define PG_DIAG_COLUMN_NAME     'c'
+#define PG_DIAG_DATATYPE_NAME   'd'
+#define PG_DIAG_CONSTRAINT_NAME 'n'
+#define PG_DIAG_SOURCE_FILE     'F'
+#define PG_DIAG_SOURCE_LINE     'L'
+#define PG_DIAG_SOURCE_FUNCTION 'R'
+
 static value v_None = Val_int(0);
 
 static inline value make_some(value v)
@@ -133,6 +154,7 @@ static inline value make_some(value v)
 /* Cache for OCaml-values */
 static value v_empty_string = Val_unit;
 static value *v_exc_Oid = NULL;  /* Exception [Oid] */
+static value *v_exc_Error_field_name = NULL;  /* Exception [Error_field_name] */
 static value *v_null_param = NULL;
 
 CAMLprim value PQocaml_init(value __unused v_unit)
@@ -140,6 +162,7 @@ CAMLprim value PQocaml_init(value __unused v_unit)
   v_empty_string = caml_alloc_string(0);
   caml_register_generational_global_root(&v_empty_string);
   v_exc_Oid = caml_named_value("Postgresql.Oid");
+  v_exc_Error_field_name = caml_named_value("Postgresql.Error_field_name");
   v_null_param = caml_named_value("Postgresql.null");
   return Val_unit;
 }
@@ -178,6 +201,34 @@ CAMLprim intnat oid_of_ftype_stub(value v_ftype)
 CAMLprim value oid_of_ftype_stub_bc(value v_ftype)
 { return Val_int(oid_of_ftype_stub(v_ftype)); }
 
+/* Error Field conversion functions */
+
+static char error_field_id_tbl[] = {
+  PG_DIAG_SEVERITY, PG_DIAG_SEVERITY_NONLOCALIZED, PG_DIAG_SQLSTATE, 
+  PG_DIAG_MESSAGE_PRIMARY, PG_DIAG_MESSAGE_DETAIL, PG_DIAG_MESSAGE_HINT, 
+  PG_DIAG_STATEMENT_POSITION, PG_DIAG_INTERNAL_POSITION, PG_DIAG_INTERNAL_QUERY,
+  PG_DIAG_CONTEXT, PG_DIAG_SCHEMA_NAME, PG_DIAG_TABLE_NAME, PG_DIAG_COLUMN_NAME,
+  PG_DIAG_DATATYPE_NAME, PG_DIAG_CONSTRAINT_NAME, PG_DIAG_SOURCE_FILE,
+  PG_DIAG_SOURCE_LINE, PG_DIAG_SOURCE_FUNCTION
+};
+
+CAMLprim value error_field_name_of_error_field_id_stub(intnat error_field_id)
+{
+  char *p = error_field_id_tbl;
+  char *last = error_field_id_tbl + sizeof(error_field_id_tbl)/sizeof(error_field_id_tbl[0]);
+  while (p != last && *p != error_field_id) p++;
+  if (p == last) caml_raise_with_arg(*v_exc_Error_field_name, Val_int(error_field_id));
+  return Val_int(p - error_field_id_tbl);
+}
+
+CAMLprim value error_field_name_of_error_field_id_stub_bc(value v_error_field_id)
+{ return error_field_name_of_error_field_id_stub(Int_val(v_error_field_id)); }
+
+CAMLprim intnat error_field_id_of_error_field_name_stub(value v_fname)
+{ return error_field_id_tbl[Int_val(v_fname)]; }
+
+CAMLprim value error_field_id_of_error_field_name_stub_bc(value v_fname)
+{ return Val_int(error_field_id_of_error_field_name_stub(v_fname)); }
 
 /* Management of notice_processor callbacks */
 
@@ -716,12 +767,7 @@ fieldnum_info(PQfname, make_string)
 CAMLprim value PQresultErrorField_stub(value v_res, value field_code)
 {
   CAMLparam1(v_res);
-  CAMLreturn(make_string(PQresultErrorField(get_res(v_res),
-                                            /* Bit-shift one to the
-                                             * right to compensate for
-                                             * OCaml's tagged
-                                             * representation */
-                                            field_code >> 1)));
+  CAMLreturn(make_string(PQresultErrorField(get_res(v_res), Int_val(field_code))));
 }
 
 #ifdef PG_OCAML_8_2
