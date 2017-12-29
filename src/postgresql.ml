@@ -626,7 +626,7 @@ object
 
   method error_field field_name = Stub.result_error_field res field_name
 
-  method sqlstate_error_code =
+  method error_code =
     Error_code.of_sqlstate (Stub.result_error_field res Error_field.SQLSTATE)
 
   method ntuples = ntuples

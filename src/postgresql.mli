@@ -226,8 +226,8 @@ class type result = object
   method error_field : Error_field.t -> string
   (** [#error_field] @return message of given error field in a result. *)
 
-  method sqlstate_error_code : Error_code.t
-  (** [#sqlstate_error_code] @return the error code of the error condition
+  method error_code : Error_code.t
+  (** [#error_code] @return the error code of the error condition
       as stored in the SQLSTATE field. *)
 
   (** Retrieving SELECT Result Information *)
