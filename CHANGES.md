@@ -1,3 +1,10 @@
+### 4.3.0 (2017-12-30)
+
+  * Added error handling functions for extracting more error details.
+
+    Thanks to Sean Grove for the patches!
+
+
 ### 4.2.1 (2017-11-22)
 
   * Improved finalization of result values for better performance.
