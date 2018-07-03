@@ -623,7 +623,8 @@ static inline void free_params_shallow(
 }
 
 CAMLprim value PQexecParams_stub(
-  value v_conn, value v_query, value v_params, value v_binary_params)
+  value v_conn, value v_query, value v_params, value v_binary_params,
+  value v_binary_result)
 {
   CAMLparam1(v_conn);
   PGconn *conn = get_conn(v_conn);
@@ -636,11 +637,12 @@ CAMLprim value PQexecParams_stub(
   int *formats, *lengths;
   copy_binary_params(v_params, v_binary_params, nparams, &formats, &lengths);
   memcpy(query, String_val(v_query), len);
+  bool binary_result = Bool_val(v_binary_result);
   caml_enter_blocking_section();
     res =
-      (nparams == 0)
+      (nparams == 0 && !binary_result)
         ? PQexec(conn, query)
-        : PQexecParams(conn, query, nparams, NULL, params, lengths, formats, 0);
+        : PQexecParams(conn, query, nparams, NULL, params, lengths, formats, binary_result);
     free_binary_params(formats, lengths);
     free_params(params, nparams);
     caml_stat_free(query);

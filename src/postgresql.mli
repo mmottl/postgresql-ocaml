@@ -581,18 +581,23 @@ object
 
   method exec :
     ?expect : result_status list -> ?params : string array ->
-    ?binary_params : bool array -> string -> result
-  (** [exec ?expect ?params ?binary_params query] synchronous execution
-      of query or command [query].  The result status will be checked
-      against all elements in [expect].  If [expect] is not empty and if
-      there is no match, the exception [Unexpected_status] will be raised.
+    ?binary_params : bool array -> ?binary_result : bool ->
+    string -> result
+
+  (** [exec ?expect ?params ?binary_params ?binary_result query]
+      synchronous execution of query or command [query].  The result
+      status will be checked against all elements in [expect].  If
+      [expect] is not empty and if there is no match, the exception
+      [Unexpected_status] will be raised.
 
       Additional query parameters can be passed in the [params] array.
       They must not be escaped and they can be referred to in [query]
       as $1, $2, ...  The value [null] can be used in the [params]
       array to denote an SQL NULL. It is possible to specify that some
       of the query parameters are passed as binary strings using the
-      [binary_params] array.
+      [binary_params] array. By default, results are returned in text
+      format, but will be returned in binary format if [binary_result]
+      is true.
 
       If no (or an empty) query parameter is passed, it is possible to
       emit several commands with a single call.
@@ -602,6 +607,7 @@ object
       @param expect default = []
       @param params default = [||]
       @param binary_params default = [||]
+      @param binary_result default = false
 
       @raise Error if there is a connection error.
       @raise Error if there is an unexpected result status.

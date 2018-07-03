@@ -369,7 +369,7 @@ module Stub = struct
   external result_isnull : result -> bool = "PQres_isnull" [@@noalloc]
 
   external exec_params :
-    connection -> string -> string array -> bool array -> result
+    connection -> string -> string array -> bool array -> bool -> result
     = "PQexecParams_stub"
 
   external prepare : connection -> string -> string -> result = "PQprepare_stub"
@@ -896,10 +896,14 @@ object (self)
   method empty_result status =
     new result (wrap_conn (fun conn -> (Stub.make_empty_res conn status)))
 
-  method exec ?(expect = []) ?(params = [||]) ?(binary_params = [||]) query =
+  method exec
+    ?(expect = []) ?(params = [||]) ?(binary_params = [||])
+    ?(binary_result = false) query =
     let r =
       wrap_conn (fun conn ->
-        let r = Stub.exec_params conn query params binary_params in
+        let r =
+          Stub.exec_params conn query params binary_params binary_result
+        in
         if Stub.result_isnull r then signal_error conn
         else r)
     in

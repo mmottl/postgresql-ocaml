@@ -1,4 +1,4 @@
-TARGETS = $(addsuffix .bc, async cursor dump populate prompt test_lo)
+TARGETS = $(addsuffix .bc, async binary cursor dump populate prompt test_lo)
 
 .PHONY: all clean
 

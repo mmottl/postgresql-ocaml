@@ -1,7 +1,7 @@
 (jbuild_version 1)
 
 (executables (
-  (names (async cursor dump populate prompt test_lo))
+  (names (async binary cursor dump populate prompt test_lo))
   (flags (
     :standard
     -w -9 -strict-sequence -principal -short-paths
