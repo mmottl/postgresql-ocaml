@@ -583,7 +583,6 @@ object
     ?expect : result_status list -> ?params : string array ->
     ?binary_params : bool array -> ?binary_result : bool ->
     string -> result
-
   (** [exec ?expect ?params ?binary_params ?binary_result query]
       synchronous execution of query or command [query].  The result
       status will be checked against all elements in [expect].  If
@@ -595,7 +594,7 @@ object
       as $1, $2, ...  The value [null] can be used in the [params]
       array to denote an SQL NULL. It is possible to specify that some
       of the query parameters are passed as binary strings using the
-      [binary_params] array. By default, results are returned in text
+      [binary_params] array.  By default, results are returned in text
       format, but will be returned in binary format if [binary_result]
       is true.
 

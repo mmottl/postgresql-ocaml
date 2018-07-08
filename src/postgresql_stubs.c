@@ -642,7 +642,9 @@ CAMLprim value PQexecParams_stub(
     res =
       (nparams == 0 && !binary_result)
         ? PQexec(conn, query)
-        : PQexecParams(conn, query, nparams, NULL, params, lengths, formats, binary_result);
+        : PQexecParams(
+            conn, query, nparams, NULL,
+            params, lengths, formats, binary_result);
     free_binary_params(formats, lengths);
     free_params(params, nparams);
     caml_stat_free(query);
