@@ -1,3 +1,10 @@
+### 4.4.0 (2018-07-08)
+
+  * Added support for executing queries with binary results.
+
+    Thanks to Paul Biggar for the patch!
+
+
 ### 4.3.0 (2017-12-30)
 
   * Added error handling functions for extracting more error details.
