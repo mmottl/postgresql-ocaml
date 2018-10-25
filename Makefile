@@ -1,10 +1,10 @@
 .PHONY: all clean doc
 
 all:
-	jbuilder build @install --dev
+	dune build @install
 
 clean:
-	jbuilder clean
+	dune clean
 
 doc:
-	jbuilder build --dev @doc
+	dune build @doc

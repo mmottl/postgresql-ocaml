@@ -2,7 +2,7 @@ open Base
 open Stdio
 
 let () =
-  let module C = Configurator in
+  let module C = Configurator.V1 in
   C.main ~name:"postgresql" (fun _c ->
     let cmd = "pg_config --includedir --libdir --version" in
     let ic =
@@ -56,9 +56,5 @@ let () =
         cflags = [pgsql_includedir; major; minor];
         libs = [pgsql_libdir; "-lpq"];
       } in
-      let write_sexp file sexp =
-        Out_channel.write_all file ~data:(Sexp.to_string sexp)
-      in
-      write_sexp "c_flags.sexp" (sexp_of_list sexp_of_string conf.cflags);
-      write_sexp "c_library_flags.sexp"
-        (sexp_of_list sexp_of_string conf.libs)))
+      C.Flags.write_sexp "c_flags.sexp" conf.cflags;
+      C.Flags.write_sexp "c_library_flags.sexp" conf.libs))

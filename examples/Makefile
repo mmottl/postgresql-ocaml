@@ -3,7 +3,7 @@ TARGETS = $(addsuffix .bc, async binary cursor dump populate prompt test_lo)
 .PHONY: all clean
 
 all:
-	@jbuilder build --dev $(TARGETS)
+	@dune build $(TARGETS)
 
 clean:
-	@jbuilder clean
+	@dune clean

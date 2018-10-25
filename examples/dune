@@ -1,0 +1,4 @@
+(executables
+  (names async binary cursor dump populate prompt test_lo)
+  (libraries postgresql)
+)

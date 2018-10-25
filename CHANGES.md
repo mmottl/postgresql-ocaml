@@ -1,3 +1,8 @@
+### 4.4.1 (2018-10-25)
+
+  * Switched to dune, dune-release, and OPAM 2.0
+
+
 ### 4.4.0 (2018-07-08)
 
   * Added support for executing queries with binary results.
