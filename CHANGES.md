@@ -1,3 +1,8 @@
+### 4.4.2 (2018-12-14)
+
+  * Fixed documentation formatting warnings
+
+
 ### 4.4.1 (2018-10-25)
 
   * Switched to dune, dune-release, and OPAM 2.0
