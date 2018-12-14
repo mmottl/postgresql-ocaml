@@ -28,7 +28,7 @@
 
 (** Please learn about more details in the database documentation! *)
 
-(** {6 Types} *)
+(** {2 Types} *)
 
 (** Object ID (= Postgresql type of an object) *)
 type oid = int
@@ -144,7 +144,7 @@ type seek_cmd =
   | SEEK_END  (** Seek from end of large object *)
 
 
-(** {6 Exceptions and error handling} *)
+(** {2 Exceptions and error handling} *)
 
 (** Kinds of exceptions:
 
@@ -173,7 +173,7 @@ val string_of_error : error -> string
 exception Oid of oid
 
 
-(** {6 Utility functions}*)
+(** {2 Utility functions}*)
 
 val unescape_bytea : string -> string
 (** [unescape_bytea str] unescapes binary string [str].  This function
@@ -194,7 +194,7 @@ val ftype_of_string : string -> ftype
 (** [string_of_ftype ftype] converts [ftype] to a string. *)
 
 
-(** {6 Handling results of commands and queries} *)
+(** {2 Handling results of commands and queries} *)
 
 val result_status : result_status -> string
 (** [result_status stat] convert status [stat] to a human-readable message *)
@@ -203,7 +203,7 @@ val invalid_oid : oid
 (** [invalid_oid] invalid Oid. *)
 
 
-(** {6 Query parameters} *)
+(** {2 Query parameters} *)
 
 val null : string
 (** [null] can be used as an element of the optional argument [parameters]
@@ -218,110 +218,153 @@ class type result = object
   (* Main routines *)
 
   method status : result_status
-  (** [#status] @return status of a command/query result. *)
+  (** [#status]
+
+      @return status of a command/query result.
+  *)
 
   method error : string
-  (** [#error] @return error string of a result. *)
+  (** [#error]
+
+      @return error string of a result.
+  *)
 
   method error_field : Error_field.t -> string
-  (** [#error_field] @return message of given error field in a result. *)
+  (** [#error_field]
+
+      @return message of given error field in a result.
+  *)
 
   method error_code : Error_code.t
-  (** [#error_code] @return the error code of the error condition
-      as stored in the SQLSTATE field. *)
+  (** [#error_code]
+
+      @return the error code of the error condition as stored in the
+      SQLSTATE field.
+  *)
 
   (** Retrieving SELECT Result Information *)
 
   method ntuples : int
-  (** [#ntuples] @return the number of tuples of a query result. *)
+  (** [#ntuples]
+
+      @return the number of tuples of a query result.
+  *)
 
   method nparams : int
-  (** [#nparams] @return the number of parameters of a prepared
-      statement.  This function is only useful when inspecting the result
-      of [#describe_prepared].  For other types of queries it will return
-      zero. *)
+  (** [#nparams]
+
+      @return the number of parameters of a prepared statement.  This function
+      is only useful when inspecting the result of [#describe_prepared].
+      For other types of queries it will return zero.
+  *)
 
   method nfields : int
-  (** [#nfields] @return the number of fields in a query result. *)
+  (** [#nfields]
+
+      @return the number of fields in a query result.
+  *)
 
   method fname : int -> string
-  (** [#fname n] @return the name of the [n]th field.
+  (** [#fname n]
+
+      @return the name of the [n]th field.
 
       @raise Error if field out of range.
   *)
 
   method fnumber : string -> int
-  (** [#fnumber field] @return the index of the field named [field].
+  (** [#fnumber field]
+
+      @return the index of the field named [field].
 
       @raise Not_found if no such named field.
   *)
 
   method fformat : int -> FFormat.t
-  (** [#fformat n] @return the format of the [n]th field.
+  (** [#fformat n]
+
+      @return the format of the [n]th field.
 
       @raise Error if field out of range.
   *)
 
   method ftype : int -> ftype
-  (** [#ftype n] @return the type of the [n]th field.
+  (** [#ftype n]
+
+      @return the type of the [n]th field.
 
       @raise Oid if there was no corresponding ftype for the internal [oid].
       @raise Error if field out of range.
   *)
 
   method ftype_oid : int -> oid
-  (** [#ftype n] @return the oid of the [n]th field.
+  (** [#ftype n]
+
+      @return the oid of the [n]th field.
 
       @raise Error if field out of range.
   *)
 
   method paramtype : int -> ftype
-  (** [#paramtype n] @return the datatype of the indicated statement
-      parameter.  Parameter numbers start at 0.  This function is
-      only useful when inspecting the result of [#describe_prepared].
-      For other types of queries it will return zero.
+  (** [#paramtype n]
+
+      @return the datatype of the indicated statement parameter.  Parameter
+      numbers start at 0.  This function is only useful when inspecting the
+      result of [#describe_prepared].  For other types of queries it will
+      return zero.
 
       @raise Oid if there was no corresponding ftype for the internal [oid].
       @raise Error if field out of range.
   *)
 
   method paramtype_oid : int -> oid
-  (** [#paramtype n] @return the oid of the indicated statement
-      parameter.  Parameter numbers start at 0.  This function is
-      only useful when inspecting the result of [#describe_prepared].
-      For other types of queries it will return zero.
+  (** [#paramtype n]
+
+      @return the oid of the indicated statement parameter.  Parameter numbers
+      start at 0.  This function is only useful when inspecting the result of
+      [#describe_prepared].  For other types of queries it will return zero.
 
       @raise Error if field out of range.
   *)
 
   method fmod : int -> int
-  (** [#fmod n] @return type-specific modification data of the [n]th field.
+  (** [#fmod n]
+
+      @return type-specific modification data of the [n]th field.
 
       @raise Error if field out of range.
   *)
 
   method fsize : int -> int
-  (** [#fsize n] @return size in bytes of the [n]th field.
+  (** [#fsize n]
+
+      @return size in bytes of the [n]th field.
 
       @raise Error if field out of range.
   *)
 
   method binary_tuples : bool
-  (** [#binary_tuples] @return [true] iff result contains binary tuple data. *)
+  (** [#binary_tuples]
+
+      @return [true] iff result contains binary tuple data.
+  *)
 
 
   (** Retrieving SELECT Result Values *)
 
   method getvalue : int -> int -> string
-  (** [#getvalue tuple field] @return value of [field] in [tuple].
+  (** [#getvalue tuple field]
+
+      @return value of [field] in [tuple].
 
       @raise Error if tuple out of range.
       @raise Error if field out of range.
   *)
 
   method get_escaped_value : int -> int -> string
-  (** [#get_escaped_value tuple field] @return escaped value of [field] in
-      [tuple].
+  (** [#get_escaped_value tuple field]
+
+      @return escaped value of [field] in [tuple].
 
       @raise Error if tuple out of range.
       @raise Error if field out of range.
@@ -335,8 +378,9 @@ class type result = object
   *)
 
   method getlength : int -> int -> int
-  (** [#getlength tuple field] @return length of value in [field] of
-      [tuple] in bytes.
+  (** [#getlength tuple field]
+
+      @return length of value in [field] of [tuple] in bytes.
 
       @raise Error if tuple out of range.
       @raise Error if field out of range.
@@ -346,46 +390,71 @@ class type result = object
   (** Retrieving Non-SELECT Result Information *)
 
   method cmd_status : string
-  (** [#cmd_status] @return status of SQL-command associated with result. *)
+  (** [#cmd_status]
+
+      @return status of SQL-command associated with result.
+  *)
 
   method cmd_tuples : string
-  (** [#cmd_tuples] @return number of rows affected by the SQL command. *)
+  (** [#cmd_tuples]
+
+      @return number of rows affected by the SQL command.
+  *)
 
   method oid_value : oid
-  (** [#cmd_tuples] @return the object ID of the inserted row if the SQL
-      command was an INSERT that inserted exactly one row into a table
-      that has OIDs. Otherwise, returns [invalid_oid]. *)
+  (** [#cmd_tuples]
+
+      @return the object ID of the inserted row if the SQL command was
+      an INSERT that inserted exactly one row into a table that has
+      OIDs. Otherwise, returns [invalid_oid].
+  *)
 
 
   (** High-level routines *)
 
   method get_fnames : string array
-  (** [#get_fnames] @return array of field names. *)
+  (** [#get_fnames]
+
+      @return array of field names.
+  *)
 
   method get_fnames_lst : string list
-  (** [#get_fnames_lst] @return list of field names. *)
+  (** [#get_fnames_lst]
+
+      @return list of field names.
+  *)
 
   method get_tuple : int -> string array
-  (** [#get_tuple n] @return all fields of the [n]th tuple.
+  (** [#get_tuple n]
+
+      @return all fields of the [n]th tuple.
 
       @raise Error if tuple out of range.
   *)
 
   method get_tuple_lst : int -> string list
-  (** [#get_tuple_lst n] @return all fields of the [n]th tuple as list.
+  (** [#get_tuple_lst n]
+
+      @return all fields of the [n]th tuple as list.
 
       @raise Error if tuple out of range.
   *)
 
   method get_all : string array array
-  (** [#get_all] @return all tuples with all fields. *)
+  (** [#get_all]
+
+      @return all tuples with all fields.
+  *)
 
   method get_all_lst : string list list
-  (** [#get_all] @return all tuples with all fields as lists. *)
+  (** [#get_all]
+
+      @return all tuples with all fields as lists.
+  *)
 end
 
 
-(** {6 Handling database connections} *)
+(** {2 Handling database connections} *)
 
 (** Status of a connection *)
 type connection_status =
@@ -432,7 +501,10 @@ module Notification : sig
 end  (* Notification *)
 
 val conndefaults : unit -> conninfo_option array
-(** [conndefaults ()] @return array of all records of type [conninfo_option] *)
+(** [conndefaults ()]
+
+    @return array of all records of type [conninfo_option]
+*)
 
 
 (** Class of connections.
@@ -486,7 +558,9 @@ object
   (** Asynchronous Notification *)
 
   method notifies : Notification.t option
-  (** [#notifies] @return [Some notification] if available ([None] otherwise).
+  (** [#notifies]
+
+      @return [Some notification] if available ([None] otherwise).
 
       @raise Error if there is a connection error.
   *)
@@ -505,67 +579,89 @@ object
   (** Accessors *)
 
   method db : string
-  (** [#db] @return database name of the connection.
+  (** [#db]
+
+      @return database name of the connection.
 
       @raise Error if there is a connection error.
   *)
 
   method user : string
-  (** [#user] @return user name of the connection.
+  (** [#user]
+
+      @return user name of the connection.
 
       @raise Error if there is a connection error.
   *)
 
   method pass : string
-  (** [#pass] @return password of the connection.
+  (** [#pass]
+
+      @return password of the connection.
 
       @raise Error if there is a connection error.
   *)
 
   method host : string
-  (** [#host] @return server host name of the connection.
+  (** [#host]
+
+      @return server host name of the connection.
 
       @raise Error if there is a connection error.
   *)
 
   method port : string
-  (** [#port] @return port of the connection.
+  (** [#port]
+
+      @return port of the connection.
 
       @raise Error if there is a connection error.
   *)
 
   method tty : string
-  (** [#tty] @return debug tty of the connection.
+  (** [#tty]
+
+      @return debug tty of the connection.
 
       @raise Error if there is a connection error.
   *)
 
   method options : string
-  (** [#options] @return backend options of the connection.
+  (** [#options]
+
+      @return backend options of the connection.
 
       @raise Error if there is a connection error.
   *)
 
   method status : connection_status
-  (** [#status] @return current connection status.
+  (** [#status]
+
+      @return current connection status.
 
       @raise Error if there is a connection error.
   *)
 
   method error_message : string
-  (** [#error_message] @return most recent error message of the connection.
+  (** [#error_message]
+
+      @return most recent error message of the connection.
 
       @raise Error if there is a connection error.
   *)
 
   method backend_pid : int
-  (** [#backend] @return process id of the backend server of the connection.
+  (** [#backend]
+
+      @return process id of the backend server of the connection.
 
       @raise Error if there is a connection error.
   *)
 
   method server_version : int * int * int
-  (* [#server_version] @return (major, minor, revision).
+  (* [#server_version]
+
+      @return (major, minor, revision).
 
       @raise Error if there is a connection error.
   *)
@@ -574,7 +670,9 @@ object
   (** Commands and Queries *)
 
   method empty_result : result_status -> result
-  (** [empty_result stat] @return dummy result with a given status [stat].
+  (** [empty_result stat]
+
+      @return dummy result with a given status [stat].
 
       @raise Error if there is a connection error.
   *)
@@ -707,8 +805,9 @@ object
       function causes the returned rows to be split into individual results. *)
 
   method get_result : result option
-  (** [get_result] @return [Some result] of an asynchronous query if
-      available or [None].
+  (** [get_result]
+
+      @return [Some result] of an asynchronous query if available or [None].
 
       @raise Error if there is a connection error.
   *)
@@ -833,7 +932,9 @@ object
   *)
 
   method is_nonblocking : bool
-  (** [is_nonblocking] @return the blocking status of the connection.
+  (** [is_nonblocking]
+
+      @return the blocking status of the connection.
 
       @raise Error if there is a connection error.
   *)
@@ -845,7 +946,9 @@ object
   *)
 
   method is_busy : bool
-  (** [is_busy] @return busy status of a query.
+  (** [is_busy]
+
+      @return busy status of a query.
 
       @raise Error if there is a connection error.
   *)
@@ -945,7 +1048,9 @@ object
   *)
 
   method lo_tell : large_object -> int
-  (** [lo_tell lo] @return current read/write position of large object [lo].
+  (** [lo_tell lo]
+
+      @return current read/write position of large object [lo].
 
       @raise Error if there is a connection error.
   *)
