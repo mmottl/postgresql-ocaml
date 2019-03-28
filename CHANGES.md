@@ -1,6 +1,8 @@
-### 4.4.2 (2018-12-14)
+### 4.4.2 (2019-03-28)
 
   * Fixed documentation formatting warnings
+
+  * Fixed OpenSUSE depexts
 
 
 ### 4.4.1 (2018-10-25)
