@@ -294,6 +294,17 @@ type result_status =
 
 external result_status : result_status -> string = "PQresStatus_stub"
 
+type put_copy_result =
+  | Put_copy_queued
+  | Put_copy_not_queued
+  | Put_copy_error
+
+type get_copy_result =
+  | Get_copy_data of string
+  | Get_copy_wait
+  | Get_copy_end
+  | Get_copy_error
+
 type getline_result = EOF | LineRead | BufFull
 
 type getline_async_result =
@@ -504,6 +515,19 @@ module Stub = struct
 
 
   (* Functions Associated with the COPY Command *)
+
+  external put_copy_data :
+    connection -> string ->
+    (int [@untagged]) -> (int [@untagged]) -> (int [@untagged])
+    = "PQputCopyData_bc" "PQputCopyData_stub"
+
+  external put_copy_end :
+    connection -> string option -> (int [@untagged])
+    = "PQputCopyEnd_bc" "PQputCopyEnd_stub"
+
+  external get_copy_data :
+    connection -> (int [@untagged]) -> get_copy_result
+    = "PQgetCopyData_bc" "PQgetCopyData_stub"
 
   external getline :
     connection -> Bytes.t ->
@@ -975,6 +999,29 @@ object (self)
   (* Copy operations *)
 
   (* Low level *)
+
+  method put_copy_data ?(pos = 0) ?len buf =
+    let buf_len = String.length buf in
+    let len = match len with Some len -> len | None -> buf_len - pos in
+    if len < 0 || pos < 0 || pos + len > buf_len then
+      invalid_arg "Postgresql.connection#put_copy_data";
+    wrap_conn (fun conn ->
+      match Stub.put_copy_data conn buf pos len with
+      | -1 -> Put_copy_error
+      | 0 -> Put_copy_not_queued
+      | 1 -> Put_copy_queued
+      | _ -> assert false)
+
+  method put_copy_end ?error_msg () =
+    wrap_conn (fun conn ->
+      match Stub.put_copy_end conn error_msg with
+      | -1 -> Put_copy_error
+      | 0 -> Put_copy_not_queued
+      | 1 -> Put_copy_queued
+      | _ -> assert false)
+
+  method get_copy_data ?(async = false) () =
+    wrap_conn (fun conn -> Stub.get_copy_data conn (if async then 1 else 0))
 
   method getline ?(pos = 0) ?len buf =
     let buf_len = Bytes.length buf in

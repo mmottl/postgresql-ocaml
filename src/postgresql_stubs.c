@@ -1211,6 +1211,86 @@ CAMLprim value PQnotifies_stub(value v_conn)
 
 /* Functions Associated with the COPY Command */
 
+CAMLprim intnat PQputCopyData_stub(
+  value v_conn, value v_buf, intnat pos, intnat len)
+{
+  CAMLparam2(v_conn, v_buf);
+  PGconn *conn = get_conn(v_conn);
+  intnat res;
+  char *buf = caml_stat_alloc(len);
+  memcpy(buf, String_val(v_buf) + pos, len);
+  caml_enter_blocking_section();
+    res = PQputCopyData(conn, buf, len);
+  caml_leave_blocking_section();
+  caml_stat_free(buf);
+  CAMLreturn(res);
+}
+
+CAMLprim value PQputCopyData_bc(
+  value v_conn, value v_buf, value v_pos, value v_len)
+{
+  return
+    Val_int(PQputCopyData_stub(v_conn, v_buf, Int_val(v_pos), Int_val(v_len)));
+}
+
+CAMLprim intnat PQputCopyEnd_stub(value v_conn, value v_msg_opt)
+{
+  CAMLparam2(v_conn, v_msg_opt);
+  intnat res;
+  PGconn *conn = get_conn(v_conn);
+  char *msg = NULL;
+  if (Is_block(v_msg_opt)) {
+    value v_msg = Field(v_msg_opt, 0);
+    size_t msg_len = caml_string_length(v_msg);
+    msg = caml_stat_alloc(msg_len + 1);
+    memcpy(msg, String_val(v_msg), msg_len);
+    msg[msg_len] = '\0';
+  }
+  caml_enter_blocking_section();
+    res = PQputCopyEnd(conn, msg);
+  caml_leave_blocking_section();
+  if (msg)
+    caml_stat_free(msg);
+  CAMLreturn(res);
+}
+
+CAMLprim value PQputCopyEnd_bc(value v_conn, value v_msg)
+{
+  return Val_int(PQputCopyEnd_stub(v_conn, v_msg));
+}
+
+CAMLprim value PQgetCopyData_stub(value v_conn, intnat async)
+{
+  CAMLparam1(v_conn);
+  CAMLlocal2(v_buf, v_result);
+  PGconn *conn = get_conn(v_conn);
+  char *buf;
+  intnat res;
+  caml_enter_blocking_section();
+    res = PQgetCopyData(conn, &buf, async);
+  caml_leave_blocking_section();
+  switch (res) {
+    case 0:
+      CAMLreturn(Val_int(0)); /* Get_copy_wait */
+    case -1:
+      CAMLreturn(Val_int(1)); /* Get_copy_end */
+    case -2:
+      CAMLreturn(Val_int(2)); /* Get_copy_error */
+    default:
+      v_buf = caml_alloc_string(res);
+      memcpy(String_val(v_buf), buf, res);
+      PQfreemem(buf);
+      v_result = caml_alloc(1, 0); /* Get_copy_data */
+      Store_field(v_result, 0, v_buf);
+      CAMLreturn(v_result);
+  }
+}
+
+CAMLprim value PQgetCopyData_bc(value v_conn, value v_async)
+{
+  return PQgetCopyData_stub(v_conn, Int_val(v_async));
+}
+
 CAMLprim intnat PQgetline_stub(
   value v_conn, value v_buf, intnat pos, intnat len)
 {

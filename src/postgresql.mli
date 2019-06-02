@@ -124,6 +124,20 @@ type result_status =
   | Copy_both
   | Single_tuple    (** One tuple of a result set ({!set_single_row_mode}) *)
 
+(** Result of put_copy_data and put_copy_end *)
+type put_copy_result =
+  | Put_copy_queued     (** Data queued *)
+  | Put_copy_not_queued (** Data not queued due to full bufffers (async only) *)
+  | Put_copy_error      (** Copying failed, see [#error_message] for details *)
+
+(** Result of get_copy_data *)
+type get_copy_result =
+  | Get_copy_data of string (** Data corresponding to one row is retured *)
+  | Get_copy_wait   (** The next row is still being received (async only); wait
+                        for read-only, call [consume_input], and try again *)
+  | Get_copy_end    (** All data has been successfully retrieved *)
+  | Get_copy_error  (** Copying failed, see [#error_message] for details *)
+
 (** Result of getline *)
 type getline_result =
   | EOF       (** End of input reached *)
@@ -816,6 +830,40 @@ object
   (** Copy operations *)
 
   (** Low level *)
+
+  method put_copy_data : ?pos : int -> ?len : int -> string -> put_copy_result
+  (** [put_copy_data ?pos ?len buf] sends [buf] of length [len] starting at
+      [pos] to the backend server, which must be in copy-in mode.  In
+      non-blocking mode, returns {!Put_copy_not_queued} if the data was not
+      queued due to full buffers.
+
+      @param pos default = 0
+      @param len default = String.length - pos
+
+      @raise Invalid_argument if the buffer parameters are invalid.
+   *)
+
+  method put_copy_end : ?error_msg : string -> unit -> put_copy_result
+  (** [put_copy_end ?error_msg ()] terminates the copy-in mode, leaving the
+      connection in [Command_ok] or failed state.  In non-blocking mode, returns
+      {!Put_copy_not_queued} if the termination message was not queued due to
+      full buffers.  Also, to ensure delivery of data in non-blocking mode,
+      repeatedly wait for write-ready an call {!#flush}.
+
+      @param error_msg if set, force the copy operation to fail with the given
+        message.
+   *)
+
+  method get_copy_data : ?async : bool -> unit -> get_copy_result
+  (** [get_copy_data ?async ()] retrieves the next row of data if available.
+      Only single complete rows are returned.  In synchronous mode, the call
+      will wait for completion of the next row.  In asynchronous mode it will
+      return immediately with [Get_copy_wait] if the row transfer is incomplete.
+      In that case, wait for read-ready and call {!#consume_input} before
+      retrying.
+
+      @param async default = false
+   *)
 
   method getline : ?pos : int -> ?len : int -> Bytes.t -> getline_result
   (** [getline ?pos ?len buf] reads a newline-terminated line of at most
