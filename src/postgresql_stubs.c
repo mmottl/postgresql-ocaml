@@ -1261,7 +1261,8 @@ CAMLprim value PQputCopyEnd_bc(value v_conn, value v_msg)
 CAMLprim value PQgetCopyData_stub(value v_conn, intnat async)
 {
   CAMLparam1(v_conn);
-  CAMLlocal2(v_buf, v_result);
+  CAMLlocal1(v_buf);
+  value v_res;
   PGconn *conn = get_conn(v_conn);
   char *buf;
   intnat res;
@@ -1279,9 +1280,9 @@ CAMLprim value PQgetCopyData_stub(value v_conn, intnat async)
       v_buf = caml_alloc_string(res);
       memcpy(String_val(v_buf), buf, res);
       PQfreemem(buf);
-      v_result = caml_alloc(1, 0); /* Get_copy_data */
-      Store_field(v_result, 0, v_buf);
-      CAMLreturn(v_result);
+      v_res = caml_alloc_small(1, 0); /* Get_copy_data */
+      Field(v_res, 0) = v_buf;
+      CAMLreturn(v_res);
   }
 }
 
