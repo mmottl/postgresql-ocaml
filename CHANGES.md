@@ -1,3 +1,10 @@
+### 4.5.0 (2019-06-06)
+
+  * Added support for `put_copy_data`, `put_copy_end`, and `get_copy_data`
+
+  Thanks to Petter A. Urkedal for the patch!
+
+
 ### 4.4.2 (2019-03-28)
 
   * Fixed documentation formatting warnings
