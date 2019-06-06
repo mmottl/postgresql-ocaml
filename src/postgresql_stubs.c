@@ -1249,8 +1249,7 @@ CAMLprim intnat PQputCopyEnd_stub(value v_conn, value v_msg_opt)
   caml_enter_blocking_section();
     res = PQputCopyEnd(conn, msg);
   caml_leave_blocking_section();
-  if (msg)
-    caml_stat_free(msg);
+  if (msg) caml_stat_free(msg);
   CAMLreturn(res);
 }
 
