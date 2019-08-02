@@ -1,11 +1,10 @@
 (library
   (public_name postgresql)
   (c_names postgresql_stubs)
-  (c_flags (
-    (:include c_flags.sexp) -g -O2 -fPIC -DPIC
-    ; NOTE: for debugging before releases
-    ; -Wall -pedantic -Wextra -Wunused -Wno-long-long -Wno-keyword-macro
-  ))
+  (c_flags
+    (:standard) (:include c_flags.sexp) -O2 -fPIC -DPIC
+    -Wno-keyword-macro
+  )
   (c_library_flags (:include c_library_flags.sexp))
   (libraries threads bigarray)
 )
