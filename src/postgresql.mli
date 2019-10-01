@@ -132,7 +132,7 @@ type put_copy_result =
 
 (** Result of get_copy_data *)
 type get_copy_result =
-  | Get_copy_data of string (** Data corresponding to one row is retured *)
+  | Get_copy_data of string (** Data corresponding to one row is returned *)
   | Get_copy_wait   (** The next row is still being received (async only); wait
                         for read-only, call [consume_input], and try again *)
   | Get_copy_end    (** All data has been successfully retrieved *)
