@@ -55,7 +55,6 @@ let () =
             "-DPG_OCAML_MINOR_VERSION=" ^ minor
         with exn -> print_fail (); raise exn
       in
-      eprintf "major: %s, minor: %s" major minor;
       let conf = {
         C.Pkg_config.
         cflags = [pgsql_includedir; major; minor];
