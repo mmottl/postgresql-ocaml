@@ -1,3 +1,10 @@
+### 4.5.1 (2019-10-11)
+
+  * Fixed warnings in C-stubs
+
+  * Support detection of release candidate version numbers
+
+
 ### 4.5.0 (2019-06-06)
 
   * Added support for `put_copy_data`, `put_copy_end`, and `get_copy_data`

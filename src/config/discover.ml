@@ -1,6 +1,27 @@
 open Base
 open Stdio
 
+let find_number ~pos str =
+  let len = String.length str in
+  let rec skip_other ~pos =
+    if pos = len then pos
+    else
+      match str.[pos] with
+      | '0'..'9' -> pos
+      | _ -> skip_other ~pos:(pos + 1)
+  in
+  let pos = skip_other ~pos in
+  let rec loop ~pos =
+    if pos = len then [], pos
+    else match str.[pos] with
+    | '0'..'9' as c ->
+        let acc, next = loop ~pos:(pos + 1) in
+        String.make 1 c :: acc, next
+    | _ -> [], pos
+  in
+  let number_lst, next = loop ~pos in
+  String.concat number_lst, next
+
 let () =
   let module C = Configurator.V1 in
   C.main ~name:"postgresql" (fun _c ->
@@ -17,40 +38,24 @@ let () =
         let print_fail () =
           eprintf "Unable to find versions from line '%s', cmd: '%s'" line cmd
         in
+        let exit_fail () = print_fail (); Caml.exit 1 in
         try
           let first_space = String.index_exn line ' ' in
-          let first_dot = String.index_exn line '.' in
-          let first_part =
-            let len = first_dot - first_space - 1 in
-            String.sub line ~pos:(first_space + 1) ~len
+          let major, next = find_number ~pos:first_space line in
+          let minor =
+            (* Can also handle release candidates *)
+            let c = line.[next] in
+            if Char.(c = '.') then fst (find_number ~pos:next line)
+            else if Char.(c <> 'r' || line.[next + 1] <> 'c') then exit_fail ()
+            else "0"
           in
-          let second_part =
-            let len = String.length line - first_dot - 1 in
-            String.sub line ~pos:(first_dot + 1) ~len
-          in
-          let search_version s =
-            let version = ref "" in
-            let stop = ref false in
-            let check_car c =
-              let ascii = Char.to_int c in
-              if (ascii >= 48 && ascii <= 57 && not !stop) then
-                version := !version ^ (String.make 1 c)
-              else stop := true
-            in
-            let () = String.iter ~f:check_car s in
-            !version
-          in
-          let major = search_version first_part in
-          let minor = search_version second_part in
-          if String.(major <> "" && minor <> "") then
+          if String.(major = "" || minor = "") then exit_fail ()
+          else
             "-DPG_OCAML_MAJOR_VERSION=" ^ major,
             "-DPG_OCAML_MINOR_VERSION=" ^ minor
-          else begin
-            print_fail ();
-            Caml.exit 1
-          end
         with exn -> print_fail (); raise exn
       in
+      eprintf "major: %s, minor: %s" major minor;
       let conf = {
         C.Pkg_config.
         cflags = [pgsql_includedir; major; minor];
