@@ -1,3 +1,12 @@
+### 4.5.2 (2019-10-28)
+
+  * Switched from `caml_alloc_custom` to `caml_alloc_custom_mem`.
+
+    This should improve memory usage and GC performance.
+
+  * Switched to OPAM file generation via `dune-project`
+
+
 ### 4.5.1 (2019-10-11)
 
   * Fixed warnings in C-stubs
