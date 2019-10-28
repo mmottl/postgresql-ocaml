@@ -534,8 +534,17 @@ static struct custom_operations result_ops = {
 
 static inline value alloc_result(PGresult *res, np_callback *cb)
 {
-  value v_res =
-    caml_alloc_custom(&result_ops, sizeof(struct pg_ocaml_result), 1, 100000);
+  value v_res;
+  size_t result_size, ocaml_result_size = sizeof(struct pg_ocaml_result);
+#if PG_OCAML_MAJOR_VERSION < 12
+  /* There isn't really a bound on size here, it all depends on the number
+     of records, columns, and type of data.  4096 bytes seems like a reasonable
+     size that shouldn't lead to excessive GC pressure. */
+  result_size = 4096;
+#else
+  result_size = PQresultMemorySize(res);
+#endif
+  v_res = caml_alloc_custom_mem(&result_ops, ocaml_result_size, result_size);
   set_res(v_res, res);
   set_res_cb(v_res, cb);
   np_incr_refcount(cb);
