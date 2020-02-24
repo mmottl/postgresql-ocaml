@@ -817,8 +817,7 @@ CAMLprim value PQgetvalue_stub(value v_res, intnat tup_num, intnat field_num)
   else {
     /* Assume binary format! */
     size_t len = PQgetlength(res, tup_num, field_num);
-    v_str = len ? caml_alloc_string(len) : v_empty_string;
-    memcpy(String_val(v_str), str, len);
+    v_str = len ? caml_alloc_initialized_string(len, str) : v_empty_string;
   }
   CAMLreturn(v_str);
 }
@@ -872,8 +871,7 @@ static value unescape_bytea(const char *str)
   char *buf = (char *) PQunescapeBytea((unsigned char*) str, &res_len);
   if (buf == NULL) caml_failwith("Postgresql: illegal bytea string");
   else {
-    value v_res = caml_alloc_string(res_len);
-    memcpy(String_val(v_res), buf, res_len);
+    value v_res = caml_alloc_initialized_string(res_len, buf);
     PQfreemem(buf);
     return v_res;
   }
@@ -924,8 +922,7 @@ CAMLprim value PQgetescval_stub(value v_res, intnat tup_num, intnat field_num)
   } else {
     /* Assume binary format! */
     size_t len = PQgetlength(res, tup_num, field_num);
-    v_str = len ? caml_alloc_string(len) : v_empty_string;
-    memcpy(String_val(v_str), str, len);
+    v_str = len ? caml_alloc_initialized_string(len, str) : v_empty_string;
   }
   CAMLreturn(v_str);
 }
@@ -1138,8 +1135,7 @@ CAMLprim value PQescapeStringConn_stub(
     caml_stat_free(buf);
     caml_failwith("Postgresql.escape_string_conn: failed to escape string");
   } else {
-    value v_res = caml_alloc_string(n_written);
-    memcpy(String_val(v_res), buf, n_written);
+    value v_res = caml_alloc_initialized_string(n_written, buf);
     caml_stat_free(buf);
     return v_res;
   }
@@ -1161,8 +1157,7 @@ CAMLprim value PQescapeByteaConn_stub(
     (char *) PQescapeByteaConn(
       get_conn(v_conn),
       (unsigned char *) String_val(v_from) + pos_from, len, &res_len);
-  value v_res = caml_alloc_string(--res_len);
-  memcpy(String_val(v_res), buf, res_len);
+  value v_res = caml_alloc_initialized_string(--res_len, buf);
   PQfreemem(buf);
   return v_res;
 }
@@ -1287,8 +1282,7 @@ CAMLprim value PQgetCopyData_stub(value v_conn, intnat async)
     case -2:
       CAMLreturn(Val_int(2)); /* Get_copy_error */
     default:
-      v_buf = caml_alloc_string(res);
-      memcpy(String_val(v_buf), buf, res);
+      v_buf = caml_alloc_initialized_string(res, buf);
       PQfreemem(buf);
       v_res = caml_alloc_small(1, 0); /* Get_copy_data */
       Field(v_res, 0) = v_buf;
