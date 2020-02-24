@@ -79,14 +79,19 @@ let test (c : connection) =
     Printf.printf "%s %s %s\n"
                   (r#getvalue i 0) (r#getvalue i 1) (r#getvalue i 2)
   done;
+
+  (* Run it in single-row mode. *)
   c#send_query_prepared "test_sel";
-  for i = 0 to 1 do
+  c#set_single_row_mode;
+  for i = 0 to 2 do
     match fetch_result c with
     | None -> assert false
-    | Some r ->
+    | Some r when i < 2 ->
       assert (r#status = Single_tuple);
       Printf.printf "%s %s %s\n"
-                    (r#getvalue i 0) (r#getvalue i 1) (r#getvalue i 2)
+                    (r#getvalue 0 0) (r#getvalue 0 1) (r#getvalue 0 2)
+    | Some r ->
+      assert (r#status = Tuples_ok)
   done;
   assert (fetch_result c = None)
 
