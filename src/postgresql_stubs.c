@@ -1101,9 +1101,20 @@ CAMLprim value PQgetResult_stub(value v_conn)
 }
 
 noalloc_conn_info_intnat(PQconsumeInput)
-noalloc_conn_info(PQisBusy, Val_bool)
+
 noalloc_conn_info_intnat(PQflush)
 noalloc_conn_info_intnat(PQsocket)
+
+CAMLprim value PQisBusy_stub(value v_conn)
+{
+  CAMLparam1(v_conn);
+  PGconn *conn = get_conn(v_conn);
+  bool res;
+  caml_enter_blocking_section();
+    res = PQisBusy(conn);
+  caml_leave_blocking_section();
+  CAMLreturn(Val_bool(res));
+}
 
 CAMLprim value PQCancel_stub(value v_conn)
 {
@@ -1392,9 +1403,9 @@ CAMLprim value PQendcopy_stub_bc(value v_conn)
 static inline void notice_ml(void *cb, const char *msg)
 {
   value v_msg;
-  /* CR mmottl for mmottl: this is not reliable and can lead to segfaults,
-     because the runtime lock may already be held (but not usually).
-     A runtime feature is needed to fully support this. */
+  /* CR mmottl for mmottl: this is not reliable and can lead to deadlocks or
+     other unintended behavior, because the runtime lock may already be held
+     (but not usually).  A runtime feature is needed to fully support this. */
   caml_leave_blocking_section();
     v_msg = make_string(msg);
     caml_callback(((np_callback *) cb)->v_cb, v_msg);
