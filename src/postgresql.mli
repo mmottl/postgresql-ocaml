@@ -205,7 +205,7 @@ val string_of_ftype : ftype -> string
 (** [string_of_ftype ftype] converts [ftype] to a string. *)
 
 val ftype_of_string : string -> ftype
-(** [string_of_ftype ftype] converts [ftype] to a string. *)
+(** [string_of_ftype ftype] converts string to a [ftype]. *)
 
 
 (** {2 Handling results of commands and queries} *)
