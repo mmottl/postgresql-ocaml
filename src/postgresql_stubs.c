@@ -1420,6 +1420,31 @@ CAMLprim value PQsetNoticeProcessor_stub(value v_conn, value v_cb)
   return Val_unit;
 }
 
+static void np_quiet(void __unused *arg, const char __unused *message)
+{
+}
+
+static void np_stderr(void __unused *arg, const char *message)
+{
+    fprintf(stderr, "%s", message);
+}
+
+CAMLprim value PQsetNoticeProcessor_num(value v_conn, value v_cb_num)
+{
+  np_decr_refcount(get_conn_cb(v_conn));
+  set_conn_cb(v_conn, NULL);
+  switch (Int_val(v_cb_num)) {
+    case 0:
+      PQsetNoticeProcessor(get_conn(v_conn), np_stderr, NULL);
+      break;
+    case 1:
+      PQsetNoticeProcessor(get_conn(v_conn), np_quiet, NULL);
+      break;
+    default:
+      break;
+  }
+  return Val_unit;
+}
 
 /* Large objects */
 

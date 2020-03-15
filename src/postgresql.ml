@@ -566,6 +566,9 @@ module Stub = struct
   external set_notice_processor :
     connection -> (string -> unit) -> unit = "PQsetNoticeProcessor_stub"
 
+  external set_notice_processor_num :
+    connection -> int -> unit = "PQsetNoticeProcessor_num"
+
 
   (* Large objects *)
 
@@ -881,6 +884,10 @@ object (self)
 
   method set_notice_processor f =
     wrap_conn (fun conn -> Stub.set_notice_processor conn f)
+
+  method set_notice_processing (h : [`Stderr | `Quiet]) =
+    let i = match h with `Stderr -> 0 | `Quiet -> 1 in
+    wrap_conn (fun conn -> Stub.set_notice_processor_num conn i)
 
 
   (* Accessors *)

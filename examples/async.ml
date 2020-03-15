@@ -47,6 +47,13 @@ let test (c : connection) =
       (id SERIAL PRIMARY KEY, a INTEGER NOT NULL, b TEXT NOT NULL)";
   assert ((fetch_single_result c)#status = Command_ok);
 
+  (* Create another table which will trigger a notice. *)
+  c#send_query "\
+    CREATE TEMPORARY TABLE postgresql_ocaml_async_2 \
+      (id INTEGER PRIMARY KEY \
+        REFERENCES postgresql_ocaml_async ON DELETE CASCADE)";
+  assert ((fetch_single_result c)#status = Command_ok);
+
   (* Populate using a prepared statement. *)
   c#send_prepare "test_ins"
                  "INSERT INTO postgresql_ocaml_async (a, b) VALUES ($1, $2)";
@@ -93,7 +100,11 @@ let test (c : connection) =
     | Some r ->
       assert (r#status = Tuples_ok)
   done;
-  assert (fetch_result c = None)
+  assert (fetch_result c = None);
+
+  (* Drop the main table. *)
+  c#send_query "DROP TABLE postgresql_ocaml_async CASCADE";
+  assert ((fetch_single_result c)#status = Command_ok)
 
 let main () =
   (* Async connect and test. *)
@@ -109,6 +120,7 @@ let main () =
   finish_conn (Obj.magic c#socket) (fun () -> c#reset_poll) Polling_writing;
   if c#status = Bad then failwith_f "Reset connection bad: %s" c#error_message;
   assert (c#status = Ok);
+  c#set_notice_processing `Quiet;
   test c
 
 let _ =
