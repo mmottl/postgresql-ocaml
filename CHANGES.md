@@ -1,3 +1,13 @@
+### 4.6.0 (2020-05-22)
+
+  * Fixed missing runtime release during calls to PQisBusy.
+
+  * Added a temporary workaround for dealing with notice processing and
+    asynchronous operations.
+
+    Thanks to Petter A. Urkedal for the patch!
+
+
 ### 4.5.2 (2019-10-28)
 
   * Switched from `caml_alloc_custom` to `caml_alloc_custom_mem`.
