@@ -24,6 +24,12 @@
    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+#if __GNUC__ >= 3
+# define __unused __attribute__ ((unused))
+#else
+# define __unused
+#endif
+
 #if PG_OCAML_MAJOR_VERSION > 8 \
     || ( PG_OCAML_MAJOR_VERSION >= 8 && PG_OCAML_MINOR_VERSION >= 2)
 # define PG_OCAML_8_2
