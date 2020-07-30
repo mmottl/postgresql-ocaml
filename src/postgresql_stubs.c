@@ -1128,8 +1128,8 @@ CAMLprim value PQCancel_stub(value v_conn)
     caml_enter_blocking_section();
       res = PQcancel(cancel, errbuf, 256);
     caml_leave_blocking_section();
-    if (res == 0) CAMLreturn(v_None);
-    else CAMLreturn(make_some(caml_copy_string(errbuf)));
+    if (res == 0) CAMLreturn(make_some(caml_copy_string(errbuf)));
+    else CAMLreturn(v_None);
   }
 }
 
