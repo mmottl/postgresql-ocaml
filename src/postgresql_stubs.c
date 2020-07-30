@@ -1329,8 +1329,7 @@ CAMLprim value PQgetline_stub_bc(
 CAMLprim intnat PQgetlineAsync_stub(
   value v_conn, value v_buf, intnat pos, intnat len)
 {
-  return PQgetlineAsync(
-    get_conn(v_conn), (char *) String_val(v_buf) + pos, len);
+  return PQgetlineAsync(get_conn(v_conn), (char *) Bytes_val(v_buf) + pos, len);
 }
 
 CAMLprim value PQgetlineAsync_stub_bc(
