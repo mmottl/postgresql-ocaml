@@ -1,9 +1,10 @@
 ### 4.6.1 (2020-07-29)
 
   * Fixed a bug in `request_cancel` that turned errors into success and
-    success into an error.
+    success into an error.  Thanks to Dmitry Astapov for this patch!
 
-  Thanks to Dmitry Astapov for the patch!
+  * Added support for const char strings in stubs due to stricter handling
+    in newer OCaml runtimes.  This eliminates C-compiler warnings.
 
 
 ### 4.6.0 (2020-05-22)
