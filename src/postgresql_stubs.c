@@ -614,7 +614,7 @@ static inline void free_params(const char * const *params, size_t nparams)
 static inline const char * const * copy_params_shallow(
   value v_params, size_t nparams)
 {
-  char **params;
+  const char **params;
   size_t i;
   if (nparams == 0) return NULL;
   params = caml_stat_alloc(nparams * sizeof(char *));
@@ -917,7 +917,7 @@ CAMLprim value PQgetescval_stub(value v_res, intnat tup_num, intnat field_num)
       str += 2;
       n_hex_pairs = bytea_hex_pairs(str);
       v_str = caml_alloc_string(n_hex_pairs);
-      decode_bytea_hex(str, String_val(v_str), n_hex_pairs);
+      decode_bytea_hex(str, (char *) String_val(v_str), n_hex_pairs);
     }
   } else {
     /* Assume binary format! */
@@ -1193,7 +1193,8 @@ CAMLprim value PQunescapeBytea_stub(value v_from)
     CAMLparam1(v_from);
     value v_res = caml_alloc_string(res_len);
     /* GC may have happened, have to use String_val on v_from again */
-    decode_bytea_hex(String_val(v_from) + 2, String_val(v_res), res_len);
+    decode_bytea_hex(
+      String_val(v_from) + 2, (char *) String_val(v_res), res_len);
     CAMLreturn(v_res);
   }
 }
@@ -1316,7 +1317,7 @@ CAMLprim intnat PQgetline_stub(
   caml_enter_blocking_section();
     res = PQgetline(conn, buf, len);
   caml_leave_blocking_section();
-  memcpy(String_val(v_buf) + pos, buf, len);
+  memcpy(Bytes_val(v_buf) + pos, buf, len);
   caml_stat_free(buf);
   CAMLreturn(res);
 }
@@ -1330,7 +1331,8 @@ CAMLprim value PQgetline_stub_bc(
 CAMLprim intnat PQgetlineAsync_stub(
   value v_conn, value v_buf, intnat pos, intnat len)
 {
-  return PQgetlineAsync(get_conn(v_conn), String_val(v_buf) + pos, len);
+  return PQgetlineAsync(
+    get_conn(v_conn), (char *) String_val(v_buf) + pos, len);
 }
 
 CAMLprim value PQgetlineAsync_stub_bc(
@@ -1578,7 +1580,7 @@ CAMLprim intnat lo_read_stub(
   caml_enter_blocking_section();
     res = lo_read(conn, fd, buf, len);
   caml_leave_blocking_section();
-  memcpy(String_val(v_buf) + pos, buf, len);
+  memcpy(Bytes_val(v_buf) + pos, buf, len);
   caml_stat_free(buf);
   CAMLreturn(res);
 }
