@@ -1,3 +1,11 @@
+### 4.6.1 (2020-07-29)
+
+  * Fixed a bug in `request_cancel` that turned errors into success and
+    success into an error.
+
+  Thanks to Dmitry Astapov for the patch!
+
+
 ### 4.6.0 (2020-05-22)
 
   * Fixed missing runtime release during calls to PQisBusy.
