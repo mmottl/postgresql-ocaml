@@ -1,5 +1,4 @@
-open Base
-open Stdio
+open Printf
 
 let find_number ~pos str =
   let len = String.length str in
@@ -20,7 +19,7 @@ let find_number ~pos str =
     | _ -> [], pos
   in
   let number_lst, next = loop ~pos in
-  String.concat number_lst, next
+  String.concat "" number_lst, next
 
 let () =
   let module C = Configurator.V1 in
@@ -30,26 +29,26 @@ let () =
       try Unix.open_process_in cmd
       with exc -> eprintf "could not open pg_config, cmd: '%s'" cmd; raise exc
     in
-    Exn.protectx ic ~finally:In_channel.close ~f:(fun ic ->
-      let pgsql_includedir = "-I" ^ In_channel.input_line_exn ic in
-      let pgsql_libdir = "-L" ^ In_channel.input_line_exn ic in
+    Fun.protect ~finally:(fun () -> close_in ic) (fun () ->
+      let pgsql_includedir = "-I" ^ input_line ic in
+      let pgsql_libdir = "-L" ^ input_line ic in
       let major, minor =
-        let line = In_channel.input_line_exn ic in
+        let line = input_line ic in
         let print_fail () =
           eprintf "Unable to find versions from line '%s', cmd: '%s'" line cmd
         in
-        let exit_fail () = print_fail (); Caml.exit 1 in
+        let exit_fail () = print_fail (); exit 1 in
         try
-          let first_space = String.index_exn line ' ' in
+          let first_space = String.index line ' ' in
           let major, next = find_number ~pos:first_space line in
           let minor =
             (* Can also handle release candidates *)
             let c = line.[next] in
-            if Char.(c = '.') then fst (find_number ~pos:next line)
-            else if Char.(c <> 'r' || line.[next + 1] <> 'c') then exit_fail ()
+            if c = '.' then fst (find_number ~pos:next line)
+            else if c <> 'r' || line.[next + 1] <> 'c' then exit_fail ()
             else "0"
           in
-          if String.(major = "" || minor = "") then exit_fail ()
+          if major = "" || minor = "" then exit_fail ()
           else
             "-DPG_OCAML_MAJOR_VERSION=" ^ major,
             "-DPG_OCAML_MINOR_VERSION=" ^ minor

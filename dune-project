@@ -25,8 +25,6 @@ Postgresql offers library functions for accessing PostgreSQL databases.")
     (ocaml (>= 4.08))
     (dune (>= 1.10))
     dune-configurator
-    (base :build)
-    (stdio :build)
     (conf-postgresql :build)
     base-bytes
   )

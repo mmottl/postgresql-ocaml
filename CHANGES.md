@@ -1,3 +1,8 @@
+### 4.6.2 (2020-08-04)
+
+  * Removed `base` and `stdio` build dependencies.
+
+
 ### 4.6.1 (2020-07-29)
 
   * Fixed a bug in `request_cancel` that turned errors into success and
