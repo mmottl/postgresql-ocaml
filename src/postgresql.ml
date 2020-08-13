@@ -498,7 +498,7 @@ module Stub = struct
   external consume_input : connection -> (int [@untagged])
     = "PQconsumeInput_stub_bc" "PQconsumeInput_stub" [@@noalloc]
 
-  external is_busy : connection -> bool = "PQisBusy_stub" [@@noalloc]
+  external is_busy : connection -> bool = "PQisBusy_stub"
 
   external flush : connection -> (int [@untagged])
     = "PQflush_stub_bc" "PQflush_stub" [@@noalloc]
