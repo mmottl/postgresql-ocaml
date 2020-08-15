@@ -1,3 +1,10 @@
+### 4.6.3 (2020-08-15)
+
+  * Removed incorrect `[@@noalloc]` from `is_busy` external call.
+
+    Thanks to Dmitry Astapov for this patch!
+
+
 ### 4.6.2 (2020-08-04)
 
   * Removed `base` and `stdio` build dependencies.
