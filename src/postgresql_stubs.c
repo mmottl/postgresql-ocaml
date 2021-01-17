@@ -583,6 +583,23 @@ static inline void free_binary_params(int *formats, int *lengths)
   if (lengths != NULL) caml_stat_free(lengths);
 }
 
+static inline Oid * copy_param_types(
+    value v_param_types, size_t nparams, size_t nparam_types)
+{
+   Oid *param_types;
+   size_t i;
+   if (nparam_types == 0) return NULL;
+   if (nparam_types > nparams) nparam_types = nparams;
+   param_types = caml_stat_alloc(nparams * sizeof(Oid));
+   for (i = 0; i < nparam_types; i++) {
+     value v_param_type = Field(v_param_types, i);
+     param_types[i] = Int_val(v_param_type);
+   }
+   memset(param_types + nparam_types, 0,
+          (nparams - nparam_types) * sizeof(Oid));
+   return param_types;
+}
+
 static inline const char * const * copy_params(value v_params, size_t nparams)
 {
   char **params;
@@ -631,8 +648,8 @@ static inline void free_params_shallow(
 }
 
 CAMLprim value PQexecParams_stub(
-  value v_conn, value v_query, value v_params, value v_binary_params,
-  value v_binary_result)
+  value v_conn, value v_query, value v_param_types, value v_params,
+  value v_binary_params, value v_binary_result)
 {
   CAMLparam1(v_conn);
   PGconn *conn = get_conn(v_conn);
@@ -642,6 +659,8 @@ CAMLprim value PQexecParams_stub(
   char *query = caml_stat_alloc(len);
   size_t nparams = Wosize_val(v_params);
   const char * const *params = copy_params(v_params, nparams);
+  size_t nparam_types = Wosize_val(v_param_types);
+  Oid *param_types = copy_param_types(v_param_types, nparams, nparam_types);
   int *formats, *lengths;
   copy_binary_params(v_params, v_binary_params, nparams, &formats, &lengths);
   memcpy(query, String_val(v_query), len);
@@ -651,8 +670,9 @@ CAMLprim value PQexecParams_stub(
       (nparams == 0 && !binary_result)
         ? PQexec(conn, query)
         : PQexecParams(
-            conn, query, nparams, NULL,
+            conn, query, nparams, param_types,
             params, lengths, formats, binary_result);
+    if (param_types != NULL) caml_stat_free(param_types);
     free_binary_params(formats, lengths);
     free_params(params, nparams);
     caml_stat_free(query);
@@ -660,8 +680,16 @@ CAMLprim value PQexecParams_stub(
   CAMLreturn(alloc_result(res, np_cb));
 }
 
+CAMLprim value PQexecParams_stub_bc(value *argv, int argn)
+{
+  (void)argn; /* unused */
+  return
+    PQexecParams_stub(argv[0], argv[1], argv[2], argv[3], argv[4], argv[5]);
+}
+
 #ifdef PG_OCAML_8_2
-CAMLprim value PQprepare_stub(value v_conn, value v_stm_name, value v_query)
+CAMLprim value PQprepare_stub(
+  value v_conn, value v_stm_name, value v_query, value v_param_types)
 {
   CAMLparam1(v_conn);
   PGconn *conn = get_conn(v_conn);
@@ -671,10 +699,13 @@ CAMLprim value PQprepare_stub(value v_conn, value v_stm_name, value v_query)
   size_t query_len = caml_string_length(v_query) + 1;
   char *stm_name = caml_stat_alloc(stm_name_len);
   char *query = caml_stat_alloc(query_len);
+  size_t nparams = Wosize_val(v_param_types);
+  Oid *param_types = copy_param_types(v_param_types, nparams, nparams);
   memcpy(stm_name, String_val(v_stm_name), stm_name_len);
   memcpy(query, String_val(v_query), query_len);
   caml_enter_blocking_section();
-    res = PQprepare(conn, stm_name, query, 0, NULL);
+    res = PQprepare(conn, stm_name, query, nparams, param_types);
+    if (param_types != NULL) caml_stat_free(param_types);
     caml_stat_free(stm_name);
     caml_stat_free(query);
   caml_leave_blocking_section();
@@ -963,12 +994,15 @@ CAMLprim value PQsetnonblocking_stub_bc(value v_conn, value v_arg)
 noalloc_conn_info(PQisnonblocking, Val_bool)
 
 CAMLprim intnat PQsendQueryParams_stub(
-  value v_conn, value v_query, value v_params, value v_binary_params)
+  value v_conn, value v_query, value v_param_types, value v_params,
+  value v_binary_params)
 {
   PGconn *conn = get_conn(v_conn);
   const char *query = String_val(v_query);
   size_t nparams = Wosize_val(v_params);
   const char * const *params = copy_params_shallow(v_params, nparams);
+  size_t nparam_types = Wosize_val(v_param_types);
+  Oid *param_types = copy_param_types(v_param_types, nparams, nparam_types);
   int *lengths, *formats;
   intnat res;
   copy_binary_params(v_params, v_binary_params, nparams, &formats, &lengths);
@@ -976,32 +1010,40 @@ CAMLprim intnat PQsendQueryParams_stub(
     (nparams == 0)
       ? PQsendQuery(conn, query)
       : PQsendQueryParams(
-          conn, query, nparams, NULL, params, lengths, formats, 0);
+          conn, query, nparams, param_types, params, lengths, formats, 0);
+  if (param_types != NULL) caml_stat_free(param_types);
   free_binary_params(formats, lengths);
   free_params_shallow(params, nparams);
   return res;
 }
 
 CAMLprim value PQsendQueryParams_stub_bc(
-  value v_conn, value v_query, value v_params, value v_binary_params)
+  value v_conn, value v_query, value v_param_types, value v_params,
+  value v_binary_params)
 {
-  return
-    Val_int(PQsendQueryParams_stub(v_conn, v_query, v_params, v_binary_params));
+  return Val_int(PQsendQueryParams_stub(
+                    v_conn, v_query, v_param_types, v_params, v_binary_params));
 }
 
 CAMLprim intnat PQsendPrepare_stub(
-    value v_conn, value v_stm_name, value v_query)
+    value v_conn, value v_stm_name, value v_query, value v_param_types)
 {
   PGconn *conn = get_conn(v_conn);
   const char *stm_name = String_val(v_stm_name);
   const char *query = String_val(v_query);
-  return PQsendPrepare(conn, stm_name, query, 0, NULL);
+  size_t nparams = Wosize_val(v_param_types);
+  Oid *param_types = copy_param_types(v_param_types, nparams, nparams);
+  intnat res;
+  res = PQsendPrepare(conn, stm_name, query, nparams, param_types);
+  if (param_types != NULL) caml_stat_free(param_types);
+  return res;
 }
 
 CAMLprim value PQsendPrepare_stub_bc(
-    value v_conn, value v_stm_name, value v_query)
+    value v_conn, value v_stm_name, value v_query, value v_param_types)
 {
-  return Val_int(PQsendPrepare_stub(v_conn, v_stm_name, v_query));
+  return
+    Val_int(PQsendPrepare_stub(v_conn, v_stm_name, v_query, v_param_types));
 }
 
 CAMLprim intnat PQsendQueryPrepared_stub(

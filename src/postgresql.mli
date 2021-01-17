@@ -704,10 +704,11 @@ object
   *)
 
   method exec :
-    ?expect : result_status list -> ?params : string array ->
+    ?expect : result_status list ->
+    ?param_types : oid array -> ?params : string array ->
     ?binary_params : bool array -> ?binary_result : bool ->
     string -> result
-  (** [exec ?expect ?params ?binary_params ?binary_result query]
+  (** [exec ?expect ?params ?param_types ?binary_params ?binary_result query]
       synchronous execution of query or command [query].  The result
       status will be checked against all elements in [expect].  If
       [expect] is not empty and if there is no match, the exception
@@ -728,6 +729,7 @@ object
       @return result of query.
 
       @param expect default = []
+      @param param_types default = [||]
       @param params default = [||]
       @param binary_params default = [||]
       @param binary_result default = false
@@ -736,9 +738,9 @@ object
       @raise Error if there is an unexpected result status.
   *)
 
-  method prepare : string -> string -> result
-  (** [prepare stm_name query] creates a prepared query named [stm_name]
-      which will execute the query or command [query] when passed to
+  method prepare : ?param_types : oid array -> string -> string -> result
+  (** [prepare ?param_types stm_name query] creates a prepared query named
+      [stm_name] which will execute the query or command [query] when passed to
       [#exec_prepared]. *)
 
   method exec_prepared :
@@ -772,10 +774,10 @@ object
   *)
 
   method send_query :
-    ?params : string array -> ?binary_params : bool array
-    -> string -> unit
-  (** [send_query ?params ?binary_params query] asynchronous execution
-      of query or command [query].
+    ?param_types : oid array -> ?params : string array ->
+    ?binary_params : bool array -> string -> unit
+  (** [send_query ?param_types ?params ?binary_params query] asynchronous
+      execution of query or command [query].
 
       Additional query parameters can be passed in the [params] array.
       They must not be escaped and they can be referred to in [query]
@@ -787,16 +789,17 @@ object
       If no (or an empty) query parameter is passed, it is possible to
       emit several commands with a single call.
 
+      @param param_types default = [||]
       @param params default = [||]
       @param binary_params default = [||]
 
       @raise Error if there is a connection error.
   *)
 
-  method send_prepare : string -> string -> unit
-  (** [#send_prepare stm_name query] sends a query preparation without waiting
-      for the result.  This does the same as {!prepare} except that the status
-      is reported by {!get_result} when available.
+  method send_prepare : ?param_types : oid array -> string -> string -> unit
+  (** [#send_prepare ?param_types stm_name query] sends a query preparation
+      without waiting for the result.  This does the same as {!prepare} except
+      that the status is reported by {!get_result} when available.
 
       @raise Error if there is a connection error. *)
 

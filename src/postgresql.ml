@@ -380,10 +380,13 @@ module Stub = struct
   external result_isnull : result -> bool = "PQres_isnull" [@@noalloc]
 
   external exec_params :
-    connection -> string -> string array -> bool array -> bool -> result
-    = "PQexecParams_stub"
+    connection -> string -> oid array -> string array -> bool array ->
+    bool -> result
+    = "PQexecParams_stub_bc" "PQexecParams_stub"
 
-  external prepare : connection -> string -> string -> result = "PQprepare_stub"
+  external prepare :
+    connection -> string -> string -> oid array -> result
+    = "PQprepare_stub"
 
   external exec_prepared :
     connection -> string -> string array -> bool array -> result
@@ -473,11 +476,12 @@ module Stub = struct
     connection -> bool = "PQisnonblocking_stub" [@@noalloc]
 
   external send_query_params :
-    connection -> string -> string array -> bool array -> (int [@untagged])
+    connection -> string -> oid array -> string array -> bool array ->
+    (int [@untagged])
     = "PQsendQueryParams_stub_bc" "PQsendQueryParams_stub"
 
   external send_prepare :
-    connection -> string -> string -> (int [@untagged])
+    connection -> string -> string -> oid array -> (int [@untagged])
     = "PQsendPrepare_stub_bc" "PQsendPrepare_stub" [@@noalloc]
 
   external send_query_prepared :
@@ -928,12 +932,13 @@ object (self)
     new result (wrap_conn (fun conn -> (Stub.make_empty_res conn status)))
 
   method exec
-    ?(expect = []) ?(params = [||]) ?(binary_params = [||])
-    ?(binary_result = false) query =
+    ?(expect = []) ?(param_types = [||]) ?(params = [||])
+    ?(binary_params = [||]) ?(binary_result = false) query =
     let r =
       wrap_conn (fun conn ->
         let r =
-          Stub.exec_params conn query params binary_params binary_result
+          Stub.exec_params conn query param_types params
+                           binary_params binary_result
         in
         if Stub.result_isnull r then signal_error conn
         else r)
@@ -944,10 +949,10 @@ object (self)
       raise (Error (Unexpected_status (stat, res#error, expect)))
     else res
 
-  method prepare stm_name query =
+  method prepare ?(param_types = [||]) stm_name query =
     new result (
       wrap_conn (fun conn ->
-        let r = Stub.prepare conn stm_name query in
+        let r = Stub.prepare conn stm_name query param_types in
         if Stub.result_isnull r then signal_error conn
         else r))
 
@@ -972,14 +977,17 @@ object (self)
         if Stub.result_isnull r then signal_error conn
         else r))
 
-  method send_query ?(params = [||]) ?(binary_params = [||]) query =
+  method send_query
+    ?(param_types = [||]) ?(params = [||]) ?(binary_params = [||]) query =
     wrap_conn (fun conn ->
-      if Stub.send_query_params conn query params binary_params <> 1 then
+      if Stub.send_query_params conn query param_types params binary_params
+            <> 1 then
         signal_error conn)
 
-  method send_prepare stm_name query =
+  method send_prepare ?(param_types = [||]) stm_name query =
     wrap_conn (fun conn ->
-      if Stub.send_prepare conn stm_name query <> 1 then signal_error conn)
+      if Stub.send_prepare conn stm_name query param_types <> 1 then
+        signal_error conn)
 
   method send_query_prepared ?(params = [||]) ?(binary_params = [||]) stm_name =
     wrap_conn (fun conn ->
