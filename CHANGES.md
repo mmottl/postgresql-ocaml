@@ -1,3 +1,11 @@
+### 5.0.0 (2021-02-12)
+
+  * Added support for parameter types to `exec`, `prepare`, `send_query`,
+    and `send_prepare`.
+
+    Thanks to Petter A. Urkedal for the patch!
+
+
 ### 4.6.3 (2020-08-15)
 
   * Removed incorrect `[@@noalloc]` from `is_busy` external call.
