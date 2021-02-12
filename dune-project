@@ -1,10 +1,10 @@
-(lang dune 1.10)
+(lang dune 2.7)
 (name postgresql)
 
 (generate_opam_files true)
 
 (source (github mmottl/postgresql-ocaml))
-(license "LGPL-2.1+ with OCaml linking exception")
+(license "LGPL-2.1-or-later with OCaml-LGPL-linking-exception")
 (homepage "https://mmottl.github.io/postgresql-ocaml")
 (documentation "https://mmottl.github.io/postgresql-ocaml/api")
 
@@ -23,7 +23,6 @@
 Postgresql offers library functions for accessing PostgreSQL databases.")
   (depends
     (ocaml (>= 4.08))
-    (dune (>= 1.10))
     dune-configurator
     (conf-postgresql :build)
     base-bytes

@@ -1,4 +1,5 @@
 (executables
   (names async binary copy cursor dump populate prompt test_lo)
   (libraries postgresql)
+  (modes byte exe)
 )
