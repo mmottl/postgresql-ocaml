@@ -118,16 +118,6 @@
 #define ANYELEMENTOID           2283
 #define JSONBOID                3802
 
-static value v_None = Val_int(0);
-
-static inline value make_some(value v)
-{
-  CAMLparam1(v);
-  value v_res = caml_alloc_small(1, 0);
-  Field(v_res, 0) = v;
-  CAMLreturn(v_res);
-}
-
 /* Cache for OCaml-values */
 static value v_empty_string = Val_unit;
 static const value *v_exc_Oid = NULL;  /* Exception [Oid] */
@@ -338,13 +328,14 @@ CAMLprim value PQconndefaults_stub(value __unused v_unit)
 
   for (i = 0; i < n; i++, p++) {
     v_el = caml_alloc_small(7, 0);
-    for (j = 0; j < 7; j++) Field(v_el, j) = v_None;
+    for (j = 0; j < 7; j++) Field(v_el, j) = Val_none;
     Store_field(v_res, i, v_el);
     Store_field(v_el, 0, caml_copy_string(p->keyword));
-    if (p->envvar) Store_field(v_el, 1, make_some(caml_copy_string(p->envvar)));
+    if (p->envvar)
+      Store_field(v_el, 1, caml_alloc_some(caml_copy_string(p->envvar)));
     if (p->compiled)
-      Store_field(v_el, 2, make_some(caml_copy_string(p->compiled)));
-    if (p->val) Store_field(v_el, 3, make_some(caml_copy_string(p->val)));
+      Store_field(v_el, 2, caml_alloc_some(caml_copy_string(p->compiled)));
+    if (p->val) Store_field(v_el, 3, caml_alloc_some(caml_copy_string(p->val)));
     Store_field(v_el, 4, caml_copy_string(p->label));
     Store_field(v_el, 5, caml_copy_string(p->dispchar));
     Store_field(v_el, 6, Val_int(p->dispsize));
@@ -1158,7 +1149,7 @@ CAMLprim value PQCancel_stub(value v_conn)
 {
   CAMLparam1(v_conn);
   PGconn *conn = get_conn(v_conn);
-  if (conn == NULL) CAMLreturn(v_None);
+  if (conn == NULL) CAMLreturn(Val_none);
   else {
     PGcancel *cancel = get_cancel_obj(v_conn);
     char errbuf[256];
@@ -1166,8 +1157,8 @@ CAMLprim value PQCancel_stub(value v_conn)
     caml_enter_blocking_section();
       res = PQcancel(cancel, errbuf, 256);
     caml_leave_blocking_section();
-    if (res == 0) CAMLreturn(make_some(caml_copy_string(errbuf)));
-    else CAMLreturn(v_None);
+    if (res == 0) CAMLreturn(caml_alloc_some(caml_copy_string(errbuf)));
+    else CAMLreturn(Val_none);
   }
 }
 
@@ -1259,9 +1250,9 @@ CAMLprim value PQnotifies_stub(value v_conn)
     Field(v_notif, 1) = Val_int(notif->be_pid);
     Field(v_notif, 2) = v_extra;
     PQfreemem(notif);
-    CAMLreturn(make_some(v_notif));
+    CAMLreturn(caml_alloc_some(v_notif));
   }
-  else CAMLreturn(v_None);
+  else CAMLreturn(Val_none);
 }
 
 /* Functions Associated with the COPY Command */

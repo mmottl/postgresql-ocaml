@@ -22,7 +22,7 @@
   (description "\
 Postgresql offers library functions for accessing PostgreSQL databases.")
   (depends
-    (ocaml (>= 4.08))
+    (ocaml (>= 4.12))
     dune-configurator
     (conf-postgresql :build)
     base-bytes
