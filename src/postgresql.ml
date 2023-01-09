@@ -507,6 +507,8 @@ module Stub = struct
   external flush : connection -> (int [@untagged])
     = "PQflush_stub_bc" "PQflush_stub" [@@noalloc]
 
+  external filedescr_of_fd : int -> Unix.file_descr = "win_handle_fd"
+
   external socket : connection -> (int [@untagged])
     = "PQsocket_stub_bc" "PQsocket_stub" [@@noalloc]
 
@@ -1145,7 +1147,7 @@ object (self)
   method socket =
     wrap_conn (fun conn ->
       let s = Stub.socket conn in
-      if s = -1 then signal_error conn else (Obj.magic s : Unix.file_descr))
+      if s = -1 then signal_error conn else Stub.filedescr_of_fd s)
 
   method request_cancel = request_cancel ()
 
