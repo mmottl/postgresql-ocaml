@@ -1145,7 +1145,7 @@ object (self)
   method socket =
     wrap_conn (fun conn ->
       let s = Stub.socket conn in
-      if s = -1 then signal_error conn else s)
+      if s = -1 then signal_error conn else (Obj.magic s : Unix.file_descr))
 
   method request_cancel = request_cancel ()
 

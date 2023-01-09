@@ -1022,7 +1022,7 @@ object
       @raise Error if there is a connection error.
   *)
 
-  method socket : int
+  method socket : Unix.file_descr
   (** [socket] obtains the file descriptor for the backend connection
       socket as an integer.
 
