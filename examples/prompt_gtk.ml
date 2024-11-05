@@ -1,16 +1,14 @@
-(*
-   A graphical frontend (handles backend notifications,
-   copy_in, copy_out, presentation of "select" result in tables)
+(* A graphical frontend (handles backend notifications, copy_in, copy_out,
+   presentation of "select" result in tables)
 
-   To build prompt_gtk you need lablgtk 1.2
-*)
+   To build prompt_gtk you need lablgtk 1.2 *)
 
 open Printf
 open GMain
 open! Postgresql
 
 let () =
-  if (Array.length Sys.argv <> 2) then (
+  if Array.length Sys.argv <> 2 then (
     eprintf "Usage:  %s conninfo\n" Sys.argv.(0);
     exit 1)
 
@@ -19,8 +17,14 @@ let conninfo = Sys.argv.(1)
 let file_dialog title =
   let name = ref "" in
   let sel = GWindow.file_selection ~title ~modal:true () in
-  let cancel_callback () = sel#destroy (); Main.quit () in
-  let ok_callback () = name := sel#filename; cancel_callback () in
+  let cancel_callback () =
+    sel#destroy ();
+    Main.quit ()
+  in
+  let ok_callback () =
+    name := sel#filename;
+    cancel_callback ()
+  in
   let _ = sel#ok_button#connect#clicked ~callback:ok_callback in
   let _ = sel#cancel_button#connect#clicked ~callback:cancel_callback in
   sel#show ();
@@ -32,8 +36,10 @@ let make_window title =
   let vbox = GPack.vbox ~packing:window#add () in
 
   let button =
-    GButton.button ~label:"Close" ~packing:(fun widget ->
-      vbox#pack ~from:`END widget) () in
+    GButton.button ~label:"Close"
+      ~packing:(fun widget -> vbox#pack ~from:`END widget)
+      ()
+  in
 
   let _ = button#connect#clicked ~callback:window#destroy in
 
@@ -41,19 +47,15 @@ let make_window title =
   let sbv = GRange.scrollbar `VERTICAL ~packing:(hbox#pack ~from:`END) () in
   let sbh = GRange.scrollbar `HORIZONTAL ~packing:(vbox#pack ~from:`END) () in
 
-  window, hbox, sbv, sbh
+  (window, hbox, sbv, sbh)
 
 let show_tuples res =
   let window, hbox, sbv, sbh = make_window "Result (tuples)" in
 
   let cl =
-    GList.clist
-      ~titles:res#get_fnames_lst
-      ~shadow_type:`OUT
-      ~packing:hbox#add
-      ~vadjustment:sbv#adjustment
-      ~hadjustment:sbh#adjustment
-      () in
+    GList.clist ~titles:res#get_fnames_lst ~shadow_type:`OUT ~packing:hbox#add
+      ~vadjustment:sbv#adjustment ~hadjustment:sbh#adjustment ()
+  in
 
   for tuple = 0 to res#ntuples - 1 do
     ignore (cl#append (res#get_tuple_lst tuple))
@@ -89,33 +91,43 @@ let main () =
         | Copy_both -> show_copy_out conn
         | Copy_in ->
             let name = file_dialog "Choose file to send" in
-            if name = "" then (conn # putline "\\.\n"; conn#endcopy)
-            else (
+            if name = "" then (
+              conn#putline "\\.\n";
+              conn#endcopy)
+            else
               let ic = open_in name in
               conn#copy_in_channel ic;
-              close_in ic)
+              close_in ic
         | Empty_query -> print "Empty query\n"
         | Command_ok -> print (sprintf "Command ok [%s]\n" res#cmd_status)
         | Bad_response ->
-            print (sprintf "Bad response : %s\n" res#error); conn#reset
+            print (sprintf "Bad response : %s\n" res#error);
+            conn#reset
         | Nonfatal_error -> print (sprintf "Non fatal error : %s\n" res#error)
         | Fatal_error -> print (sprintf "Fatal error : %s\n" res#error));
         dump_res ()
-    | None -> () in
+    | None -> ()
+  in
 
   let query () =
     let buf = text#buffer in
     let s = buf#get_text () in
-    print "-> "; print s; print "\n";
+    print "-> ";
+    print s;
+    print "\n";
     buf#delete ~start:buf#start_iter ~stop:buf#end_iter;
     conn#send_query s;
     dump_res ();
     print "======\n";
-    flush stdout in
+    flush stdout
+  in
 
   let key_press k =
-    if GdkEvent.Key.keyval k = GdkKeysyms._KP_Enter then (query (); true)
-    else false in
+    if GdkEvent.Key.keyval k = GdkKeysyms._KP_Enter then (
+      query ();
+      true)
+    else false
+  in
 
   let _ = text#event#connect#key_press ~callback:key_press in
   let button = GButton.button ~label:"Exec" ~packing:vbox#add () in
@@ -124,7 +136,8 @@ let main () =
   window#show ();
 
   let window =
-    GWindow.window ~title:"Backend notifications" ~width:300 ~height:150 () in
+    GWindow.window ~title:"Backend notifications" ~width:300 ~height:150 ()
+  in
 
   let _ = window#connect#destroy ~callback:Main.quit in
   let vbox = GPack.vbox ~border_width:5 ~packing:window#add () in
@@ -133,11 +146,9 @@ let main () =
 
   let clist =
     GList.clist
-      ~titles:["Backend PID"; "Notification"]
-      ~shadow_type:`OUT
-      ~packing:hbox#add
-      ~vadjustment:sb#adjustment
-      () in
+      ~titles:[ "Backend PID"; "Notification" ]
+      ~shadow_type:`OUT ~packing:hbox#add ~vadjustment:sb#adjustment ()
+  in
 
   let hbox = GPack.hbox ~packing:vbox#pack () in
   let button_clear = GButton.button ~label:"Clear" ~packing:hbox#add () in
@@ -148,14 +159,18 @@ let main () =
   let rec dump_notification () =
     match conn#notifies with
     | Some { Notification.name; pid; extra } ->
-        let _ = clist#append [string_of_int pid; name; extra] in
+        let _ = clist#append [ string_of_int pid; name; extra ] in
         window#show ();
         dump_notification ()
-    | None -> () in
+    | None -> ()
+  in
 
   let _ =
-    Timeout.add ~ms:100
-      ~callback:(fun () -> conn#consume_input; dump_notification (); true) in
+    Timeout.add ~ms:100 ~callback:(fun () ->
+        conn#consume_input;
+        dump_notification ();
+        true)
+  in
 
   Main.main ()
 

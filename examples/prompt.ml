@@ -29,22 +29,35 @@ let print_res conn res =
       printf "%i tuples with %i fields\n" res#ntuples res#nfields;
       print_endline (String.concat ";" res#get_fnames_lst);
       for tuple = 0 to res#ntuples - 1 do
-        for field = 0 to res#nfields - 1  do
+        for field = 0 to res#nfields - 1 do
           printf "%s, " (res#getvalue tuple field)
         done;
         print_newline ()
       done
-  | Copy_out -> printf "Copy out:\n"; conn#copy_out print_endline
-  | Copy_in -> printf "Copy in, not handled!\n"; exit 1
-  | Bad_response -> printf "Bad response: %s\n" res#error; conn#reset
+  | Copy_out ->
+      printf "Copy out:\n";
+      conn#copy_out print_endline
+  | Copy_in ->
+      printf "Copy in, not handled!\n";
+      exit 1
+  | Bad_response ->
+      printf "Bad response: %s\n" res#error;
+      conn#reset
   | Nonfatal_error -> printf "Non fatal error: %s\n" res#error
   | Fatal_error -> printf "Fatal error: %s\n" res#error
-  | Copy_both -> printf "Copy in/out, not handled!\n"; exit 1
-  | Single_tuple -> printf "Single tuple, not handled!\n"; exit 1
+  | Copy_both ->
+      printf "Copy in/out, not handled!\n";
+      exit 1
+  | Single_tuple ->
+      printf "Single tuple, not handled!\n";
+      exit 1
 
 let rec dump_res conn =
   match conn#get_result with
-  | Some res -> print_res conn res; flush stdout; dump_res conn
+  | Some res ->
+      print_res conn res;
+      flush stdout;
+      dump_res conn
   | None -> ()
 
 let rec dump_notification conn =
@@ -59,7 +72,7 @@ let listener conn =
   try
     while true do
       let socket : Unix.file_descr = Obj.magic conn#socket in
-      let _ = Unix.select [socket] [] [] 1. in
+      let _ = Unix.select [ socket ] [] [] 1. in
       conn#consume_input;
       dump_notification conn
     done
@@ -68,8 +81,7 @@ let listener conn =
   | e -> prerr_endline (Printexc.to_string e)
 
 let main () =
-  if Obj.is_block (Obj.repr Unix.stdin) then
-    failwith "cannot run on Windows";
+  if Obj.is_block (Obj.repr Unix.stdin) then failwith "cannot run on Windows";
   let conn = new connection ~conninfo () in
   print_conn_info conn;
   flush stdout;

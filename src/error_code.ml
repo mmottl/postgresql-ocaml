@@ -1,28 +1,23 @@
-(*
-   PostgreSQL-OCAML - OCaml-interface to the PostgreSQL database
+(* PostgreSQL-OCAML - OCaml-interface to the PostgreSQL database
 
-   Copyright (C) 2017  Sean Grove
-   email: sean@bushi.do
-   WWW:   http://www.riseos.com
+   Copyright (C) 2017 Sean Grove email: sean@bushi.do WWW: http://www.riseos.com
 
-   Copyright (C) 2017-  Markus Mottl
-   email: markus.mottl@gmail.com
-   WWW:   http://www.ocaml.info
+   Copyright (C) 2017- Markus Mottl email: markus.mottl@gmail.com WWW:
+   http://www.ocaml.info
 
-   This library is free software; you can redistribute it and/or
-   modify it under the terms of the GNU Lesser General Public
-   License as published by the Free Software Foundation; either
-   version 2.1 of the License, or (at your option) any later version.
+   This library is free software; you can redistribute it and/or modify it under
+   the terms of the GNU Lesser General Public License as published by the Free
+   Software Foundation; either version 2.1 of the License, or (at your option)
+   any later version.
 
-   This library is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   Lesser General Public License for more details.
+   This library is distributed in the hope that it will be useful, but WITHOUT
+   ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+   FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+   details.
 
-   You should have received a copy of the GNU Lesser General Public
-   License along with this library; if not, write to the Free Software
-   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
-*)
+   You should have received a copy of the GNU Lesser General Public License
+   along with this library; if not, write to the Free Software Foundation, Inc.,
+   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA *)
 
 type t =
   | ACTIVE_SQL_TRANSACTION
@@ -357,8 +352,7 @@ let to_string = function
   | GROUPING_ERROR -> "GROUPING_ERROR"
   | HELD_CURSOR_REQUIRES_SAME_ISOLATION_LEVEL ->
       "HELD_CURSOR_REQUIRES_SAME_ISOLATION_LEVEL"
-  | IDLE_IN_TRANSACTION_SESSION_TIMEOUT ->
-      "IDLE_IN_TRANSACTION_SESSION_TIMEOUT"
+  | IDLE_IN_TRANSACTION_SESSION_TIMEOUT -> "IDLE_IN_TRANSACTION_SESSION_TIMEOUT"
   | IMPLICIT_ZERO_BIT_PADDING -> "IMPLICIT_ZERO_BIT_PADDING"
   | INAPPROPRIATE_ACCESS_MODE_FOR_BRANCH_TRANSACTION ->
       "INAPPROPRIATE_ACCESS_MODE_FOR_BRANCH_TRANSACTION"

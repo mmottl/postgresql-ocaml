@@ -1,0 +1,35 @@
+name: Main workflow
+
+on:
+  - pull_request
+  - push
+  - workflow_dispatch
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            ocaml-compiler: 5.2.0
+          - os: macos-latest
+            ocaml-compiler: 5.2.0
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Use OCaml ${{ matrix.ocaml-compiler }}
+        uses: ocaml/setup-ocaml@v2
+        with:
+          ocaml-compiler: ${{ matrix.ocaml-compiler }}
+
+      - run: opam install -t --deps-only .
+
+      - run: opam exec -- make
+
+      - run: opam exec -- make -C test
+# vim: filetype=yaml

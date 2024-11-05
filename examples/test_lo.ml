@@ -11,13 +11,13 @@ let conninfo = Sys.argv.(1)
 
 let main () =
   let c = new connection ~conninfo () in
-  let _ = c#exec ~expect:[Command_ok] "begin" in
+  let _ = c#exec ~expect:[ Command_ok ] "begin" in
   let oid = c#lo_creat in
   let lo = c#lo_open oid in
   c#lo_write "Hello world !\n" lo;
   c#lo_close lo;
   c#lo_export oid "/dev/stdout";
-  let _ = c#exec ~expect:[Command_ok] "end" in
+  let _ = c#exec ~expect:[ Command_ok ] "end" in
   c#finish
 
 let _ =
