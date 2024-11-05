@@ -212,7 +212,8 @@ val invalid_oid : oid
 
 val null : string
 (** [null] can be used as an element of the optional argument [parameters]
-    passed to the [exec] or [send_query] method to indicate a NULL value. *)
+    passed to the [exec] or [send_query] method to indicate a NULL value. It is
+    an empty string, but not physically equal to [""]. *)
 
 (** Class type of query results.
 

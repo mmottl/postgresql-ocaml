@@ -238,7 +238,7 @@ let ftype_of_string = function
 
 external init : unit -> unit = "PQocaml_init"
 
-let null = ""
+let null = String.make 0 '\000'
 
 let () =
   Callback.register_exception "Postgresql.Oid" (Oid invalid_oid);
