@@ -1,105 +1,113 @@
-### 5.0.0 (2021-02-12)
+## 5.1.0 (2024-11-04)
 
-  * Added support for parameter types to `exec`, `prepare`, `send_query`,
-    and `send_prepare`.
+- Made Postgresql.null a now unique, empty string.
 
-    Thanks to Petter A. Urkedal for the patch!
+- Fixed license format and a typo.
 
+- Fixed some odoc references.
 
-### 4.6.3 (2020-08-15)
+- Added GitHub workflows.
 
-  * Removed incorrect `[@@noalloc]` from `is_busy` external call.
+- Added automatic formatting with ocamlformat and clang-format.
 
-    Thanks to Dmitry Astapov for this patch!
+- Ported the config discovery script to pkg-config
 
+  Thanks to Antonio Nuno Monteiro for the patch.
 
-### 4.6.2 (2020-08-04)
+- Improved Dune rules.
 
-  * Removed `base` and `stdio` build dependencies.
+- Used new OCaml 4.12 C-macros.
 
+- Switched to Dune lang 2.7.
 
-### 4.6.1 (2020-07-29)
+## 5.0.0 (2021-02-12)
 
-  * Fixed a bug in `request_cancel` that turned errors into success and
-    success into an error.  Thanks to Dmitry Astapov for this patch!
+- Added support for parameter types to `exec`, `prepare`, `send_query`,
+  and `send_prepare`.
 
-  * Added support for const char strings in stubs due to stricter handling
-    in newer OCaml runtimes.  This eliminates C-compiler warnings.
+  Thanks to Petter A. Urkedal for the patch.
 
+## 4.6.3 (2020-08-15)
 
-### 4.6.0 (2020-05-22)
+- Removed incorrect `[@@noalloc]` from `is_busy` external call.
 
-  * Fixed missing runtime release during calls to PQisBusy.
+  Thanks to Dmitry Astapov for this patch.
 
-  * Added a temporary workaround for dealing with notice processing and
-    asynchronous operations.
+## 4.6.2 (2020-08-04)
 
-    Thanks to Petter A. Urkedal for the patch!
+- Removed `base` and `stdio` build dependencies.
 
+## 4.6.1 (2020-07-29)
 
-### 4.5.2 (2019-10-28)
+- Fixed a bug in `request_cancel` that turned errors into success and
+  success into an error. Thanks to Dmitry Astapov for this patch.
 
-  * Switched from `caml_alloc_custom` to `caml_alloc_custom_mem`.
+- Added support for const char strings in stubs due to stricter handling
+  in newer OCaml runtimes. This eliminates C-compiler warnings.
 
-    This should improve memory usage and GC performance.
+## 4.6.0 (2020-05-22)
 
-  * Switched to OPAM file generation via `dune-project`
+- Fixed missing runtime release during calls to PQisBusy.
 
+- Added a temporary workaround for dealing with notice processing and
+  asynchronous operations.
 
-### 4.5.1 (2019-10-11)
+  Thanks to Petter A. Urkedal for the patch.
 
-  * Fixed warnings in C-stubs
+## 4.5.2 (2019-10-28)
 
-  * Support detection of release candidate version numbers
+- Switched from `caml_alloc_custom` to `caml_alloc_custom_mem`.
 
+  This should improve memory usage and GC performance.
 
-### 4.5.0 (2019-06-06)
+- Switched to OPAM file generation via `dune-project`
 
-  * Added support for `put_copy_data`, `put_copy_end`, and `get_copy_data`
+## 4.5.1 (2019-10-11)
 
-  Thanks to Petter A. Urkedal for the patch!
+- Fixed warnings in C-stubs
 
+- Support detection of release candidate version numbers
 
-### 4.4.2 (2019-03-28)
+## 4.5.0 (2019-06-06)
 
-  * Fixed documentation formatting warnings
+- Added support for `put_copy_data`, `put_copy_end`, and `get_copy_data`
 
-  * Fixed OpenSUSE depexts
+Thanks to Petter A. Urkedal for the patch.
 
+## 4.4.2 (2019-03-28)
 
-### 4.4.1 (2018-10-25)
+- Fixed documentation formatting warnings
 
-  * Switched to dune, dune-release, and OPAM 2.0
+- Fixed OpenSUSE depexts
 
+## 4.4.1 (2018-10-25)
 
-### 4.4.0 (2018-07-08)
+- Switched to dune, dune-release, and OPAM 2.0
 
-  * Added support for executing queries with binary results.
+## 4.4.0 (2018-07-08)
 
-    Thanks to Paul Biggar for the patch!
+- Added support for executing queries with binary results.
 
+  Thanks to Paul Biggar for the patch.
 
-### 4.3.0 (2017-12-30)
+## 4.3.0 (2017-12-30)
 
-  * Added error handling functions for extracting more error details.
+- Added error handling functions for extracting more error details.
 
-    Thanks to Sean Grove for the patches!
+  Thanks to Sean Grove for the patches.
 
+## 4.2.1 (2017-11-22)
 
-### 4.2.1 (2017-11-22)
+- Improved finalization of result values for better performance.
 
-  * Improved finalization of result values for better performance.
+## 4.2.0 (2017-10-10)
 
+- Fixed bigarray library dependencies. No need for the user to explicitly
+  link with `bigarray` when using certain functions anymore.
 
-### 4.2.0 (2017-10-10)
+- Used untagged integer representations in external calls for improved
+  efficiency.
 
-  * Fixed bigarray library dependencies.  No need for the user to explicitly
-    link with `bigarray` when using certain functions anymore.
+## 4.1.0 (2017-08-02)
 
-  * Used untagged integer representations in external calls for improved
-    efficiency.
-
-
-### 4.1.0 (2017-08-02)
-
-  * Switched to jbuilder and topkg
+- Switched to jbuilder and topkg
