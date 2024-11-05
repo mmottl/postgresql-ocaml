@@ -116,7 +116,8 @@ type result_status =
   | Nonfatal_error
   | Fatal_error
   | Copy_both
-  | Single_tuple  (** One tuple of a result set ({!set_single_row_mode}) *)
+  | Single_tuple
+      (** One tuple of a result set ({!connection.set_single_row_mode}) *)
 
 (** Result of put_copy_data and put_copy_end *)
 type put_copy_result =
@@ -482,7 +483,8 @@ val conndefaults : unit -> conninfo_option array
 
     @param startonly
       If true, initiate a non-blocking connect procedure, which involves
-      cooperative calls to {!connect_poll} before the connection is usable.
+      cooperative calls to {!connection.connect_poll} before the connection is
+      usable.
 
     @raise Error if there is a connection failure. *)
 class connection :
@@ -545,8 +547,9 @@ object
 
       {e Warning:} This function is unsafe in combination with a number of libpq
       entry points, and should not be used for now. As a workaround,
-      {!#set_notice_processing} can be used to silence notices, if this is more
-      appropriate than the default behaviour of printing them to standard error.
+      {!connection.set_notice_processing} can be used to silence notices, if
+      this is more appropriate than the default behaviour of printing them to
+      standard error.
 
       @raise Error if there is a connection error. *)
 
@@ -696,15 +699,15 @@ object
   method describe_prepared : string -> result
   (** [#describe_prepared stm_name] submits a request to obtain information
       about the specified prepared statement, and waits for completion.
-      {!describe_prepared} allows an application to obtain information about a
-      previously prepared statement. The [stm_name] parameter can be the empty
-      string ("") to reference the unnamed statement, otherwise it must be the
-      name of an existing prepared statement. On success, a {!result} with
-      status [Command_ok] is returned. The methods {!result.nparams} and
-      {!result.paramtype} of the class [result] can be used to obtain
-      information about the parameters of the prepared statement, and the
-      methods {!result.nfields}, {!result.fname} and {!result.ftype} provide
-      information about the result columns (if any) of the statement.
+      {!connection.describe_prepared} allows an application to obtain
+      information about a previously prepared statement. The [stm_name]
+      parameter can be the empty string ("") to reference the unnamed statement,
+      otherwise it must be the name of an existing prepared statement. On
+      success, a {!result} with status [Command_ok] is returned. The methods
+      {!result.nparams} and {!result.paramtype} of the class [result] can be
+      used to obtain information about the parameters of the prepared statement,
+      and the methods {!result.nfields}, {!result.fname} and {!result.ftype}
+      provide information about the result columns (if any) of the statement.
 
       To prepare a statement use the SQL command PREPARE.
 
@@ -741,16 +744,18 @@ object
 
   method send_prepare : ?param_types:oid array -> string -> string -> unit
   (** [#send_prepare ?param_types stm_name query] sends a query preparation
-      without waiting for the result. This does the same as {!prepare} except
-      that the status is reported by {!get_result} when available.
+      without waiting for the result. This does the same as
+      {!connection.prepare} except that the status is reported by
+      {!connection.get_result} when available.
 
       @raise Error if there is a connection error. *)
 
   method send_query_prepared :
     ?params:string array -> ?binary_params:bool array -> string -> unit
   (** [#send_query_prepared ?params ?binary_params stm_name] is an asynchronous
-      version of {!query_prepared}. The semantics is otherwise the same, and the
-      result is reported by {!get_result} when available.
+      version of {!connection.exec_prepared}. The semantics is otherwise the
+      same, and the result is reported by {!connection.get_result} when
+      available.
 
       @param params default = [||]
       @param binary_params default = [||]
@@ -760,20 +765,22 @@ object
   method send_describe_prepared : string -> unit
   (** [#send_describe_prepared stm_name] sends a request for a description of a
       prepared query without waiting for the result. The result must be fetched
-      with {!get_result} when it becomes available. Otherwise it does the same
-      as {!describe_prepared}.
+      with {!connection.get_result} when it becomes available. Otherwise it does
+      the same as {!connection.describe_prepared}.
 
       @raise Error if there is a connection error. *)
 
   method send_describe_portal : string -> unit
   (** [#send_describe_portal portal_name] sends a request for a description of
-      the named portal. The result must be fetched with {!get_result}.
+      the named portal. The result must be fetched with
+      {!connection.get_result}.
 
       @raise Error if there is a connection error. *)
 
   method set_single_row_mode : unit
-  (** [#set_single_row_mode] called right after {!send_query} or a sibling
-      function causes the returned rows to be split into individual results. *)
+  (** [#set_single_row_mode] called right after {!connection.send_query} or a
+      sibling function causes the returned rows to be split into individual
+      results. *)
 
   method get_result : result option
   (** [get_result]
@@ -802,7 +809,7 @@ object
       connection in [Command_ok] or failed state. In non-blocking mode, returns
       {!Put_copy_not_queued} if the termination message was not queued due to
       full buffers. Also, to ensure delivery of data in non-blocking mode,
-      repeatedly wait for write-ready an call {!#flush}.
+      repeatedly wait for write-ready an call {!connection.flush}.
 
       @param error_msg
         if set, force the copy operation to fail with the given message. *)
@@ -812,7 +819,8 @@ object
       Only single complete rows are returned. In synchronous mode, the call will
       wait for completion of the next row. In asynchronous mode it will return
       immediately with [Get_copy_wait] if the row transfer is incomplete. In
-      that case, wait for read-ready and call {!#consume_input} before retrying.
+      that case, wait for read-ready and call {!connection.consume_input} before
+      retrying.
 
       @param async default = false *)
 
@@ -884,11 +892,12 @@ object
   (** Asynchronous operations and non blocking mode *)
 
   method connect_poll : polling_status
-  (** After creating a connection with [~startonly:true], {!connect_poll} must
-      be called a number of times before the connection can be used. The precise
-      procedure is described in the libpq manual, but the following code should
-      capture the idea, assuming monadic concurrency primitives [return] and
-      [>>=] along with polling functions [wait_for_read] and [wait_for_write]:
+  (** After creating a connection with [~startonly:true],
+      {!connection.connect_poll} must be called a number of times before the
+      connection can be used. The precise procedure is described in the libpq
+      manual, but the following code should capture the idea, assuming monadic
+      concurrency primitives [return] and [>>=] along with polling functions
+      [wait_for_read] and [wait_for_write]:
       {[
         let my_async_connect () =
           let c = new connection () in
@@ -906,11 +915,12 @@ object
       See also [examples/async.ml]. *)
 
   method reset_start : bool
-  (** An asynchronous variant of {!reset}. Use {!reset_poll} to finish
-      re-establishing the connection. *)
+  (** An asynchronous variant of {!connection.reset}. Use
+      {!connection.reset_poll} to finish re-establishing the connection. *)
 
   method reset_poll : polling_status
-  (** Used analogously to {!connect_poll} after calling {!reset_start}. *)
+  (** Used analogously to {!connection.connect_poll} after calling
+      {!connection.reset_start}. *)
 
   method set_nonblocking : bool -> unit
   (** [set_nonblocking b] sets state of the connection to nonblocking if [b] is
