@@ -14,7 +14,7 @@ requirements listed in clause 6 of the GNU Lesser General Public License.
 By "a publicly distributed version of the Library", we mean either the
 unmodified Library as distributed by the authors, or a modified version
 of the Library that is distributed under the conditions defined in clause
-3 of the GNU Lesser General Public License.  This exception does not
+2 of the GNU Lesser General Public License.  This exception does not
 however invalidate any other reasons why the executable file might be
 covered by the GNU Lesser General Public License.
 
@@ -26,7 +26,7 @@ Version 2.1, February 1999
 
     Copyright (C) 1991, 1999 Free Software Foundation, Inc.
     51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
-    
+
     Everyone is permitted to copy and distribute verbatim copies
     of this license document, but changing it is not allowed.
 
