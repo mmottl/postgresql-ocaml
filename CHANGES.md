@@ -1,3 +1,7 @@
+## 5.1.1 (2024-11-26)
+
+- Fixed a rare, architecture-specific GC bug in `lo_seek`.
+
 ## 5.1.0 (2024-11-04)
 
 - Made Postgresql.null a now unique, empty string.
