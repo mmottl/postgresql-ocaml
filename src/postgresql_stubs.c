@@ -1583,7 +1583,6 @@ CAMLprim intnat lo_lseek_stub(value v_conn, intnat fd, intnat pos,
   PGconn *conn = get_conn(v_conn);
   intnat res;
   int whence;
-  caml_enter_blocking_section();
   switch (Int_val(v_whence)) {
   case 0:
     whence = SEEK_SET;
@@ -1595,6 +1594,7 @@ CAMLprim intnat lo_lseek_stub(value v_conn, intnat fd, intnat pos,
     whence = SEEK_END;
     break;
   }
+  caml_enter_blocking_section();
   res = lo_lseek(conn, fd, pos, whence);
   caml_leave_blocking_section();
   CAMLreturn(res);
