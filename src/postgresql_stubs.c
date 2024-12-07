@@ -382,19 +382,24 @@ static inline value make_string(const char *s) {
     return Val_int(fun##_stub(v_conn));                                        \
   }
 
-conn_info(PQconnectPoll, Val_int) conn_info(PQresetStart, Val_bool)
-    conn_info(PQresetPoll, Val_int) conn_info(PQdb, make_string)
-        conn_info(PQuser, make_string) conn_info(PQpass, make_string)
-            conn_info(PQhost, make_string) conn_info(PQport, make_string)
-                conn_info(PQtty, make_string) conn_info(PQoptions, make_string)
-                    noalloc_conn_info(PQstatus, Val_int)
-                        conn_info(PQerrorMessage, make_string)
-                            noalloc_conn_info_intnat(PQbackendPID)
-                                noalloc_conn_info_intnat(PQserverVersion)
+conn_info(PQconnectPoll, Val_int);
+conn_info(PQresetStart, Val_bool);
+conn_info(PQresetPoll, Val_int);
+conn_info(PQdb, make_string);
+conn_info(PQuser, make_string);
+conn_info(PQpass, make_string);
+conn_info(PQhost, make_string);
+conn_info(PQport, make_string);
+conn_info(PQtty, make_string);
+conn_info(PQoptions, make_string);
+noalloc_conn_info(PQstatus, Val_int);
+conn_info(PQerrorMessage, make_string);
+noalloc_conn_info_intnat(PQbackendPID);
+noalloc_conn_info_intnat(PQserverVersion);
 
-    /* Command Execution Functions */
+/* Command Execution Functions */
 
-    struct pg_ocaml_result {
+struct pg_ocaml_result {
   PGresult *res;
   np_callback *cb;
 };
@@ -735,26 +740,26 @@ CAMLprim value PQdescribePrepared_stub(value __unused v_conn,
 #endif
 }
 
-noalloc_res_info(PQresultStatus, Val_int)
+noalloc_res_info(PQresultStatus, Val_int);
 
-    CAMLprim value PQresStatus_stub(value v_status) {
+CAMLprim value PQresStatus_stub(value v_status) {
   return make_string(PQresStatus(Int_val(v_status)));
 }
 
-res_info(PQresultErrorMessage, make_string) noalloc_res_info_intnat(PQntuples)
-    noalloc_res_info_intnat(PQnfields)
-        noalloc_res_info(PQbinaryTuples, Val_bool)
-            fieldnum_info(PQfname, make_string)
+res_info(PQresultErrorMessage, make_string);
+noalloc_res_info_intnat(PQntuples);
+noalloc_res_info_intnat(PQnfields);
+noalloc_res_info(PQbinaryTuples, Val_bool);
+fieldnum_info(PQfname, make_string);
 
-                CAMLprim value
-    PQresultErrorField_stub(value v_res, value v_field_name) {
+CAMLprim value PQresultErrorField_stub(value v_res, value v_field_name) {
   CAMLparam1(v_res);
   int field_code = error_field_tbl[Int_val(v_field_name)];
   CAMLreturn(make_string(PQresultErrorField(get_res(v_res), field_code)));
 }
 
 #ifdef PG_OCAML_8_2
-noalloc_res_info_intnat(PQnparams)
+noalloc_res_info_intnat(PQnparams);
 #else
 CAMLprim intnat PQnparams_stub(value __unused v_res) {
   caml_failwith("Postgresql.nparams: not supported");
@@ -765,7 +770,7 @@ CAMLprim value PQnparams_stub_bc(value __unused v_res) {
 }
 #endif
 
-    CAMLprim intnat PQfnumber_stub(value v_res, value v_field_name) {
+CAMLprim intnat PQfnumber_stub(value v_res, value v_field_name) {
   return PQfnumber(get_res(v_res), String_val(v_field_name));
 }
 
@@ -773,14 +778,16 @@ CAMLprim value PQfnumber_stub_bc(value v_res, value v_field_name) {
   return Val_int(PQfnumber_stub(v_res, v_field_name));
 }
 
-noalloc_fieldnum_info(PQfformat, Val_int) noalloc_fieldnum_info_intnat(PQftype)
-    noalloc_fieldnum_info_intnat(PQfmod) noalloc_fieldnum_info_intnat(PQfsize)
+noalloc_fieldnum_info(PQfformat, Val_int);
+noalloc_fieldnum_info_intnat(PQftype);
+noalloc_fieldnum_info_intnat(PQfmod);
+noalloc_fieldnum_info_intnat(PQfsize);
 
 #ifdef PG_OCAML_8_2
-        noalloc_fieldnum_info_intnat(PQparamtype)
+noalloc_fieldnum_info_intnat(PQparamtype);
 #else
-        CAMLprim intnat
-    PQparamtype_stub(value __unused v_res, intnat __unused field_num) {
+CAMLprim intnat PQparamtype_stub(value __unused v_res,
+                                 intnat __unused field_num) {
   caml_failwith("Postgresql.paramtype: not supported");
 }
 
@@ -789,8 +796,7 @@ CAMLprim value PQparamtype_stub_bc(value v_res, value v_field_num) {
 }
 #endif
 
-            CAMLprim value
-    PQgetvalue_stub(value v_res, intnat tup_num, intnat field_num) {
+CAMLprim value PQgetvalue_stub(value v_res, intnat tup_num, intnat field_num) {
   CAMLparam1(v_res);
   value v_str;
   PGresult *res = get_res(v_res);
@@ -914,13 +920,14 @@ CAMLprim value PQgetescval_stub_bc(value v_res, value v_tup_num,
   return PQgetescval_stub(v_res, Int_val(v_tup_num), Int_val(v_field_num));
 }
 
-noalloc_field_info(PQgetisnull, Val_bool) noalloc_field_info_intnat(PQgetlength)
+noalloc_field_info(PQgetisnull, Val_bool);
+noalloc_field_info_intnat(PQgetlength);
 
-    res_info(PQcmdStatus, make_string) res_info(PQcmdTuples, make_string)
-        noalloc_res_info_intnat(PQoidValue)
+res_info(PQcmdStatus, make_string);
+res_info(PQcmdTuples, make_string);
+noalloc_res_info_intnat(PQoidValue);
 
-            CAMLprim value
-    PQmakeEmptyPGresult_stub(value v_conn, value v_status) {
+CAMLprim value PQmakeEmptyPGresult_stub(value v_conn, value v_status) {
   CAMLparam1(v_conn);
   value v_res =
       alloc_result(PQmakeEmptyPGresult(get_conn(v_conn), Int_val(v_status)),
@@ -938,11 +945,11 @@ CAMLprim value PQsetnonblocking_stub_bc(value v_conn, value v_arg) {
   return Val_int(PQsetnonblocking_stub(v_conn, v_arg));
 }
 
-noalloc_conn_info(PQisnonblocking, Val_bool)
+noalloc_conn_info(PQisnonblocking, Val_bool);
 
-    CAMLprim intnat
-    PQsendQueryParams_stub(value v_conn, value v_query, value v_param_types,
-                           value v_params, value v_binary_params) {
+CAMLprim intnat PQsendQueryParams_stub(value v_conn, value v_query,
+                                       value v_param_types, value v_params,
+                                       value v_binary_params) {
   PGconn *conn = get_conn(v_conn);
   const char *query = String_val(v_query);
   size_t nparams = Wosize_val(v_params);
@@ -1049,7 +1056,7 @@ CAMLprim value PQsendDescribePortal_stub_bc(value v_conn, value v_portal_name) {
 }
 
 #ifdef PG_OCAML_9_2
-noalloc_conn_info_intnat(PQsetSingleRowMode)
+noalloc_conn_info_intnat(PQsetSingleRowMode);
 #else
 CAMLprim intnat PQsetSingleRowMode_stub(value __unused conn) {
   caml_failwith("Postgresql.set_single_row_mode: not supported");
@@ -1060,7 +1067,7 @@ CAMLprim value PQsetSingleRowMode_stub_bc(value conn) {
 }
 #endif
 
-    CAMLprim value PQgetResult_stub(value v_conn) {
+CAMLprim value PQgetResult_stub(value v_conn) {
   CAMLparam1(v_conn);
   PGconn *conn = get_conn(v_conn);
   np_callback *np_cb = get_conn_cb(v_conn);
@@ -1071,11 +1078,11 @@ CAMLprim value PQsetSingleRowMode_stub_bc(value conn) {
   CAMLreturn(alloc_result(res, np_cb));
 }
 
-noalloc_conn_info_intnat(PQconsumeInput)
+noalloc_conn_info_intnat(PQconsumeInput);
+noalloc_conn_info_intnat(PQflush);
+noalloc_conn_info_intnat(PQsocket);
 
-    noalloc_conn_info_intnat(PQflush) noalloc_conn_info_intnat(PQsocket)
-
-        CAMLprim value PQisBusy_stub(value v_conn) {
+CAMLprim value PQisBusy_stub(value v_conn) {
   CAMLparam1(v_conn);
   PGconn *conn = get_conn(v_conn);
   bool res;
