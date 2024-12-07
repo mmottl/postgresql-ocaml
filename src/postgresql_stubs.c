@@ -366,36 +366,36 @@ static inline value make_string(const char *s) {
   return (s ? caml_copy_string(s) : v_empty_string);
 }
 
-#define conn_info(fun, ret)                                                    \
+#define CONN_INFO(fun, ret)                                                    \
   CAMLprim value fun##_stub(value v_conn) {                                    \
     CAMLparam1(v_conn);                                                        \
     CAMLreturn(ret(fun(get_conn(v_conn))));                                    \
   }
 
-#define noalloc_conn_info(fun, ret)                                            \
+#define NOALLOC_CONN_INFO(fun, ret)                                            \
   CAMLprim value fun##_stub(value v_conn) { return ret(fun(get_conn(v_conn))); }
 
-#define noalloc_conn_info_intnat(fun)                                          \
+#define NOALLOC_CONN_INFO_INTNAT(fun)                                          \
   CAMLprim intnat fun##_stub(value v_conn) { return fun(get_conn(v_conn)); }   \
                                                                                \
   CAMLprim value fun##_stub_bc(value v_conn) {                                 \
     return Val_int(fun##_stub(v_conn));                                        \
   }
 
-conn_info(PQconnectPoll, Val_int);
-conn_info(PQresetStart, Val_bool);
-conn_info(PQresetPoll, Val_int);
-conn_info(PQdb, make_string);
-conn_info(PQuser, make_string);
-conn_info(PQpass, make_string);
-conn_info(PQhost, make_string);
-conn_info(PQport, make_string);
-conn_info(PQtty, make_string);
-conn_info(PQoptions, make_string);
-noalloc_conn_info(PQstatus, Val_int);
-conn_info(PQerrorMessage, make_string);
-noalloc_conn_info_intnat(PQbackendPID);
-noalloc_conn_info_intnat(PQserverVersion);
+CONN_INFO(PQconnectPoll, Val_int)
+CONN_INFO(PQresetStart, Val_bool)
+CONN_INFO(PQresetPoll, Val_int)
+CONN_INFO(PQdb, make_string)
+CONN_INFO(PQuser, make_string)
+CONN_INFO(PQpass, make_string)
+CONN_INFO(PQhost, make_string)
+CONN_INFO(PQport, make_string)
+CONN_INFO(PQtty, make_string)
+CONN_INFO(PQoptions, make_string)
+NOALLOC_CONN_INFO(PQstatus, Val_int)
+CONN_INFO(PQerrorMessage, make_string)
+NOALLOC_CONN_INFO_INTNAT(PQbackendPID)
+NOALLOC_CONN_INFO_INTNAT(PQserverVersion)
 
 /* Command Execution Functions */
 
@@ -411,23 +411,23 @@ struct pg_ocaml_result {
 #define get_res_cb(v) PG_ocaml_result_val(v)->cb
 #define set_res_cb(v, callback) PG_ocaml_result_val(v)->cb = callback
 
-#define res_info(fun, ret)                                                     \
+#define RES_INFO(fun, ret)                                                     \
   CAMLprim value fun##_stub(value v_res) {                                     \
     CAMLparam1(v_res);                                                         \
     CAMLreturn(ret(fun(get_res(v_res))));                                      \
   }
 
-#define noalloc_res_info(fun, ret)                                             \
+#define NOALLOC_RES_INFO(fun, ret)                                             \
   CAMLprim value fun##_stub(value v_res) { return ret(fun(get_res(v_res))); }
 
-#define noalloc_res_info_intnat(fun)                                           \
+#define NOALLOC_RES_INFO_INTNAT(fun)                                           \
   CAMLprim intnat fun##_stub(value v_res) { return fun(get_res(v_res)); }      \
                                                                                \
   CAMLprim value fun##_stub_bc(value v_res) {                                  \
     return Val_int(fun##_stub(v_res));                                         \
   }
 
-#define fieldnum_info(fun, ret)                                                \
+#define FIELDNUM_INFO(fun, ret)                                                \
   CAMLprim value fun##_stub(value v_res, intnat field_num) {                   \
     CAMLparam1(v_res);                                                         \
     CAMLreturn(ret(fun(get_res(v_res), field_num)));                           \
@@ -437,7 +437,7 @@ struct pg_ocaml_result {
     return fun##_stub(v_res, Int_val(v_field_num));                            \
   }
 
-#define noalloc_fieldnum_info(fun, ret)                                        \
+#define NOALLOC_FIELDNUM_INFO(fun, ret)                                        \
   CAMLprim value fun##_stub(value v_res, intnat field_num) {                   \
     return ret(fun(get_res(v_res), field_num));                                \
   }                                                                            \
@@ -446,7 +446,7 @@ struct pg_ocaml_result {
     return fun##_stub(v_res, Int_val(v_field_num));                            \
   }
 
-#define noalloc_fieldnum_info_intnat(fun)                                      \
+#define NOALLOC_FIELDNUM_INFO_INTNAT(fun)                                      \
   CAMLprim intnat fun##_stub(value v_res, intnat field_num) {                  \
     return fun(get_res(v_res), field_num);                                     \
   }                                                                            \
@@ -455,14 +455,14 @@ struct pg_ocaml_result {
     return Val_int(fun##_stub(v_res, Int_val(v_field_num)));                   \
   }
 
-#define field_info(fun, ret)                                                   \
+#define FIELD_INFO(fun, ret)                                                   \
   CAMLprim value fun##_stub(value v_res, value v_tup_num, value v_field_num) { \
     CAMLparam1(v_res);                                                         \
     CAMLreturn(                                                                \
         ret(fun(get_res(v_res), Long_val(v_tup_num), Long_val(v_field_num)))); \
   }
 
-#define noalloc_field_info(fun, ret)                                           \
+#define NOALLOC_FIELD_INFO(fun, ret)                                           \
   CAMLprim value fun##_stub(value v_res, intnat tup_num, intnat field_num) {   \
     return ret(fun(get_res(v_res), tup_num, field_num));                       \
   }                                                                            \
@@ -472,7 +472,7 @@ struct pg_ocaml_result {
     return fun##_stub(v_res, Int_val(v_tup_num), Int_val(v_field_num));        \
   }
 
-#define noalloc_field_info_intnat(fun)                                         \
+#define NOALLOC_FIELD_INFO_INTNAT(fun)                                         \
   CAMLprim intnat fun##_stub(value v_res, intnat tup_num, intnat field_num) {  \
     return fun(get_res(v_res), tup_num, field_num);                            \
   }                                                                            \
@@ -740,17 +740,17 @@ CAMLprim value PQdescribePrepared_stub(value __unused v_conn,
 #endif
 }
 
-noalloc_res_info(PQresultStatus, Val_int);
+NOALLOC_RES_INFO(PQresultStatus, Val_int)
 
 CAMLprim value PQresStatus_stub(value v_status) {
   return make_string(PQresStatus(Int_val(v_status)));
 }
 
-res_info(PQresultErrorMessage, make_string);
-noalloc_res_info_intnat(PQntuples);
-noalloc_res_info_intnat(PQnfields);
-noalloc_res_info(PQbinaryTuples, Val_bool);
-fieldnum_info(PQfname, make_string);
+RES_INFO(PQresultErrorMessage, make_string)
+NOALLOC_RES_INFO_INTNAT(PQntuples)
+NOALLOC_RES_INFO_INTNAT(PQnfields)
+NOALLOC_RES_INFO(PQbinaryTuples, Val_bool)
+FIELDNUM_INFO(PQfname, make_string)
 
 CAMLprim value PQresultErrorField_stub(value v_res, value v_field_name) {
   CAMLparam1(v_res);
@@ -759,7 +759,7 @@ CAMLprim value PQresultErrorField_stub(value v_res, value v_field_name) {
 }
 
 #ifdef PG_OCAML_8_2
-noalloc_res_info_intnat(PQnparams);
+NOALLOC_RES_INFO_INTNAT(PQnparams)
 #else
 CAMLprim intnat PQnparams_stub(value __unused v_res) {
   caml_failwith("Postgresql.nparams: not supported");
@@ -778,13 +778,13 @@ CAMLprim value PQfnumber_stub_bc(value v_res, value v_field_name) {
   return Val_int(PQfnumber_stub(v_res, v_field_name));
 }
 
-noalloc_fieldnum_info(PQfformat, Val_int);
-noalloc_fieldnum_info_intnat(PQftype);
-noalloc_fieldnum_info_intnat(PQfmod);
-noalloc_fieldnum_info_intnat(PQfsize);
+NOALLOC_FIELDNUM_INFO(PQfformat, Val_int)
+NOALLOC_FIELDNUM_INFO_INTNAT(PQftype)
+NOALLOC_FIELDNUM_INFO_INTNAT(PQfmod)
+NOALLOC_FIELDNUM_INFO_INTNAT(PQfsize)
 
 #ifdef PG_OCAML_8_2
-noalloc_fieldnum_info_intnat(PQparamtype);
+NOALLOC_FIELDNUM_INFO_INTNAT(PQparamtype)
 #else
 CAMLprim intnat PQparamtype_stub(value __unused v_res,
                                  intnat __unused field_num) {
@@ -920,12 +920,12 @@ CAMLprim value PQgetescval_stub_bc(value v_res, value v_tup_num,
   return PQgetescval_stub(v_res, Int_val(v_tup_num), Int_val(v_field_num));
 }
 
-noalloc_field_info(PQgetisnull, Val_bool);
-noalloc_field_info_intnat(PQgetlength);
+NOALLOC_FIELD_INFO(PQgetisnull, Val_bool)
+NOALLOC_FIELD_INFO_INTNAT(PQgetlength)
 
-res_info(PQcmdStatus, make_string);
-res_info(PQcmdTuples, make_string);
-noalloc_res_info_intnat(PQoidValue);
+RES_INFO(PQcmdStatus, make_string)
+RES_INFO(PQcmdTuples, make_string)
+NOALLOC_RES_INFO_INTNAT(PQoidValue)
 
 CAMLprim value PQmakeEmptyPGresult_stub(value v_conn, value v_status) {
   CAMLparam1(v_conn);
@@ -945,7 +945,7 @@ CAMLprim value PQsetnonblocking_stub_bc(value v_conn, value v_arg) {
   return Val_int(PQsetnonblocking_stub(v_conn, v_arg));
 }
 
-noalloc_conn_info(PQisnonblocking, Val_bool);
+NOALLOC_CONN_INFO(PQisnonblocking, Val_bool)
 
 CAMLprim intnat PQsendQueryParams_stub(value v_conn, value v_query,
                                        value v_param_types, value v_params,
@@ -1056,7 +1056,7 @@ CAMLprim value PQsendDescribePortal_stub_bc(value v_conn, value v_portal_name) {
 }
 
 #ifdef PG_OCAML_9_2
-noalloc_conn_info_intnat(PQsetSingleRowMode);
+NOALLOC_CONN_INFO_INTNAT(PQsetSingleRowMode)
 #else
 CAMLprim intnat PQsetSingleRowMode_stub(value __unused conn) {
   caml_failwith("Postgresql.set_single_row_mode: not supported");
@@ -1078,9 +1078,9 @@ CAMLprim value PQgetResult_stub(value v_conn) {
   CAMLreturn(alloc_result(res, np_cb));
 }
 
-noalloc_conn_info_intnat(PQconsumeInput);
-noalloc_conn_info_intnat(PQflush);
-noalloc_conn_info_intnat(PQsocket);
+NOALLOC_CONN_INFO_INTNAT(PQconsumeInput)
+NOALLOC_CONN_INFO_INTNAT(PQflush)
+NOALLOC_CONN_INFO_INTNAT(PQsocket)
 
 CAMLprim value PQisBusy_stub(value v_conn) {
   CAMLparam1(v_conn);
