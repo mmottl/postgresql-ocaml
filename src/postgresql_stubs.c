@@ -1,13 +1,9 @@
 /*
    PostgreSQL-OCAML - OCaml-interface to the PostgreSQL database
 
-   Copyright (C) 2004-  Markus Mottl
-   email: markus.mottl@gmail.com
-   WWW:   http://www.ocaml.info
+   Copyright © 2004- Markus Mottl <markus.mottl@gmail.com>
 
-   Copyright (C) 2001  Alain Frisch  (version: postgres-20010808)
-   email: Alain.Frisch@ens.fr
-   WWW:   http://www.eleves.ens.fr/home/frisch
+   Copyright © 2001 Alain Frisch <Alain.Frisch@ens.fr>
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public

@@ -1,9 +1,8 @@
 (* PostgreSQL-OCAML - OCaml-interface to the PostgreSQL database
 
-   Copyright (C) 2017 Sean Grove email: sean@bushi.do WWW: http://www.riseos.com
+   Copyright © 2017 Sean Grove <sean@bushi.do>
 
-   Copyright (C) 2017- Markus Mottl email: markus.mottl@gmail.com WWW:
-   http://www.ocaml.info
+   Copyright © 2017- Markus Mottl <markus.mottl@gmail.com>
 
    This library is free software; you can redistribute it and/or modify it under
    the terms of the GNU Lesser General Public License as published by the Free
