@@ -27,6 +27,8 @@ jobs:
         with:
           ocaml-compiler: ${{ matrix.ocaml-compiler }}
 
+      - run: opam depext -y --install .
+
       - run: opam install -t --deps-only .
 
       - run: opam exec -- make
