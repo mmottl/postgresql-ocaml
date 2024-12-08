@@ -27,9 +27,11 @@ jobs:
         with:
           ocaml-compiler: ${{ matrix.ocaml-compiler }}
 
-      - run: opam depext -y --install .
+      - name: Install system dependencies
+        run: opam install --depext-only .
 
-      - run: opam install -t --deps-only .
+      - name: Install OPAM dependencies
+        run: opam install -t --deps-only .
 
       - run: opam exec -- make
 # vim: filetype=yaml
