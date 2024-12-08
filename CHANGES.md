@@ -1,3 +1,12 @@
+## 5.1.2 (2024-12-08)
+
+- Fixed version discovery with pkg-config.
+- Removed obsolete `base-bytes` dependency.
+- Switched to ocamlformat 0.27.0.
+- Fixed macro naming and instantiation formatting.
+- Fixed copyright notices.
+- Improved GitHub workflow.
+
 ## 5.1.1 (2024-11-26)
 
 - Fixed a rare, architecture-specific GC bug in `lo_seek`.
