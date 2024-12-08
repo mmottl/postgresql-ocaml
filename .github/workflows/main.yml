@@ -23,20 +23,14 @@ jobs:
       - name: Checkout tree
         uses: actions/checkout@v4
 
-      - name: Set-up OCaml
+      - name: Set-up OCaml ${{ matrix.ocaml-compiler }}
         uses: ocaml/setup-ocaml@v3
         with:
           ocaml-compiler: 5
 
-      - name: Install OS dependencies
-        run: opam install --depext-only .
+      - run: opam install . --deps-only --with-test
 
-      - name: Install OCaml dependencies
-        run: opam install . --deps-only --with-test
+      - run: opam exec -- dune build
 
-      - name: Build project
-        run: opam exec -- dune build
-
-      - name: Run tests
-        run: opam exec -- dune runtest
+      - run: opam exec -- dune runtest
 # vim: filetype=yaml
