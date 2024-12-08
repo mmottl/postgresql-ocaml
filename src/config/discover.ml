@@ -55,6 +55,18 @@ let major_minor_from_pgconfig () =
   in
   Fun.protect ~finally:(fun () -> close_in ic) (fun () -> pg_major_minor ic)
 
+let major_minor_from_pkg_config () =
+  let ic = Unix.open_process_in "pkg-config --modversion libpq" in
+  Fun.protect ~finally:(fun () -> close_in ic) @@ fun () ->
+  let version_line = input_line ic in
+  (* Typically something like "14.1" *)
+  match String.split_on_char '.' version_line with
+  | major :: minor :: _ ->
+      ("-DPG_OCAML_MAJOR_VERSION=" ^ major, "-DPG_OCAML_MINOR_VERSION=" ^ minor)
+  | _ ->
+      eprintf "Unable to parse libpq version: %s" version_line;
+      exit 1
+
 let from_pgconfig () =
   let cmd = "pg_config --includedir --libdir --version" in
   let ic =
@@ -81,7 +93,7 @@ let () =
         | Some pc -> (
             match C.Pkg_config.query pc ~package:"libpq" with
             | Some conf ->
-                let major, minor = major_minor_from_pgconfig () in
+                let major, minor = major_minor_from_pkg_config () in
                 {
                   conf with
                   C.Pkg_config.cflags = major :: minor :: conf.cflags;
