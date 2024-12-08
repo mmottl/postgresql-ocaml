@@ -1,37 +1,42 @@
-name: Main workflow
+name: Builds, tests & co
 
 on:
   - pull_request
   - push
   - workflow_dispatch
 
+permissions: read-all
+
 jobs:
   build:
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - os: ubuntu-latest
-            ocaml-compiler: 5.2.0
-          - os: macos-latest
-            ocaml-compiler: 5.2.0
+        os:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
 
     runs-on: ${{ matrix.os }}
 
     steps:
-      - name: Checkout code
+      - name: Checkout tree
         uses: actions/checkout@v4
 
-      - name: Use OCaml ${{ matrix.ocaml-compiler }}
-        uses: ocaml/setup-ocaml@v2
+      - name: Set-up OCaml
+        uses: ocaml/setup-ocaml@v3
         with:
-          ocaml-compiler: ${{ matrix.ocaml-compiler }}
+          ocaml-compiler: 5
 
-      - name: Install system dependencies
+      - name: Install OS dependencies
         run: opam install --depext-only .
 
-      - name: Install OPAM dependencies
-        run: opam install -t --deps-only .
+      - name: Install OCaml dependencies
+        run: opam install . --deps-only --with-test
 
-      - run: opam exec -- make
+      - name: Build project
+        run: opam exec -- dune build
+
+      - name: Run tests
+        run: opam exec -- dune runtest
 # vim: filetype=yaml
