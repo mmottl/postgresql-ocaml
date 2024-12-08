@@ -238,7 +238,8 @@ class type result = object
   (** [#error_code]
 
       @return
-        the error code of the error condition as stored in the SQLSTATE field. *)
+        the error code of the error condition as stored in the SQLSTATE field.
+  *)
 
   (** Retrieving SELECT Result Information *)
 
