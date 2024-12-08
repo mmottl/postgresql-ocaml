@@ -28,7 +28,9 @@ jobs:
           ocaml-compiler: 5
 
       - name: Set PKG_CONFIG_PATH for libpq (keg-only)
-        run: echo "PKG_CONFIG_PATH=/opt/homebrew/opt/libpq/lib/pkgconfig" >> $GITHUB_ENV
+        run: |
+          echo "PKG_CONFIG_PATH=/opt/homebrew/opt/libpq/lib/pkgconfig" \
+          >> $GITHUB_ENV
 
       - run: opam install . --deps-only --with-test
 
