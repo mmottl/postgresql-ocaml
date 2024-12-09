@@ -1,3 +1,9 @@
+## 5.1.3 (2024-12-08)
+
+- Fixed cross-compilation in discover process.
+
+  Thanks to Antonio Nuno Monteiro for the patch.
+
 ## 5.1.2 (2024-12-08)
 
 - Fixed version discovery with pkg-config.
