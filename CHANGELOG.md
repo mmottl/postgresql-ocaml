@@ -1,137 +1,174 @@
 # Changelog
 
-## 5.1.3 (2024-12-08)
+## [5.1.3] - 2024-12-08
 
-- Fixed cross-compilation in discover process.
+### Fixed
 
-  Thanks to Antonio Nuno Monteiro for the patch.
+- Cross-compilation in discover process. Thanks to Antonio Nuno Monteiro for
+  the patch.
 
-## 5.1.2 (2024-12-08)
+## [5.1.2] - 2024-12-08
 
-- Fixed version discovery with pkg-config.
-- Removed obsolete `base-bytes` dependency.
+### Fixed
+
+- Version discovery with pkg-config.
+- Macro naming and instantiation formatting.
+- Copyright notices.
+
+### Removed
+
+- Obsolete `base-bytes` dependency.
+
+### Changed
+
 - Switched to ocamlformat 0.27.0.
-- Fixed macro naming and instantiation formatting.
-- Fixed copyright notices.
 - Improved GitHub workflow.
 
-## 5.1.1 (2024-11-26)
+## [5.1.1] - 2024-11-26
 
-- Fixed a rare, architecture-specific GC bug in `lo_seek`.
+### Fixed
 
-## 5.1.0 (2024-11-04)
+- Rare, architecture-specific GC bug in `lo_seek`.
 
-- Made Postgresql.null a now unique, empty string.
+## [5.1.0] - 2024-11-04
 
-- Fixed license format and a typo.
+### Added
 
-- Fixed some odoc references.
+- GitHub workflows.
+- Automatic formatting with ocamlformat and clang-format.
 
-- Added GitHub workflows.
+### Fixed
 
-- Added automatic formatting with ocamlformat and clang-format.
+- License format and a typo.
+- Some odoc references.
 
-- Ported the config discovery script to pkg-config
+### Changed
 
-  Thanks to Antonio Nuno Monteiro for the patch.
-
+- Made `Postgresql.null` a now unique, empty string.
+- Ported the config discovery script to pkg-config. Thanks to Antonio Nuno
+  Monteiro for the patch.
 - Improved Dune rules.
-
 - Used new OCaml 4.12 C-macros.
-
 - Switched to Dune lang 2.7.
 
-## 5.0.0 (2021-02-12)
+## [5.0.0] - 2021-02-12
 
-- Added support for parameter types to `exec`, `prepare`, `send_query`,
-  and `send_prepare`.
+### Added
 
-  Thanks to Petter A. Urkedal for the patch.
+- Support for parameter types to `exec`, `prepare`, `send_query`, and
+  `send_prepare`. Thanks to Petter A. Urkedal for the patch.
 
-## 4.6.3 (2020-08-15)
+## [4.6.3] - 2020-08-15
 
-- Removed incorrect `[@@noalloc]` from `is_busy` external call.
+### Removed
 
-  Thanks to Dmitry Astapov for this patch.
+- Incorrect `[@@noalloc]` from `is_busy` external call. Thanks to Dmitry
+  Astapov for this patch.
 
-## 4.6.2 (2020-08-04)
+## [4.6.2] - 2020-08-04
 
-- Removed `base` and `stdio` build dependencies.
+### Removed
 
-## 4.6.1 (2020-07-29)
+- `base` and `stdio` build dependencies.
 
-- Fixed a bug in `request_cancel` that turned errors into success and
-  success into an error. Thanks to Dmitry Astapov for this patch.
+## [4.6.1] - 2020-07-29
 
-- Added support for const char strings in stubs due to stricter handling
-  in newer OCaml runtimes. This eliminates C-compiler warnings.
+### Fixed
 
-## 4.6.0 (2020-05-22)
+- Bug in `request_cancel` that turned errors into success and success into
+  an error. Thanks to Dmitry Astapov for this patch.
 
-- Fixed missing runtime release during calls to PQisBusy.
+### Added
 
-- Added a temporary workaround for dealing with notice processing and
-  asynchronous operations.
+- Support for const char strings in stubs due to stricter handling in newer
+  OCaml runtimes, eliminating C-compiler warnings.
 
-  Thanks to Petter A. Urkedal for the patch.
+## [4.6.0] - 2020-05-22
 
-## 4.5.2 (2019-10-28)
+### Fixed
 
-- Switched from `caml_alloc_custom` to `caml_alloc_custom_mem`.
+- Missing runtime release during calls to PQisBusy.
 
-  This should improve memory usage and GC performance.
+### Added
 
-- Switched to OPAM file generation via `dune-project`
+- Temporary workaround for dealing with notice processing and asynchronous
+  operations. Thanks to Petter A. Urkedal for the patch.
 
-## 4.5.1 (2019-10-11)
+## [4.5.2] - 2019-10-28
 
-- Fixed warnings in C-stubs
+### Changed
 
-- Support detection of release candidate version numbers
+- Switched from `caml_alloc_custom` to `caml_alloc_custom_mem` to improve
+  memory usage and GC performance.
+- Switched to OPAM file generation via `dune-project`.
 
-## 4.5.0 (2019-06-06)
+## [4.5.1] - 2019-10-11
 
-- Added support for `put_copy_data`, `put_copy_end`, and `get_copy_data`
+### Fixed
 
-Thanks to Petter A. Urkedal for the patch.
+- Warnings in C-stubs.
 
-## 4.4.2 (2019-03-28)
+### Added
 
-- Fixed documentation formatting warnings
+- Support detection of release candidate version numbers.
 
-- Fixed OpenSUSE depexts
+## [4.5.0] - 2019-06-06
 
-## 4.4.1 (2018-10-25)
+### Added
 
-- Switched to dune, dune-release, and OPAM 2.0
+- Support for `put_copy_data`, `put_copy_end`, and `get_copy_data`. Thanks
+  to Petter A. Urkedal for the patch.
 
-## 4.4.0 (2018-07-08)
+## [4.4.2] - 2019-03-28
 
-- Added support for executing queries with binary results.
+### Fixed
 
-  Thanks to Paul Biggar for the patch.
+- Documentation formatting warnings.
+- OpenSUSE depexts.
 
-## 4.3.0 (2017-12-30)
+## [4.4.1] - 2018-10-25
 
-- Added error handling functions for extracting more error details.
+### Changed
 
-  Thanks to Sean Grove for the patches.
+- Switched to dune, dune-release, and OPAM 2.0.
 
-## 4.2.1 (2017-11-22)
+## [4.4.0] - 2018-07-08
 
-- Improved finalization of result values for better performance.
+### Added
 
-## 4.2.0 (2017-10-10)
+- Support for executing queries with binary results. Thanks to Paul Biggar
+  for the patch.
 
-- Fixed bigarray library dependencies. No need for the user to explicitly
-  link with `bigarray` when using certain functions anymore.
+## [4.3.0] - 2017-12-30
+
+### Added
+
+- Error handling functions for extracting more error details. Thanks to
+  Sean Grove for the patches.
+
+## [4.2.1] - 2017-11-22
+
+### Improved
+
+- Finalization of result values for better performance.
+
+## [4.2.0] - 2017-10-10
+
+### Fixed
+
+- Bigarray library dependencies, eliminating the need for explicit linking
+  with `bigarray`.
+
+### Changed
 
 - Used untagged integer representations in external calls for improved
   efficiency.
 
-## 4.1.0 (2017-08-02)
+## [4.1.0] - 2017-08-02
 
-- Switched to jbuilder and topkg
+### Changed
+
+- Switched to jbuilder and topkg.
 
 ## Changes Before Version 4.1.0
 
