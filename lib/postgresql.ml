@@ -491,9 +491,12 @@ module Stub = struct
   [@@noalloc]
 
   external send_query_prepared :
-    connection -> string -> string array -> bool array -> bool ->
-    (int[@untagged])
-    = "PQsendQueryPrepared_stub_bc" "PQsendQueryPrepared_stub"
+    connection ->
+    string ->
+    string array ->
+    bool array ->
+    bool ->
+    (int[@untagged]) = "PQsendQueryPrepared_stub_bc" "PQsendQueryPrepared_stub"
 
   external send_describe_prepared : connection -> string -> (int[@untagged])
     = "PQsendDescribePrepared_stub_bc" "PQsendDescribePrepared_stub"
@@ -1008,7 +1011,7 @@ class connection ?host ?hostaddr ?port ?dbname ?user ?password ?options ?tty
                 if Stub.result_isnull r then signal_error conn else r))
 
        method send_query ?(param_types = [||]) ?(params = [||])
-           ?(binary_params = [||]) ?(binary_result=false) query =
+           ?(binary_params = [||]) ?(binary_result = false) query =
          wrap_conn (fun conn ->
              if
                Stub.send_query_params conn query param_types params
@@ -1022,11 +1025,12 @@ class connection ?host ?hostaddr ?port ?dbname ?user ?password ?options ?tty
                signal_error conn)
 
        method send_query_prepared ?(params = [||]) ?(binary_params = [||])
-                ?(binary_result=false)
-           stm_name =
+           ?(binary_result = false) stm_name =
          wrap_conn (fun conn ->
-             if Stub.send_query_prepared conn stm_name params
-                  binary_params binary_result <> 1
+             if
+               Stub.send_query_prepared conn stm_name params binary_params
+                 binary_result
+               <> 1
              then signal_error conn)
 
        method send_describe_prepared stm_name =
