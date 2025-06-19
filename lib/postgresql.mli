@@ -722,6 +722,7 @@ object
     ?param_types:oid array ->
     ?params:string array ->
     ?binary_params:bool array ->
+    ?binary_result:bool ->
     string ->
     unit
   (** [send_query ?param_types ?params ?binary_params query] asynchronous
@@ -751,7 +752,11 @@ object
       @raise Error if there is a connection error. *)
 
   method send_query_prepared :
-    ?params:string array -> ?binary_params:bool array -> string -> unit
+    ?params:string array ->
+    ?binary_params:bool array ->
+    ?binary_result:bool ->
+    string ->
+    unit
   (** [#send_query_prepared ?params ?binary_params stm_name] is an asynchronous
       version of {!connection.exec_prepared}. The semantics is otherwise the
       same, and the result is reported by {!connection.get_result} when
