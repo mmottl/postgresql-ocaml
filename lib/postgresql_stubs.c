@@ -950,7 +950,7 @@ NOALLOC_CONN_INFO(PQisnonblocking, Val_bool)
 CAMLprim intnat PQsendQueryParams_stub(value v_conn, value v_query,
                                        value v_param_types, value v_params,
                                        value v_binary_params,
-				       value v_binary_result) {
+                                       value v_binary_result) {
   PGconn *conn = get_conn(v_conn);
   const char *query = String_val(v_query);
   size_t nparams = Wosize_val(v_params);
@@ -961,10 +961,10 @@ CAMLprim intnat PQsendQueryParams_stub(value v_conn, value v_query,
   intnat res;
   copy_binary_params(v_params, v_binary_params, nparams, &formats, &lengths);
   bool binary_result = Bool_val(v_binary_result);
-  res = (nparams == 0) ? PQsendQuery(conn, query)
-                       : PQsendQueryParams(conn, query, nparams, param_types,
-                                           params, lengths, formats,
-					   binary_result);
+  res = (nparams == 0)
+            ? PQsendQuery(conn, query)
+            : PQsendQueryParams(conn, query, nparams, param_types, params,
+                                lengths, formats, binary_result);
   if (param_types != NULL)
     caml_stat_free(param_types);
   free_binary_params(formats, lengths);
@@ -975,9 +975,10 @@ CAMLprim intnat PQsendQueryParams_stub(value v_conn, value v_query,
 CAMLprim value PQsendQueryParams_stub_bc(value v_conn, value v_query,
                                          value v_param_types, value v_params,
                                          value v_binary_params,
-					 value v_binary_result) {
+                                         value v_binary_result) {
   return Val_int(PQsendQueryParams_stub(v_conn, v_query, v_param_types,
-                                        v_params, v_binary_params, v_binary_result));
+                                        v_params, v_binary_params,
+                                        v_binary_result));
 }
 
 CAMLprim intnat PQsendPrepare_stub(value v_conn, value v_stm_name,
@@ -1000,9 +1001,8 @@ CAMLprim value PQsendPrepare_stub_bc(value v_conn, value v_stm_name,
 }
 
 CAMLprim intnat PQsendQueryPrepared_stub(value v_conn, value v_stm_name,
-                                         value v_params,
-                                         value v_binary_params,
-					 value v_binary_result) {
+                                         value v_params, value v_binary_params,
+                                         value v_binary_result) {
   PGconn *conn = get_conn(v_conn);
   const char *stm_name = String_val(v_stm_name);
   size_t nparams = Wosize_val(v_params);
@@ -1011,9 +1011,8 @@ CAMLprim intnat PQsendQueryPrepared_stub(value v_conn, value v_stm_name,
   intnat res;
   copy_binary_params(v_params, v_binary_params, nparams, &formats, &lengths);
   bool binary_result = Bool_val(v_binary_result);
-  res =
-      PQsendQueryPrepared(conn, stm_name, nparams, params, lengths,
-			  formats, binary_result);
+  res = PQsendQueryPrepared(conn, stm_name, nparams, params, lengths, formats,
+                            binary_result);
   free_binary_params(formats, lengths);
   free_params_shallow(params, nparams);
   return res;
@@ -1022,10 +1021,9 @@ CAMLprim intnat PQsendQueryPrepared_stub(value v_conn, value v_stm_name,
 CAMLprim value PQsendQueryPrepared_stub_bc(value v_conn, value v_stm_name,
                                            value v_params,
                                            value v_binary_params,
-					   value v_binary_result) {
-  return Val_int(
-      PQsendQueryPrepared_stub(v_conn, v_stm_name, v_params,
-			       v_binary_params, v_binary_result));
+                                           value v_binary_result) {
+  return Val_int(PQsendQueryPrepared_stub(v_conn, v_stm_name, v_params,
+                                          v_binary_params, v_binary_result));
 }
 
 #ifdef PG_OCAML_8_2
