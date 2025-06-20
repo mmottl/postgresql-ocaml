@@ -1,0 +1,46 @@
+---
+name: pre-commit
+
+on:
+  push:
+    branches:
+      - "master"
+  pull_request:
+
+jobs:
+  hooks:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Get the code
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Set up Python with built-in pip caching
+      - name: Set up Python
+        id: python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: "pip"
+
+      # Cache pre-commit’s virtual envs + hook repos
+      - name: Cache pre-commit envs
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pre-commit
+          key: >
+            ${{ format('pre-commit-{0}-{1}',
+            steps.python.outputs.python-version,
+            hashFiles('.pre-commit-config.yaml')) }}
+
+      # Install the tool itself
+      - name: Install pre-commit
+        run: |
+          pip install --upgrade pip pre-commit
+          pre-commit install
+
+      # Run all hooks not already handled by other workflows
+      - name: Run hooks
+        run: |
+          pre-commit run --all-files --show-diff-on-failure --color=always
