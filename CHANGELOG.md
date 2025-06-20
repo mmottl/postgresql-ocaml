@@ -1,11 +1,18 @@
 # Changelog
 
+## [5.2.0] - 2025-06-20
+
+### Added
+
+- `binary_result` to `send_query` and `send_query_prepared`. Thanks to
+  Christophe Raffalli for the contribution.
+
 ## [5.1.3] - 2024-12-08
 
 ### Fixed
 
-- Cross-compilation in discover process. Thanks to Antonio Nuno Monteiro for
-  the patch.
+- Cross-compilation in discover process. Thanks to Antonio Nuno Monteiro for the
+  patch.
 
 ## [5.1.2] - 2024-12-08
 
@@ -62,8 +69,8 @@
 
 ### Removed
 
-- Incorrect `[@@noalloc]` from `is_busy` external call. Thanks to Dmitry
-  Astapov for this patch.
+- Incorrect `[@@noalloc]` from `is_busy` external call. Thanks to Dmitry Astapov
+  for this patch.
 
 ## [4.6.2] - 2020-08-04
 
@@ -75,8 +82,8 @@
 
 ### Fixed
 
-- Bug in `request_cancel` that turned errors into success and success into
-  an error. Thanks to Dmitry Astapov for this patch.
+- Bug in `request_cancel` that turned errors into success and success into an
+  error. Thanks to Dmitry Astapov for this patch.
 
 ### Added
 
@@ -98,8 +105,8 @@
 
 ### Changed
 
-- Switched from `caml_alloc_custom` to `caml_alloc_custom_mem` to improve
-  memory usage and GC performance.
+- Switched from `caml_alloc_custom` to `caml_alloc_custom_mem` to improve memory
+  usage and GC performance.
 - Switched to OPAM file generation via `dune-project`.
 
 ## [4.5.1] - 2019-10-11
@@ -116,8 +123,8 @@
 
 ### Added
 
-- Support for `put_copy_data`, `put_copy_end`, and `get_copy_data`. Thanks
-  to Petter A. Urkedal for the patch.
+- Support for `put_copy_data`, `put_copy_end`, and `get_copy_data`. Thanks to
+  Petter A. Urkedal for the patch.
 
 ## [4.4.2] - 2019-03-28
 
@@ -136,15 +143,15 @@
 
 ### Added
 
-- Support for executing queries with binary results. Thanks to Paul Biggar
-  for the patch.
+- Support for executing queries with binary results. Thanks to Paul Biggar for
+  the patch.
 
 ## [4.3.0] - 2017-12-30
 
 ### Added
 
-- Error handling functions for extracting more error details. Thanks to
-  Sean Grove for the patches.
+- Error handling functions for extracting more error details. Thanks to Sean
+  Grove for the patches.
 
 ## [4.2.1] - 2017-11-22
 
@@ -156,8 +163,8 @@
 
 ### Fixed
 
-- Bigarray library dependencies, eliminating the need for explicit linking
-  with `bigarray`.
+- Bigarray library dependencies, eliminating the need for explicit linking with
+  `bigarray`.
 
 ### Changed
 
