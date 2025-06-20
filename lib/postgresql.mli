@@ -488,8 +488,7 @@ val conndefaults : unit -> conninfo_option array
 
     @raise Error if there is a connection failure. *)
 
-class type connection_class =
-object
+class type connection_class = object
   (* Main routines *)
 
   method finish : unit
@@ -1058,7 +1057,8 @@ object
       @param len default = String.length str - pos *)
 end
 
-class connection : ?host:string ->
+class connection :
+  ?host:string ->
   (* Default: none *)
   ?hostaddr:string ->
   (* Default: none *)
@@ -1080,39 +1080,43 @@ class connection : ?host:string ->
   (* Default: none *)
   ?startonly:bool ->
   (* Default: false *)
-  unit -> connection_class
+  unit ->
+  connection_class
 
 (** Type of a mutex module *)
 module type Mutex = sig
   type t
+
   val create : unit -> t
   val lock : t -> unit
   val unlock : t -> unit
 end
 
 (** Connection parametrized by the type of mutex used *)
-module Connection(_:Mutex) : sig
-  class connection : ?host:string ->
-  (* Default: none *)
-  ?hostaddr:string ->
-  (* Default: none *)
-  ?port:string ->
-  (* Default: none *)
-  ?dbname:string ->
-  (* Default: none *)
-  ?user:string ->
-  (* Default: none *)
-  ?password:string ->
-  (* Default: none *)
-  ?options:string ->
-  (* Default: none *)
-  ?tty:string ->
-  (* Default: none *)
-  ?requiressl:string ->
-  (* Default: none *)
-  ?conninfo:string ->
-  (* Default: none *)
-  ?startonly:bool ->
-  (* Default: false *)
-  unit -> connection_class
+module Connection (_ : Mutex) : sig
+  class connection :
+    ?host:string ->
+    (* Default: none *)
+    ?hostaddr:string ->
+    (* Default: none *)
+    ?port:string ->
+    (* Default: none *)
+    ?dbname:string ->
+    (* Default: none *)
+    ?user:string ->
+    (* Default: none *)
+    ?password:string ->
+    (* Default: none *)
+    ?options:string ->
+    (* Default: none *)
+    ?tty:string ->
+    (* Default: none *)
+    ?requiressl:string ->
+    (* Default: none *)
+    ?conninfo:string ->
+    (* Default: none *)
+    ?startonly:bool ->
+    (* Default: false *)
+    unit ->
+    connection_class
 end
