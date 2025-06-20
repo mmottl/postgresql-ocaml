@@ -1,0 +1,63 @@
+---
+default_stages: [pre-commit, pre-push]
+
+repos:
+  #############################################################################
+  #                                   Meta                                    #
+  #############################################################################
+
+  - repo: meta
+    hooks:
+      - id: check-hooks-apply
+      - id: check-useless-excludes
+      # Identity prints all arguments (files) passed to it; for testing
+      # - id: identity
+
+  #############################################################################
+  #                                Core Hooks                                 #
+  #############################################################################
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-added-large-files
+      - id: check-case-conflict
+      - id: check-merge-conflict
+      - id: check-symlinks
+      - id: detect-private-key
+      - id: end-of-file-fixer
+      - id: fix-byte-order-marker
+      - id: mixed-line-ending
+      - id: trailing-whitespace
+
+  #############################################################################
+  #                                    Git                                    #
+  #############################################################################
+
+  - repo: https://github.com/commitizen-tools/commitizen
+    rev: v4.8.2
+    hooks:
+      - id: commitizen
+
+  - repo: https://github.com/jorisroovers/gitlint
+    rev: v0.19.1
+    hooks:
+      - id: gitlint
+
+  #############################################################################
+  #                                  GitHub                                   #
+  #############################################################################
+
+  - repo: https://github.com/rhysd/actionlint
+    rev: v1.7.4
+    hooks:
+      - id: actionlint
+
+  #############################################################################
+  #                                ClangFormat                                #
+  #############################################################################
+
+  - repo: https://github.com/pre-commit/mirrors-clang-format
+    rev: v20.1.5
+    hooks:
+      - id: clang-format
