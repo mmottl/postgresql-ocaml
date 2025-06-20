@@ -725,14 +725,16 @@ object
     ?binary_result:bool ->
     string ->
     unit
-  (** [send_query ?param_types ?params ?binary_params query] asynchronous
-      execution of query or command [query].
+  (** [send_query ?param_types ?params ?binary_params ?binary_result query]
+      asynchronous execution of query or command [query].
 
       Additional query parameters can be passed in the [params] array. They must
       not be escaped and they can be referred to in [query] as $1, $2, ... The
       value [null] can be used in the [params] array to denote an SQL NULL. It
       is possible to specify that some of the query parameters are passed as
-      binary strings using the [binary_params] array.
+      binary strings using the [binary_params] array. By default, results are
+      returned in text format, but will be returned in binary format if
+      [binary_result] is true.
 
       If no (or an empty) query parameter is passed, it is possible to emit
       several commands with a single call.
@@ -740,6 +742,7 @@ object
       @param param_types default = [||]
       @param params default = [||]
       @param binary_params default = [||]
+      @param binary_result default = false
 
       @raise Error if there is a connection error. *)
 
@@ -760,10 +763,12 @@ object
   (** [#send_query_prepared ?params ?binary_params stm_name] is an asynchronous
       version of {!connection.exec_prepared}. The semantics is otherwise the
       same, and the result is reported by {!connection.get_result} when
-      available.
+      available. By default, results are returned in text format, but will be
+      returned in binary format if [binary_result] is true.
 
       @param params default = [||]
       @param binary_params default = [||]
+      @param binary_result default = false
 
       @raise Error if there is a connection error. *)
 
