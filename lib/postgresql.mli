@@ -1092,7 +1092,32 @@ module type Mutex = sig
   val unlock : t -> unit
 end
 
-(** Connection parametrized by the type of mutex used *)
+(** Connection parametrized by the type of mutex used.
+
+    If you are using your own wrapper around connection, you could for instance
+    use this kind of code:
+    {[
+      module Check = struct
+        type t = bool Atomic.t
+
+        let create () = Atomic.make false
+
+        let lock m =
+          if not (Atomic.compare_and_set m false true) then
+            failwith "Concurrent use of a Postgres connection (at lock)"
+
+        let unlock m =
+          if not (Atomic.compare_and_set m true false) then
+            failwith
+              "Concurrent use of a Postgres connection (at unlock, impossible \
+               ?)"
+      end
+
+      module Postgresql = struct
+        include Postgresql
+        include Connection (Check)
+      end
+    ]} *)
 module Connection (_ : Mutex) : sig
   class connection :
     ?host:string ->
