@@ -6,6 +6,7 @@
 
 - `binary_result` to `send_query` and `send_query_prepared`. Thanks to
   Christophe Raffalli for the contribution.
+- `pre-commit` configuration and GitHub workflow.
 
 ## [5.1.3] - 2024-12-08
 
