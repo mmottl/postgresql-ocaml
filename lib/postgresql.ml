@@ -797,18 +797,127 @@ external conndefaults : unit -> conninfo_option array = "PQconndefaults_stub"
 
 exception Finally of exn * exn
 
-let protectx ~f x ~(finally : 'a -> unit) =
+let protectx ~f ~(finally : unit -> unit) =
   let res =
-    try f x
+    try f ()
     with exn ->
-      (try finally x with final_exn -> raise (Finally (exn, final_exn)));
+      (try finally () with final_exn -> raise (Finally (exn, final_exn)));
       raise exn
   in
-  finally x;
+  finally ();
   res
 
+module type Mutex = sig
+  type t
+  val create : unit -> t
+  val lock : t -> unit
+  val unlock : t -> unit
+end
+
+class type connection_class =
+object
+  method finish : unit
+  method try_reset : unit
+  method reset : unit
+  method notifies : Notification.t option
+  method set_notice_processor : (string -> unit) -> unit
+  method set_notice_processing : [ `Stderr | `Quiet ] -> unit
+  method db : string
+  method user : string
+  method pass : string
+  method host : string
+  method port : string
+  method tty : string
+  method options : string
+  method status : connection_status
+  method error_message : string
+  method backend_pid : int
+  method server_version : int * int * int
+  method empty_result : result_status -> result
+  method exec :
+    ?expect:result_status list ->
+    ?param_types:oid array ->
+    ?params:string array ->
+    ?binary_params:bool array ->
+    ?binary_result:bool ->
+    string ->
+    result
+  method prepare : ?param_types:oid array -> string -> string -> result
+  method exec_prepared :
+    ?expect:result_status list ->
+    ?params:string array ->
+    ?binary_params:bool array ->
+    string ->
+    result
+  method describe_prepared : string -> result
+  method send_query :
+    ?param_types:oid array ->
+    ?params:string array ->
+    ?binary_params:bool array ->
+    ?binary_result:bool ->
+    string ->
+    unit
+  method send_prepare : ?param_types:oid array -> string -> string -> unit
+  method send_query_prepared :
+    ?params:string array ->
+    ?binary_params:bool array ->
+    ?binary_result:bool ->
+    string ->
+    unit
+  method send_describe_prepared : string -> unit
+  method send_describe_portal : string -> unit
+  method set_single_row_mode : unit
+  method get_result : result option
+  method put_copy_data : ?pos:int -> ?len:int -> string -> put_copy_result
+  method put_copy_end : ?error_msg:string -> unit -> put_copy_result
+  method get_copy_data : ?async:bool -> unit -> get_copy_result
+  method getline : ?pos:int -> ?len:int -> Bytes.t -> getline_result
+  method getline_async : ?pos:int -> ?len:int -> Bytes.t -> getline_async_result
+  method putline : string -> unit
+  method putnbytes : ?pos:int -> ?len:int -> string -> unit
+  method endcopy : unit
+  method copy_out : (string -> unit) -> unit
+  method copy_out_channel : out_channel -> unit
+  method copy_in_channel : in_channel -> unit
+  method connect_poll : polling_status
+  method reset_start : bool
+  method reset_poll : polling_status
+  method set_nonblocking : bool -> unit
+  method is_nonblocking : bool
+  method consume_input : unit
+  method is_busy : bool
+  method flush : flush_status
+  method socket : int
+  method request_cancel : unit
+  method lo_creat : oid
+  method lo_import : string -> oid
+  method lo_export : oid -> string -> unit
+  method lo_open : oid -> large_object
+  method lo_write : ?pos:int -> ?len:int -> string -> large_object -> unit
+  method lo_write_ba :
+    ?pos:int ->
+    ?len:int ->
+    (char, Bigarray.int8_unsigned_elt, Bigarray.c_layout) Bigarray.Array1.t ->
+    large_object ->
+    unit
+  method lo_read : large_object -> ?pos:int -> ?len:int -> Bytes.t -> int
+  method lo_read_ba :
+    large_object ->
+    ?pos:int ->
+    ?len:int ->
+    (char, Bigarray.int8_unsigned_elt, Bigarray.c_layout) Bigarray.Array1.t ->
+    int
+  method lo_seek : ?pos:int -> ?whence:seek_cmd -> large_object -> unit
+  method lo_tell : large_object -> int
+  method lo_close : large_object -> unit
+  method lo_unlink : oid -> unit
+  method escape_string : ?pos:int -> ?len:int -> string -> string
+  method escape_bytea : ?pos:int -> ?len:int -> string -> string
+end
+
+module Connection (Mutex : Mutex) = struct
 class connection ?host ?hostaddr ?port ?dbname ?user ?password ?options ?tty
-  ?requiressl ?conninfo ?(startonly = false) =
+        ?requiressl ?conninfo ?(startonly = false) =
   let conn_info =
     match conninfo with
     | Some conn_info -> conn_info
@@ -846,49 +955,28 @@ class connection ?host ?hostaddr ?port ?dbname ?user ?password ?options ?tty
        else Gc.finalise Stub.finish my_conn
      in
      let conn_mtx = Mutex.create () in
-     let conn_cnd = Condition.create () in
-     let conn_state = ref `Free in
+     let finishing = ref false in
      let check_null () =
-       if Stub.conn_isnull my_conn then
+       if !finishing || Stub.conn_isnull my_conn then
          failwith "Postgresql.check_null: connection already finished"
      in
-     let wrap_mtx f =
-       Mutex.lock conn_mtx;
-       protectx conn_mtx
+     let wrap_conn f =
+       protectx
          ~f:(fun _ ->
-           check_null ();
-           (* Check now to avoid blocking *)
-           f ())
-         ~finally:Mutex.unlock
-     in
-     let wrap_conn ?(state = `Used) f =
-       wrap_mtx (fun () ->
-           while !conn_state <> `Free do
-             Condition.wait conn_cnd conn_mtx
-           done;
-           conn_state := state);
-       protectx conn_state
-         ~f:(fun _ ->
+           Mutex.lock conn_mtx;
            check_null ();
            (* Check again in case the world has changed *)
            f my_conn)
-         ~finally:(fun _ ->
-           Mutex.lock conn_mtx;
-           conn_state := `Free;
-           Condition.signal conn_cnd;
-           Mutex.unlock conn_mtx)
+         ~finally:(fun _ -> Mutex.unlock conn_mtx);
      in
      let signal_error conn =
        raise (Error (Connection_failure (Stub.error_message conn)))
      in
      let request_cancel () =
-       wrap_mtx (fun _ ->
-           match !conn_state with
-           | `Finishing | `Free -> ()
-           | `Used -> (
-               match Stub.request_cancel my_conn with
-               | None -> ()
-               | Some err -> raise (Error (Cancel_failure err))))
+       wrap_conn (fun _ ->
+           match Stub.request_cancel my_conn with
+           | None -> ()
+           | Some err -> raise (Error (Cancel_failure err)))
      in
      let get_str_pos_len ~loc ?pos ?len str =
        let str_len = String.length str in
@@ -910,7 +998,7 @@ class connection ?host ?hostaddr ?port ?dbname ?user ?password ?options ?tty
      in
 
      object (self (* Main routines *))
-       method finish = wrap_conn ~state:`Finishing Stub.finish
+       method finish = wrap_conn (fun c -> Stub.finish c; finishing:=true)
 
        method try_reset =
          wrap_conn (fun conn ->
@@ -1291,3 +1379,7 @@ class connection ?host ?hostaddr ?port ?dbname ?user ?password ?options ?tty
          let pos, len = get_str_pos_len ~loc:"escape_bytea" ?pos ?len str in
          wrap_conn (fun conn -> Stub.escape_bytea_conn conn str ~pos ~len)
      end
+end
+
+module DefaultConnection = Connection(Stdlib.Mutex)
+class connection = DefaultConnection.connection
