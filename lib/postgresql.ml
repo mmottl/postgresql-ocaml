@@ -967,9 +967,9 @@ module Connection (Mutex : Mutex) = struct
          else Gc.finalise Stub.finish my_conn
        in
        let conn_mtx = Mutex.create () in
-       let finishing = ref false in
+       let cancel_mtx = Mutex.create () in
        let check_null () =
-         if !finishing || Stub.conn_isnull my_conn then
+         if Stub.conn_isnull my_conn then
            failwith "Postgresql.check_null: connection already finished"
        in
        let wrap_conn f =
@@ -981,11 +981,20 @@ module Connection (Mutex : Mutex) = struct
              f my_conn)
            ~finally:(fun _ -> Mutex.unlock conn_mtx)
        in
+       let wrap_cancel f =
+         protectx
+           ~f:(fun _ ->
+             Mutex.lock cancel_mtx;
+             check_null ();
+             (* Check again in case the world has changed *)
+             f my_conn)
+           ~finally:(fun _ -> Mutex.unlock cancel_mtx)
+       in
        let signal_error conn =
          raise (Error (Connection_failure (Stub.error_message conn)))
        in
        let request_cancel () =
-         wrap_conn (fun _ ->
+         wrap_cancel (fun _ ->
              match Stub.request_cancel my_conn with
              | None -> ()
              | Some err -> raise (Error (Cancel_failure err)))
@@ -1012,8 +1021,7 @@ module Connection (Mutex : Mutex) = struct
        object (self (* Main routines *))
          method finish =
            wrap_conn (fun c ->
-               Stub.finish c;
-               finishing := true)
+               Stub.finish c)
 
          method try_reset =
            wrap_conn (fun conn ->
