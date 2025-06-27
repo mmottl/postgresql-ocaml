@@ -338,7 +338,6 @@ module Stub = struct
   type connection
   type result
 
-  external conn_isnull : connection -> bool = "PQconn_isnull" [@@noalloc]
   external connect : string -> bool -> connection = "PQconnectdb_stub"
   external finish : connection -> unit = "PQfinish_stub"
   external reset : connection -> unit = "PQreset_stub"
@@ -968,8 +967,9 @@ module Connection (Mutex : Mutex) = struct
        in
        let conn_mtx = Mutex.create () in
        let cancel_mtx = Mutex.create () in
+       let finished = ref false in (* bool becomes true after deallocation *)
        let check_null () =
-         if Stub.conn_isnull my_conn then
+         if !finished then
            failwith "Postgresql.check_null: connection already finished"
        in
        let wrap_conn f =
@@ -989,6 +989,18 @@ module Connection (Mutex : Mutex) = struct
              (* Check again in case the world has changed *)
              f my_conn)
            ~finally:(fun _ -> Mutex.unlock cancel_mtx)
+       in
+       let wrap_both f =
+         protectx
+           ~f:(fun _ ->
+             Mutex.lock conn_mtx;
+             Mutex.lock cancel_mtx;
+             check_null ();
+             (* Check again in case the world has changed *)
+             f my_conn)
+           ~finally:(fun _ ->
+             Mutex.unlock cancel_mtx;
+             Mutex.unlock conn_mtx)
        in
        let signal_error conn =
          raise (Error (Connection_failure (Stub.error_message conn)))
@@ -1019,7 +1031,7 @@ module Connection (Mutex : Mutex) = struct
        in
 
        object (self (* Main routines *))
-         method finish = wrap_conn (fun c -> Stub.finish c)
+         method finish = wrap_both (fun c -> Stub.finish c; finished := true)
 
          method try_reset =
            wrap_conn (fun conn ->

@@ -494,10 +494,6 @@ static inline void free_result(value v_res) {
   }
 }
 
-CAMLprim value PQres_isnull(value v_res) {
-  return Val_bool(get_res(v_res) ? 0 : 1);
-}
-
 static struct custom_operations result_ops = {
     "pg_ocaml_result",          free_result,
     custom_compare_default,     custom_hash_default,
