@@ -1019,9 +1019,7 @@ module Connection (Mutex : Mutex) = struct
        in
 
        object (self (* Main routines *))
-         method finish =
-           wrap_conn (fun c ->
-               Stub.finish c)
+         method finish = wrap_conn (fun c -> Stub.finish c)
 
          method try_reset =
            wrap_conn (fun conn ->
