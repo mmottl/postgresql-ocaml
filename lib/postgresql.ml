@@ -967,7 +967,8 @@ module Connection (Mutex : Mutex) = struct
        in
        let conn_mtx = Mutex.create () in
        let cancel_mtx = Mutex.create () in
-       let finished = ref false in (* bool becomes true after deallocation *)
+       let finished = ref false in
+       (* bool becomes true after deallocation *)
        let check_null () =
          if !finished then
            failwith "Postgresql.check_null: connection already finished"
@@ -1031,7 +1032,10 @@ module Connection (Mutex : Mutex) = struct
        in
 
        object (self (* Main routines *))
-         method finish = wrap_both (fun c -> Stub.finish c; finished := true)
+         method finish =
+           wrap_both (fun c ->
+               Stub.finish c;
+               finished := true)
 
          method try_reset =
            wrap_conn (fun conn ->
