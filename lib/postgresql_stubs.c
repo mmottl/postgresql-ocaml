@@ -266,10 +266,6 @@ static inline void np_decr_refcount(np_callback *c) {
 #define get_cancel_obj(v) ((PGcancel *)Field(v, 2))
 #define set_cancel_obj(v, cancel) (Field(v, 2) = (value)cancel)
 
-CAMLprim value PQconn_isnull(value v_conn) {
-  return Val_bool((get_conn(v_conn)) ? 0 : 1);
-}
-
 static inline void free_conn(value v_conn) {
   PGconn *conn = get_conn(v_conn);
   if (conn) {

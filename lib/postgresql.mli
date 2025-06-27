@@ -487,31 +487,8 @@ val conndefaults : unit -> conninfo_option array
       usable.
 
     @raise Error if there is a connection failure. *)
-class connection :
-  ?host:string ->
-  (* Default: none *)
-  ?hostaddr:string ->
-  (* Default: none *)
-  ?port:string ->
-  (* Default: none *)
-  ?dbname:string ->
-  (* Default: none *)
-  ?user:string ->
-  (* Default: none *)
-  ?password:string ->
-  (* Default: none *)
-  ?options:string ->
-  (* Default: none *)
-  ?tty:string ->
-  (* Default: none *)
-  ?requiressl:string ->
-  (* Default: none *)
-  ?conninfo:string ->
-  (* Default: none *)
-  ?startonly:bool ->
-  (* Default: false *)
-  unit ->
-object
+
+class type connection_class = object
   (* Main routines *)
 
   method finish : unit
@@ -1078,4 +1055,93 @@ object
 
       @param pos default = 0
       @param len default = String.length str - pos *)
+end
+
+class connection :
+  ?host:string ->
+  (* Default: none *)
+  ?hostaddr:string ->
+  (* Default: none *)
+  ?port:string ->
+  (* Default: none *)
+  ?dbname:string ->
+  (* Default: none *)
+  ?user:string ->
+  (* Default: none *)
+  ?password:string ->
+  (* Default: none *)
+  ?options:string ->
+  (* Default: none *)
+  ?tty:string ->
+  (* Default: none *)
+  ?requiressl:string ->
+  (* Default: none *)
+  ?conninfo:string ->
+  (* Default: none *)
+  ?startonly:bool ->
+  (* Default: false *)
+  unit ->
+  connection_class
+
+(** Type of a mutex module *)
+module type Mutex = sig
+  type t
+
+  val create : unit -> t
+  val lock : t -> unit
+  val unlock : t -> unit
+end
+
+(** Connection parametrized by the type of mutex used.
+
+    If you are using your own wrapper around connection, you could for instance
+    use this kind of code:
+    {[
+      module Check = struct
+        type t = bool Atomic.t
+
+        let create () = Atomic.make false
+
+        let lock m =
+          if not (Atomic.compare_and_set m false true) then
+            failwith "Concurrent use of a Postgres connection (at lock)"
+
+        let unlock m =
+          if not (Atomic.compare_and_set m true false) then
+            failwith
+              "Concurrent use of a Postgres connection (at unlock, impossible \
+               ?)"
+      end
+
+      module Postgresql = struct
+        include Postgresql
+        include Connection (Check)
+      end
+    ]} *)
+module Connection (_ : Mutex) : sig
+  class connection :
+    ?host:string ->
+    (* Default: none *)
+    ?hostaddr:string ->
+    (* Default: none *)
+    ?port:string ->
+    (* Default: none *)
+    ?dbname:string ->
+    (* Default: none *)
+    ?user:string ->
+    (* Default: none *)
+    ?password:string ->
+    (* Default: none *)
+    ?options:string ->
+    (* Default: none *)
+    ?tty:string ->
+    (* Default: none *)
+    ?requiressl:string ->
+    (* Default: none *)
+    ?conninfo:string ->
+    (* Default: none *)
+    ?startonly:bool ->
+    (* Default: false *)
+    unit ->
+    connection_class
 end
