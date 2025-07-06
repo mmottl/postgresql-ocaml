@@ -6,6 +6,7 @@ all:
 
 clean:
 	@dune clean
+	@make -C lib clean-compile-commands
 
 doc:
 	@dune build @doc
