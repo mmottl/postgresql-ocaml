@@ -1,4 +1,2 @@
-.*.swp
-.merlin
-*.install
 _build
+lib/compile_commands\.json
