@@ -795,8 +795,6 @@ class result res =
 
 external conndefaults : unit -> conninfo_option array = "PQconndefaults_stub"
 
-exception Finally of exn * exn
-
 module type Mutex = sig
   type t
 
