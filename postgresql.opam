@@ -16,6 +16,7 @@ bug-reports: "https://github.com/mmottl/postgresql-ocaml/issues"
 depends: [
   "dune" {>= "2.7"}
   "ocaml" {>= "4.12"}
+  "dune-compiledb"
   "dune-configurator"
   "conf-postgresql" {build}
   "odoc" {with-doc}

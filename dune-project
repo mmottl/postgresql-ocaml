@@ -27,5 +27,6 @@
  (depends
   (ocaml
    (>= 4.12))
+  dune-compiledb
   dune-configurator
   (conf-postgresql :build)))
