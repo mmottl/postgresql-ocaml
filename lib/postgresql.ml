@@ -797,16 +797,6 @@ external conndefaults : unit -> conninfo_option array = "PQconndefaults_stub"
 
 exception Finally of exn * exn
 
-let protectx ~f ~(finally : unit -> unit) =
-  let res =
-    try f ()
-    with exn ->
-      (try finally () with final_exn -> raise (Finally (exn, final_exn)));
-      raise exn
-  in
-  finally ();
-  res
-
 module type Mutex = sig
   type t
 
@@ -973,13 +963,13 @@ module Connection (Mutex : Mutex) = struct
            failwith "Postgresql.check_null: connection already finished"
        in
        let wrap_conn f =
-         protectx
-           ~f:(fun _ ->
+         Fun.protect
+           ~finally:(fun _ -> Mutex.unlock conn_mtx)
+           (fun _ ->
              Mutex.lock conn_mtx;
              check_null ();
              (* Check again in case the world has changed *)
              f my_conn)
-           ~finally:(fun _ -> Mutex.unlock conn_mtx)
        in
        let signal_error conn =
          raise (Error (Connection_failure (Stub.error_message conn)))
