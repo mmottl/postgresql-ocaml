@@ -957,39 +957,36 @@ module Connection (Mutex : Mutex) = struct
        let cancel_mtx = Mutex.create () in
        let finished = ref false in
        (* bool becomes true after deallocation *)
-       let check_null () =
+       let check_finished () =
          if !finished then
-           failwith "Postgresql.check_null: connection already finished"
+           failwith "Postgresql.check_finished: connection already finished"
        in
        let wrap_conn f =
          Fun.protect
            ~finally:(fun _ -> Mutex.unlock conn_mtx)
            (fun _ ->
              Mutex.lock conn_mtx;
-             check_null ();
-             (* Check again in case the world has changed *)
+             check_finished ();
              f my_conn)
        in
        let wrap_cancel f =
-         protectx
-           ~f:(fun _ ->
-             Mutex.lock cancel_mtx;
-             check_null ();
-             (* Check again in case the world has changed *)
-             f my_conn)
+         Fun.protect
            ~finally:(fun _ -> Mutex.unlock cancel_mtx)
+           (fun _ ->
+             Mutex.lock cancel_mtx;
+             check_finished ();
+             f my_conn)
        in
        let wrap_both f =
-         protectx
-           ~f:(fun _ ->
-             Mutex.lock conn_mtx;
-             Mutex.lock cancel_mtx;
-             check_null ();
-             (* Check again in case the world has changed *)
-             f my_conn)
+         Fun.protect
            ~finally:(fun _ ->
              Mutex.unlock cancel_mtx;
              Mutex.unlock conn_mtx)
+           (fun _ ->
+             Mutex.lock conn_mtx;
+             Mutex.lock cancel_mtx;
+             check_finished ();
+             f my_conn)
        in
        let signal_error conn =
          raise (Error (Connection_failure (Stub.error_message conn)))
