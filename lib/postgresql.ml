@@ -963,26 +963,26 @@ module Connection (Mutex : Mutex) = struct
        in
        let wrap_conn f =
          Fun.protect
-           ~finally:(fun _ -> Mutex.unlock conn_mtx)
-           (fun _ ->
+           ~finally:(fun () -> Mutex.unlock conn_mtx)
+           (fun () ->
              Mutex.lock conn_mtx;
              check_finished ();
              f my_conn)
        in
        let wrap_cancel f =
          Fun.protect
-           ~finally:(fun _ -> Mutex.unlock cancel_mtx)
-           (fun _ ->
+           ~finally:(fun () -> Mutex.unlock cancel_mtx)
+           (fun () ->
              Mutex.lock cancel_mtx;
              check_finished ();
              f my_conn)
        in
        let wrap_both f =
          Fun.protect
-           ~finally:(fun _ ->
+           ~finally:(fun () ->
              Mutex.unlock cancel_mtx;
              Mutex.unlock conn_mtx)
-           (fun _ ->
+           (fun () ->
              Mutex.lock conn_mtx;
              Mutex.lock cancel_mtx;
              check_finished ();
