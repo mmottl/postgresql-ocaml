@@ -1,5 +1,24 @@
 # Changelog
 
+## [5.3.0] - 2025-07-07
+
+### Added
+
+- Introduced a `Connection` functor that allows for custom mutex
+  implementations. This improves compatibility with effect-based concurrency
+  frameworks and helps prevent deadlocks.
+- Added a Makefile target to generate `compile_commands.json` for improved LSP
+  support in editors.
+
+### Changed
+
+- Improved thread coordination during cancellation of operations.
+- Removed the use of C stubs to check for a finished connection.
+- Replaced custom resource management logic with `Fun.protect`.
+
+Thanks to Christophe Raffalli for contributing solutions for the improved thread
+coordination and for effect-based concurrency frameworks.
+
 ## [5.2.0] - 2025-06-20
 
 ### Added
