@@ -4,11 +4,11 @@
 
 ### Added
 
-- Introduced a `Connection` functor that allows for custom mutex
-  implementations. This improves compatibility with effect-based concurrency
-  frameworks and helps prevent deadlocks.
-- Added a Makefile target to generate `compile_commands.json` for improved LSP
-  support in editors.
+- `Connection` functor that allows for custom mutex implementations. This
+  improves compatibility with effect-based concurrency frameworks and helps
+  prevent deadlocks.
+- Makefile target to generate `compile_commands.json` for improved LSP support
+  in editors.
 
 ### Changed
 
