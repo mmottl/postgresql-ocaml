@@ -8,7 +8,7 @@ all: compile_commands.json
 clean: clean-compile-commands
 	@dune clean
 
-compile_commands.json: config/dune config/discover.ml postgresql_stubs.c
+compile_commands.json: config/dune config/discover.ml $(wildcard *.c *.h)
 	@dune rules | dune-compiledb
 
 clean-compile-commands:
