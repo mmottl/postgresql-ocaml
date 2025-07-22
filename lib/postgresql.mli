@@ -211,7 +211,13 @@ val invalid_oid : oid
 val null : string
 (** [null] can be used as an element of the optional argument [parameters]
     passed to the [exec] or [send_query] method to indicate a NULL value. It is
-    an empty string, but not physically equal to [""]. *)
+    an empty string, but not physically equal to [""].
+
+    [null] is also returned by [getvalue] and [get_escaped_value], [gettuple],
+    ... for NULL values.
+
+    Remark: is you use NULL within array or other structured data, you will
+    have to handle NULL values according to postgresql documentation.  *)
 
 (** Class type of query results.
 
