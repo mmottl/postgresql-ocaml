@@ -796,7 +796,8 @@ CAMLprim value PQgetvalue_stub(value v_res, intnat tup_num, intnat field_num) {
   CAMLparam1(v_res);
   value v_str;
   PGresult *res = get_res(v_res);
-  if (PQgetisnull(res, tup_num, field_num)) CAMLreturn(*v_null_param);
+  if (PQgetisnull(res, tup_num, field_num))
+    CAMLreturn(*v_null_param);
   char *str = PQgetvalue(res, tup_num, field_num);
   if (PQfformat(res, field_num) == 0)
     v_str = make_string(str);
@@ -893,7 +894,8 @@ CAMLprim value PQgetescval_stub(value v_res, intnat tup_num, intnat field_num) {
   CAMLparam1(v_res);
   value v_str;
   PGresult *res = get_res(v_res);
-  if (PQgetisnull(res, tup_num, field_num)) CAMLreturn(*v_null_param);
+  if (PQgetisnull(res, tup_num, field_num))
+    CAMLreturn(*v_null_param);
   char *str = PQgetvalue(res, tup_num, field_num);
   if (PQfformat(res, field_num) == 0) {
     if (str == NULL || strlen(str) < 2 || !is_bytea_hex_protocol(str))
