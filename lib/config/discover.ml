@@ -62,12 +62,17 @@ let major_minor_from_pkg_config () =
   let ic = Unix.open_process_in cmd in
   Fun.protect ~finally:(fun () -> close_in ic) @@ fun () ->
   let version_line = input_line ic in
-  match String.split_on_char '.' version_line with
-  | major :: minor :: _ ->
-      ("-DPG_OCAML_MAJOR_VERSION=" ^ major, "-DPG_OCAML_MINOR_VERSION=" ^ minor)
-  | _ ->
-      eprintf "Unable to parse libpq version: %s" version_line;
-      exit 1
+  let major, minor =
+    try Scanf.sscanf version_line "%d.%d" (fun a b -> a, b)
+    with Scanf.Scan_failure _ ->
+      try
+        (* Treat "NbetaM" as a pre-release of N.0 *)
+        Scanf.sscanf version_line "%dbeta%d" (fun a _ -> a, 0)
+      with Scanf.Scan_failure _ ->
+        eprintf "Unable to parse libpq version: %s" version_line;
+        exit 1 in
+  ("-DPG_OCAML_MAJOR_VERSION=" ^ string_of_int major,
+   "-DPG_OCAML_MINOR_VERSION=" ^ string_of_int minor)
 
 let from_pgconfig () =
   let cmd = "pg_config --includedir --libdir --version" in
