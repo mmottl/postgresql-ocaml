@@ -14,7 +14,7 @@ jobs:
     steps:
       # Get the code
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       # Set up Python with built-in pip caching
       - name: Set up Python
