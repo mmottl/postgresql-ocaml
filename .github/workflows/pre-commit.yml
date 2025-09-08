@@ -19,7 +19,7 @@ jobs:
       # Set up Python with built-in pip caching
       - name: Set up Python
         id: python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.13"
 
