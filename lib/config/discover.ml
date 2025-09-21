@@ -55,6 +55,19 @@ let major_minor_from_pgconfig () =
   in
   Fun.protect ~finally:(fun () -> close_in ic) (fun () -> pg_major_minor ic)
 
+let keep_digits =
+  let rec aux version_line len i =
+    if i < len then
+      match version_line.[i] with
+      | '0' .. '9' | '.' -> aux version_line len (i + 1)
+      | _ -> i
+    else i
+  in
+  fun version_line ->
+    let len = String.length version_line in
+    let cut = aux version_line len 0 in
+    String.sub version_line 0 cut
+
 let major_minor_from_pkg_config () =
   let bin = Sys.getenv_opt "PKG_CONFIG" |> Option.value ~default:"pkg-config" in
   let args = Sys.getenv_opt "PKG_CONFIG_ARGN" |> Option.value ~default:"" in
@@ -62,7 +75,9 @@ let major_minor_from_pkg_config () =
   let ic = Unix.open_process_in cmd in
   Fun.protect ~finally:(fun () -> close_in ic) @@ fun () ->
   let version_line = input_line ic in
-  match String.split_on_char '.' version_line with
+  match String.split_on_char '.' (keep_digits version_line) with
+  | [major] ->
+      ("-DPG_OCAML_MAJOR_VERSION=" ^ major, "-DPG_OCAML_MINOR_VERSION=0")
   | major :: minor :: _ ->
       ("-DPG_OCAML_MAJOR_VERSION=" ^ major, "-DPG_OCAML_MINOR_VERSION=" ^ minor)
   | _ ->
