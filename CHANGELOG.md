@@ -1,5 +1,17 @@
 # Changelog
 
+## [5.3.1] - 2025-09-23
+
+### Fixed
+
+- `getvalue` and `get_escaped_value` now return `Postgresql.null` for SQL NULL
+  values, matching the documentation. Thanks to Christophe Raffalli for the
+  patch.
+
+### Changed
+
+- Applied OCaml/C formatting and added an ocamlformat pre-commit hook.
+
 ## [5.3.0] - 2025-09-23
 
 ### Added
