@@ -216,8 +216,8 @@ val null : string
     [null] is also returned by [getvalue] and [get_escaped_value], [gettuple],
     ... for NULL values.
 
-    Remark: is you use NULL within array or other structured data, you will have
-    to handle NULL values according to postgresql documentation. *)
+    NOTE: if you use NULL within an array or other structured data, you will
+    have to handle NULL values according to the PostgreSQL documentation. *)
 
 (** Class type of query results.
 
