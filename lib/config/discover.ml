@@ -76,7 +76,7 @@ let major_minor_from_pkg_config () =
   Fun.protect ~finally:(fun () -> close_in ic) @@ fun () ->
   let version_line = input_line ic in
   match String.split_on_char '.' (keep_digits version_line) with
-  | [major] ->
+  | [ major ] ->
       ("-DPG_OCAML_MAJOR_VERSION=" ^ major, "-DPG_OCAML_MINOR_VERSION=0")
   | major :: minor :: _ ->
       ("-DPG_OCAML_MAJOR_VERSION=" ^ major, "-DPG_OCAML_MINOR_VERSION=" ^ minor)

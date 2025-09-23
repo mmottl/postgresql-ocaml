@@ -60,3 +60,15 @@ repos:
     rev: v20.1.6
     hooks:
       - id: clang-format
+
+  #############################################################################
+  #                                OCamlFormat                                #
+  #############################################################################
+
+  - repo: local
+    hooks:
+      - id: ocaml-format
+        name: OCaml format
+        entry: dune fmt
+        language: system
+        pass_filenames: false
