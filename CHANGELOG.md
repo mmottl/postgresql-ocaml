@@ -1,6 +1,6 @@
 # Changelog
 
-## [5.3.0] - 2025-07-07
+## [5.3.0] - 2025-09-23
 
 ### Added
 
@@ -9,6 +9,8 @@
   prevent deadlocks.
 - Makefile target to generate `compile_commands.json` for improved LSP support
   in editors.
+- Version discovery supports PostgreSQL beta/rc versions (via `pg_config` and
+  `pkg-config`). Thanks to Antonio Nuno Monteiro for the patch.
 
 ### Changed
 
