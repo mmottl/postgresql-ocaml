@@ -961,7 +961,7 @@ CAMLprim intnat PQsendQueryParams_stub(value v_conn, value v_query,
   intnat res;
   copy_binary_params(v_params, v_binary_params, nparams, &formats, &lengths);
   bool binary_result = Bool_val(v_binary_result);
-  res = (nparams == 0)
+  res = (nparams == 0 && !binary_result)
             ? PQsendQuery(conn, query)
             : PQsendQueryParams(conn, query, nparams, param_types, params,
                                 lengths, formats, binary_result);
