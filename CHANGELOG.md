@@ -1,5 +1,13 @@
 # Changelog
 
+## [5.3.2] - 2025-09-27
+
+### Fixed
+
+- Enable binary results for parameterless queries by calling `PQsendQueryParams`
+  when `binary_result` is requested (instead of `PQsendQuery`). Thanks to Alain
+  Frisch for the patch.
+
 ## [5.3.1] - 2025-09-23
 
 ### Fixed
