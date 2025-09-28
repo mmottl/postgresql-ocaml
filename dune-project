@@ -26,7 +26,7 @@
    "Postgresql offers library functions for accessing PostgreSQL databases.")
  (depends
   (ocaml
-   (>= 4.12))
+   (>= 5.00))
   dune-compiledb
   dune-configurator
   (conf-postgresql :build)))
