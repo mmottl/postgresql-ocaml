@@ -44,4 +44,6 @@ jobs:
       # Run all hooks not already handled by other workflows
       - name: Run hooks
         run: |
+          # Formatting already handled by a dedicated hook
+          SKIP="ocaml-format" \
           pre-commit run --all-files --show-diff-on-failure --color=always
