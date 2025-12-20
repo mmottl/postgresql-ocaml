@@ -27,7 +27,7 @@ jobs:
 
       # Cache pre-commit’s virtual envs + hook repos
       - name: Cache pre-commit envs
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.cache/pre-commit
           key: >
