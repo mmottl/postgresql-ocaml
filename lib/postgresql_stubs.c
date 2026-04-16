@@ -1,5 +1,5 @@
 /*
-   PostgreSQL-OCAML - OCaml-interface to the PostgreSQL database
+   PostgreSQL-OCaml - OCaml-interface to the PostgreSQL database
 
    Copyright © 2004- Markus Mottl <markus.mottl@gmail.com>
 
@@ -47,6 +47,7 @@
 #include <caml/memory.h>
 #include <caml/mlvalues.h>
 #include <caml/signals.h>
+#include <caml/unixsupport.h>
 
 #include <libpq-fe.h>
 #include <libpq/libpq-fs.h>
@@ -1088,6 +1089,18 @@ CAMLprim value PQgetResult_stub(value v_conn) {
 NOALLOC_CONN_INFO_INTNAT(PQconsumeInput)
 NOALLOC_CONN_INFO_INTNAT(PQflush)
 NOALLOC_CONN_INFO_INTNAT(PQsocket)
+
+CAMLprim value PQsocketDescr_stub(intnat socket_fd) {
+#ifdef _WIN32
+  return caml_win32_alloc_socket((SOCKET)socket_fd);
+#else
+  return Val_int(socket_fd);
+#endif
+}
+
+CAMLprim value PQsocketDescr_stub_bc(value v_socket_fd) {
+  return PQsocketDescr_stub(Int_val(v_socket_fd));
+}
 
 CAMLprim value PQisBusy_stub(value v_conn) {
   CAMLparam1(v_conn);

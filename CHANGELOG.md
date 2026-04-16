@@ -1,5 +1,17 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- `connection#socket_descr`, which exposes the libpq socket as a
+  `Unix.file_descr` suitable for readiness-based waiting without `Obj.magic`.
+
+### Changed
+
+- Updated asynchronous and notification examples to use `socket_descr` instead
+  of coercing `socket` with `Obj.magic`.
+
 ## [5.3.2] - 2025-09-27
 
 ### Fixed

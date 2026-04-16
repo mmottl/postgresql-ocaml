@@ -14,7 +14,7 @@ let _ =
 let wait_for_result c =
   c#consume_input;
   while c#is_busy do
-    ignore (Unix.select [ Obj.magic c#socket ] [] [] (-1.0));
+    ignore (Unix.select [ c#socket_descr ] [] [] (-1.0));
     c#consume_input
   done
 
@@ -131,7 +131,7 @@ let test (c : connection) =
 let main () =
   (* Async connect and test. *)
   let c = new connection ~conninfo:Sys.argv.(1) ~startonly:true () in
-  finish_conn (Obj.magic c#socket) (fun () -> c#connect_poll) Polling_writing;
+  finish_conn c#socket_descr (fun () -> c#connect_poll) Polling_writing;
   if c#status = Bad then failwith_f "Connection failed: %s" c#error_message;
   assert (c#status = Ok);
   c#set_nonblocking true;
@@ -139,7 +139,7 @@ let main () =
 
   (* Async reset and test again. *)
   if not c#reset_start then failwith_f "reset_start failed: %s" c#error_message;
-  finish_conn (Obj.magic c#socket) (fun () -> c#reset_poll) Polling_writing;
+  finish_conn c#socket_descr (fun () -> c#reset_poll) Polling_writing;
   if c#status = Bad then failwith_f "Reset connection bad: %s" c#error_message;
   assert (c#status = Ok);
   c#set_notice_processing `Quiet;

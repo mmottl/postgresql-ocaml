@@ -71,8 +71,7 @@ let rec dump_notification conn =
 let listener conn =
   try
     while true do
-      let socket : Unix.file_descr = Obj.magic conn#socket in
-      let _ = Unix.select [ socket ] [] [] 1. in
+      let _ = Unix.select [ conn#socket_descr ] [] [] 1. in
       conn#consume_input;
       dump_notification conn
     done

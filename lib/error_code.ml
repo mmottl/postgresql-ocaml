@@ -1,4 +1,4 @@
-(* PostgreSQL-OCAML - OCaml-interface to the PostgreSQL database
+(* PostgreSQL-OCaml - OCaml-interface to the PostgreSQL database
 
    Copyright © 2017 Sean Grove <sean@bushi.do>
 

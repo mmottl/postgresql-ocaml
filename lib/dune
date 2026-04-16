@@ -11,7 +11,7 @@
    -DPIC))
  (c_library_flags
   (:include c_library_flags.sexp))
- (libraries threads bigarray))
+ (libraries unix threads bigarray))
 
 (rule
  (targets c_flags.sexp c_library_flags.sexp)

@@ -1,4 +1,4 @@
-(* PostgreSQL-OCAML - OCaml-interface to the PostgreSQL database
+(* PostgreSQL-OCaml - OCaml-interface to the PostgreSQL database
 
    Copyright © 2004- Markus Mottl <markus.mottl@gmail.com>
 
@@ -522,6 +522,9 @@ module Stub = struct
     = "PQsocket_stub_bc" "PQsocket_stub"
   [@@noalloc]
 
+  external socket_descr_of_int : (int[@untagged]) -> Unix.file_descr
+    = "PQsocketDescr_stub_bc" "PQsocketDescr_stub"
+
   external request_cancel : connection -> string option = "PQCancel_stub"
 
   (* Asynchronous Notification *)
@@ -883,6 +886,7 @@ class type connection_class = object
   method is_busy : bool
   method flush : flush_status
   method socket : int
+  method socket_descr : Unix.file_descr
   method request_cancel : unit
   method lo_creat : oid
   method lo_import : string -> oid
@@ -1310,6 +1314,11 @@ module Connection (Mutex : Mutex) = struct
            wrap_conn (fun conn ->
                let s = Stub.socket conn in
                if s = -1 then signal_error conn else s)
+
+         method socket_descr =
+           wrap_conn (fun conn ->
+               let s = Stub.socket conn in
+               if s = -1 then signal_error conn else Stub.socket_descr_of_int s)
 
          method request_cancel = request_cancel ()
 

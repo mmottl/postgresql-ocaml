@@ -1,4 +1,4 @@
-(* PostgreSQL-OCAML - OCaml-interface to the PostgreSQL database
+(* PostgreSQL-OCaml - OCaml-interface to the PostgreSQL database
 
    Copyright © 2004- Markus Mottl <markus.mottl@gmail.com>
 
@@ -892,18 +892,18 @@ class type connection_class = object
       concurrency primitives [return] and [>>=] along with polling functions
       [wait_for_read] and [wait_for_write]:
       {[
-        let my_async_connect () =
-          let c = new connection () in
-          let rec establish_connection = function
-            | Polling_failed | Polling_ok -> return c
-            | Polling_reading ->
-                wait_for_read c#socket >>= fun () ->
-                establish_connection c#connect_poll
-            | Polling_writing ->
-                wait_for_write c#socket >>= fun () ->
-                establish_connection c#connect_poll
-          in
-          establish_connection Polling_writing
+      let my_async_connect () =
+        let c = new connection () in
+        let rec establish_connection = function
+          | Polling_failed | Polling_ok -> return c
+          | Polling_reading ->
+              wait_for_read c#socket_descr >>= fun () ->
+              establish_connection c#connect_poll
+          | Polling_writing ->
+              wait_for_write c#socket_descr >>= fun () ->
+              establish_connection c#connect_poll
+        in
+        establish_connection Polling_writing
       ]}
       See also [examples/async.ml]. *)
 
@@ -946,8 +946,18 @@ class type connection_class = object
       @raise Error if there is a connection error. *)
 
   method socket : int
-  (** [socket] obtains the file descriptor for the backend connection socket as
-      an integer.
+  (** [socket] obtains the raw backend connection socket as an integer.
+
+      Use {!connection.socket_descr} to wait for read or write readiness with
+      {!Unix.select} or other OCaml APIs expecting [Unix.file_descr].
+
+      @raise Error if there is a connection error. *)
+
+  method socket_descr : Unix.file_descr
+  (** [socket_descr] obtains the backend connection socket as a
+      [Unix.file_descr].
+
+      This is the accessor to use with {!Unix.select} and similar APIs.
 
       @raise Error if there is a connection error. *)
 
@@ -1103,26 +1113,25 @@ end
     If you are using your own wrapper around connection, you could for instance
     use this kind of code:
     {[
-      module Check = struct
-        type t = bool Atomic.t
+    module Check = struct
+      type t = bool Atomic.t
 
-        let create () = Atomic.make false
+      let create () = Atomic.make false
 
-        let lock m =
-          if not (Atomic.compare_and_set m false true) then
-            failwith "Concurrent use of a Postgres connection (at lock)"
+      let lock m =
+        if not (Atomic.compare_and_set m false true) then
+          failwith "Concurrent use of a Postgres connection (at lock)"
 
-        let unlock m =
-          if not (Atomic.compare_and_set m true false) then
-            failwith
-              "Concurrent use of a Postgres connection (at unlock, impossible \
-               ?)"
-      end
+      let unlock m =
+        if not (Atomic.compare_and_set m true false) then
+          failwith
+            "Concurrent use of a Postgres connection (at unlock, impossible ?)"
+    end
 
-      module Postgresql = struct
-        include Postgresql
-        include Connection (Check)
-      end
+    module Postgresql = struct
+      include Postgresql
+      include Connection (Check)
+    end
     ]} *)
 module Connection (_ : Mutex) : sig
   class connection :
