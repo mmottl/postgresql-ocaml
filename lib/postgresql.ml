@@ -311,19 +311,31 @@ type error =
   | Unexpected_status of result_status * string * result_status list
   | Cancel_failure of string
 
+let trim_trailing_newlines s =
+  let rec find_end i =
+    if i = 0 then 0
+    else match s.[i - 1] with '\n' | '\r' -> find_end (i - 1) | _ -> i
+  in
+  String.sub s 0 (find_end (String.length s))
+
+let format_error_with_detail prefix detail =
+  let detail = trim_trailing_newlines detail in
+  if detail = "" then prefix else prefix ^ ": " ^ detail
+
 let string_of_error = function
   | Field_out_of_range (i, n) ->
       sprintf "Field number %i is out of range [0..%i]" i (n - 1)
   | Tuple_out_of_range (i, n) ->
       sprintf "Tuple number %i is out of range [0..%i]" i (n - 1)
   | Binary -> sprintf "This function does not accept binary tuples"
-  | Connection_failure s -> "Connection failure: " ^ s
+  | Connection_failure s -> format_error_with_detail "Connection failure" s
   | Unexpected_status (s, msg, sl) ->
-      sprintf "Result status %s unexpected (expected status:%s); %s"
-        (result_status s)
-        (String.concat "," (List.map result_status sl))
+      format_error_with_detail
+        (sprintf "Result status %s unexpected (expected status: %s)"
+           (result_status s)
+           (String.concat "," (List.map result_status sl)))
         msg
-  | Cancel_failure s -> "Cancel failure: " ^ s
+  | Cancel_failure s -> format_error_with_detail "Cancel failure" s
 
 exception Error of error
 

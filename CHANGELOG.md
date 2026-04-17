@@ -12,6 +12,11 @@
 - Updated asynchronous and notification examples to use `socket_descr` instead
   of coercing `socket` with `Obj.magic`.
 
+### Fixed
+
+- `string_of_error` now normalizes trailing newlines in backend-provided error
+  messages and avoids odd punctuation for empty `Unexpected_status` details.
+
 ## [5.3.2] - 2025-09-27
 
 ### Fixed
